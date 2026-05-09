@@ -9,8 +9,62 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TerapiasRouteImport } from './routes/terapias'
+import { Route as SoyProfesionalRouteImport } from './routes/soy-profesional'
+import { Route as RegistroRouteImport } from './routes/registro'
+import { Route as ProfesionalesRouteImport } from './routes/profesionales'
+import { Route as PlanesRouteImport } from './routes/planes'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ConfianzaRouteImport } from './routes/confianza'
+import { Route as BuscarRouteImport } from './routes/buscar'
+import { Route as ActividadesRouteImport } from './routes/actividades'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TerapiasRoute = TerapiasRouteImport.update({
+  id: '/terapias',
+  path: '/terapias',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SoyProfesionalRoute = SoyProfesionalRouteImport.update({
+  id: '/soy-profesional',
+  path: '/soy-profesional',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegistroRoute = RegistroRouteImport.update({
+  id: '/registro',
+  path: '/registro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfesionalesRoute = ProfesionalesRouteImport.update({
+  id: '/profesionales',
+  path: '/profesionales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanesRoute = PlanesRouteImport.update({
+  id: '/planes',
+  path: '/planes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfianzaRoute = ConfianzaRouteImport.update({
+  id: '/confianza',
+  path: '/confianza',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BuscarRoute = BuscarRouteImport.update({
+  id: '/buscar',
+  path: '/buscar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActividadesRoute = ActividadesRouteImport.update({
+  id: '/actividades',
+  path: '/actividades',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +73,158 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/actividades': typeof ActividadesRoute
+  '/buscar': typeof BuscarRoute
+  '/confianza': typeof ConfianzaRoute
+  '/login': typeof LoginRoute
+  '/planes': typeof PlanesRoute
+  '/profesionales': typeof ProfesionalesRoute
+  '/registro': typeof RegistroRoute
+  '/soy-profesional': typeof SoyProfesionalRoute
+  '/terapias': typeof TerapiasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/actividades': typeof ActividadesRoute
+  '/buscar': typeof BuscarRoute
+  '/confianza': typeof ConfianzaRoute
+  '/login': typeof LoginRoute
+  '/planes': typeof PlanesRoute
+  '/profesionales': typeof ProfesionalesRoute
+  '/registro': typeof RegistroRoute
+  '/soy-profesional': typeof SoyProfesionalRoute
+  '/terapias': typeof TerapiasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/actividades': typeof ActividadesRoute
+  '/buscar': typeof BuscarRoute
+  '/confianza': typeof ConfianzaRoute
+  '/login': typeof LoginRoute
+  '/planes': typeof PlanesRoute
+  '/profesionales': typeof ProfesionalesRoute
+  '/registro': typeof RegistroRoute
+  '/soy-profesional': typeof SoyProfesionalRoute
+  '/terapias': typeof TerapiasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/actividades'
+    | '/buscar'
+    | '/confianza'
+    | '/login'
+    | '/planes'
+    | '/profesionales'
+    | '/registro'
+    | '/soy-profesional'
+    | '/terapias'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/actividades'
+    | '/buscar'
+    | '/confianza'
+    | '/login'
+    | '/planes'
+    | '/profesionales'
+    | '/registro'
+    | '/soy-profesional'
+    | '/terapias'
+  id:
+    | '__root__'
+    | '/'
+    | '/actividades'
+    | '/buscar'
+    | '/confianza'
+    | '/login'
+    | '/planes'
+    | '/profesionales'
+    | '/registro'
+    | '/soy-profesional'
+    | '/terapias'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ActividadesRoute: typeof ActividadesRoute
+  BuscarRoute: typeof BuscarRoute
+  ConfianzaRoute: typeof ConfianzaRoute
+  LoginRoute: typeof LoginRoute
+  PlanesRoute: typeof PlanesRoute
+  ProfesionalesRoute: typeof ProfesionalesRoute
+  RegistroRoute: typeof RegistroRoute
+  SoyProfesionalRoute: typeof SoyProfesionalRoute
+  TerapiasRoute: typeof TerapiasRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terapias': {
+      id: '/terapias'
+      path: '/terapias'
+      fullPath: '/terapias'
+      preLoaderRoute: typeof TerapiasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/soy-profesional': {
+      id: '/soy-profesional'
+      path: '/soy-profesional'
+      fullPath: '/soy-profesional'
+      preLoaderRoute: typeof SoyProfesionalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/registro': {
+      id: '/registro'
+      path: '/registro'
+      fullPath: '/registro'
+      preLoaderRoute: typeof RegistroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profesionales': {
+      id: '/profesionales'
+      path: '/profesionales'
+      fullPath: '/profesionales'
+      preLoaderRoute: typeof ProfesionalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planes': {
+      id: '/planes'
+      path: '/planes'
+      fullPath: '/planes'
+      preLoaderRoute: typeof PlanesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/confianza': {
+      id: '/confianza'
+      path: '/confianza'
+      fullPath: '/confianza'
+      preLoaderRoute: typeof ConfianzaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/buscar': {
+      id: '/buscar'
+      path: '/buscar'
+      fullPath: '/buscar'
+      preLoaderRoute: typeof BuscarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/actividades': {
+      id: '/actividades'
+      path: '/actividades'
+      fullPath: '/actividades'
+      preLoaderRoute: typeof ActividadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +237,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ActividadesRoute: ActividadesRoute,
+  BuscarRoute: BuscarRoute,
+  ConfianzaRoute: ConfianzaRoute,
+  LoginRoute: LoginRoute,
+  PlanesRoute: PlanesRoute,
+  ProfesionalesRoute: ProfesionalesRoute,
+  RegistroRoute: RegistroRoute,
+  SoyProfesionalRoute: SoyProfesionalRoute,
+  TerapiasRoute: TerapiasRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
