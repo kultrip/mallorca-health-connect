@@ -1,0 +1,29 @@
+// Catalogs used by the search UI before the backend is wired.
+// These will be replaced by DB queries in phase 2.
+
+export const MUNICIPALITIES = [
+  "Alaró", "Alcúdia", "Algaida", "Andratx", "Ariany", "Artà", "Banyalbufar",
+  "Binissalem", "Búger", "Bunyola", "Calvià", "Campanet", "Campos", "Capdepera",
+  "Consell", "Costitx", "Deià", "Escorca", "Esporles", "Estellencs", "Felanitx",
+  "Fornalutx", "Inca", "Lloret de Vistalegre", "Lloseta", "Llubí", "Llucmajor",
+  "Manacor", "Mancor de la Vall", "Maria de la Salut", "Marratxí", "Montuïri",
+  "Muro", "Palma", "Petra", "Pollença", "Porreres", "Puigpunyent", "Sa Pobla",
+  "Sant Joan", "Sant Llorenç des Cardassar", "Santa Eugènia", "Santa Margalida",
+  "Santa María del Camí", "Santanyí", "Selva", "Sencelles", "Ses Salines",
+  "Sineu", "Sóller", "Son Servera", "Valldemossa", "Vilafranca de Bonany",
+];
+
+export const POPULAR_THERAPIES = [
+  "Masaje relajante", "Osteopatía", "Reiki", "Acupuntura", "Quiromasaje",
+  "Yoga", "Meditación", "Fisioterapia", "Coaching", "Terapia emocional",
+];
+
+export const SYMPTOM_CHIPS = [
+  "Me duele la espalda",
+  "Tengo ansiedad",
+  "Estoy pasando por un duelo",
+  "Necesito parar un poco",
+  "Tengo dolores crónicos",
+  "Busco equilibrio emocional",
+  "Me siento deprimido",
+];
