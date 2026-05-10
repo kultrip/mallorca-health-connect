@@ -79,7 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Encuentra terapeutas y profesionales verificados en terapias naturales y complementarias en Mallorca.",
       },
       { name: "author", content: "Mallorca Holística" },
-      { property: "og:title", content: "Mallorca Holística" },
+      { property: "og:title", content: "Mallorca Holística — Profesionales verificados de bienestar" },
       {
         property: "og:description",
         content:
@@ -87,6 +87,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Mallorca Holística — Profesionales verificados de bienestar" },
+      { name: "description", content: "Mallorca Holistica" },
+      { property: "og:description", content: "Mallorca Holistica" },
+      { name: "twitter:description", content: "Mallorca Holistica" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e92b4fa5-4f31-4919-b7db-1827a813ecb9/id-preview-616ca2e0--57ee4b30-ccb5-4abd-ba7f-9551ac4a5082.lovable.app-1778453137348.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e92b4fa5-4f31-4919-b7db-1827a813ecb9/id-preview-616ca2e0--57ee4b30-ccb5-4abd-ba7f-9551ac4a5082.lovable.app-1778453137348.png" },
     ],
     links: [
       {
