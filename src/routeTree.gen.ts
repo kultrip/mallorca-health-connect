@@ -28,6 +28,7 @@ import { Route as ActivitiesRouteImport } from './routes/activities'
 import { Route as ActividadesRouteImport } from './routes/actividades'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TherapiesSlugRouteImport } from './routes/therapies.$slug'
+import { Route as TerapiasSlugRouteImport } from './routes/terapias.$slug'
 import { Route as ProfessionalsSlugRouteImport } from './routes/professionals.$slug'
 import { Route as ProfesionalesSlugRouteImport } from './routes/profesionales.$slug'
 
@@ -126,6 +127,11 @@ const TherapiesSlugRoute = TherapiesSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => TherapiesRoute,
 } as any)
+const TerapiasSlugRoute = TerapiasSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => TerapiasRoute,
+} as any)
 const ProfessionalsSlugRoute = ProfessionalsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -153,11 +159,12 @@ export interface FileRoutesByFullPath {
   '/registro': typeof RegistroRoute
   '/search': typeof SearchRoute
   '/soy-profesional': typeof SoyProfesionalRoute
-  '/terapias': typeof TerapiasRoute
+  '/terapias': typeof TerapiasRouteWithChildren
   '/therapies': typeof TherapiesRouteWithChildren
   '/trust': typeof TrustRoute
   '/profesionales/$slug': typeof ProfesionalesSlugRoute
   '/professionals/$slug': typeof ProfessionalsSlugRoute
+  '/terapias/$slug': typeof TerapiasSlugRoute
   '/therapies/$slug': typeof TherapiesSlugRoute
 }
 export interface FileRoutesByTo {
@@ -176,11 +183,12 @@ export interface FileRoutesByTo {
   '/registro': typeof RegistroRoute
   '/search': typeof SearchRoute
   '/soy-profesional': typeof SoyProfesionalRoute
-  '/terapias': typeof TerapiasRoute
+  '/terapias': typeof TerapiasRouteWithChildren
   '/therapies': typeof TherapiesRouteWithChildren
   '/trust': typeof TrustRoute
   '/profesionales/$slug': typeof ProfesionalesSlugRoute
   '/professionals/$slug': typeof ProfessionalsSlugRoute
+  '/terapias/$slug': typeof TerapiasSlugRoute
   '/therapies/$slug': typeof TherapiesSlugRoute
 }
 export interface FileRoutesById {
@@ -200,11 +208,12 @@ export interface FileRoutesById {
   '/registro': typeof RegistroRoute
   '/search': typeof SearchRoute
   '/soy-profesional': typeof SoyProfesionalRoute
-  '/terapias': typeof TerapiasRoute
+  '/terapias': typeof TerapiasRouteWithChildren
   '/therapies': typeof TherapiesRouteWithChildren
   '/trust': typeof TrustRoute
   '/profesionales/$slug': typeof ProfesionalesSlugRoute
   '/professionals/$slug': typeof ProfessionalsSlugRoute
+  '/terapias/$slug': typeof TerapiasSlugRoute
   '/therapies/$slug': typeof TherapiesSlugRoute
 }
 export interface FileRouteTypes {
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
     | '/trust'
     | '/profesionales/$slug'
     | '/professionals/$slug'
+    | '/terapias/$slug'
     | '/therapies/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/trust'
     | '/profesionales/$slug'
     | '/professionals/$slug'
+    | '/terapias/$slug'
     | '/therapies/$slug'
   id:
     | '__root__'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/trust'
     | '/profesionales/$slug'
     | '/professionals/$slug'
+    | '/terapias/$slug'
     | '/therapies/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -295,7 +307,7 @@ export interface RootRouteChildren {
   RegistroRoute: typeof RegistroRoute
   SearchRoute: typeof SearchRoute
   SoyProfesionalRoute: typeof SoyProfesionalRoute
-  TerapiasRoute: typeof TerapiasRoute
+  TerapiasRoute: typeof TerapiasRouteWithChildren
   TherapiesRoute: typeof TherapiesRouteWithChildren
   TrustRoute: typeof TrustRoute
 }
@@ -435,6 +447,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TherapiesSlugRouteImport
       parentRoute: typeof TherapiesRoute
     }
+    '/terapias/$slug': {
+      id: '/terapias/$slug'
+      path: '/$slug'
+      fullPath: '/terapias/$slug'
+      preLoaderRoute: typeof TerapiasSlugRouteImport
+      parentRoute: typeof TerapiasRoute
+    }
     '/professionals/$slug': {
       id: '/professionals/$slug'
       path: '/$slug'
@@ -476,6 +495,18 @@ const ProfessionalsRouteWithChildren = ProfessionalsRoute._addFileChildren(
   ProfessionalsRouteChildren,
 )
 
+interface TerapiasRouteChildren {
+  TerapiasSlugRoute: typeof TerapiasSlugRoute
+}
+
+const TerapiasRouteChildren: TerapiasRouteChildren = {
+  TerapiasSlugRoute: TerapiasSlugRoute,
+}
+
+const TerapiasRouteWithChildren = TerapiasRoute._addFileChildren(
+  TerapiasRouteChildren,
+)
+
 interface TherapiesRouteChildren {
   TherapiesSlugRoute: typeof TherapiesSlugRoute
 }
@@ -504,7 +535,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegistroRoute: RegistroRoute,
   SearchRoute: SearchRoute,
   SoyProfesionalRoute: SoyProfesionalRoute,
-  TerapiasRoute: TerapiasRoute,
+  TerapiasRoute: TerapiasRouteWithChildren,
   TherapiesRoute: TherapiesRouteWithChildren,
   TrustRoute: TrustRoute,
 }
