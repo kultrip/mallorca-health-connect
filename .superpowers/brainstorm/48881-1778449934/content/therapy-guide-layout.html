@@ -1,0 +1,73 @@
+<h2>Therapy Guide Layout</h2>
+<p class="subtitle">
+  Database-first: therapies come from Supabase. The choice here is how visitors should browse and
+  understand them.
+</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A. A-Z Directory</div>
+        <div class="mockup-body">
+          <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap">
+            <span class="mock-button">Todas</span>
+            <span class="mock-button">A</span>
+            <span class="mock-button">B</span>
+            <span class="mock-button">C</span>
+            <span class="mock-button">M</span>
+            <span class="mock-button">Y</span>
+          </div>
+          <div class="placeholder" style="height: 42px">Acupuntura</div>
+          <div class="placeholder" style="height: 42px">Coaching</div>
+          <div class="placeholder" style="height: 42px">Meditación</div>
+          <div class="placeholder" style="height: 42px">Yoga</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A-Z Simple</h3>
+      <p>Fast, clear, and useful if visitors already know what they are looking for.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B. Category Guide</div>
+        <div class="mockup-body">
+          <div class="placeholder" style="height: 50px">Cuerpo y movimiento</div>
+          <div class="placeholder" style="height: 50px">Mente y emociones</div>
+          <div class="placeholder" style="height: 50px">Energía y equilibrio</div>
+          <div class="placeholder" style="height: 50px">Espiritualidad y crecimiento</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Category-Led</h3>
+      <p>Warmer and more educational, but less direct for visitors searching a known therapy.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">C. Hybrid Guide</div>
+        <div class="mockup-body">
+          <input class="mock-input" placeholder="Buscar terapia..." />
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px">
+            <div class="placeholder" style="height: 56px">Meditación</div>
+            <div class="placeholder" style="height: 56px">Yoga</div>
+            <div class="placeholder" style="height: 56px">Terapia emocional</div>
+            <div class="placeholder" style="height: 56px">Fisioterapia</div>
+          </div>
+          <div class="placeholder" style="height: 36px; margin-top: 14px">A-Z index below</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Hybrid Search + Categories + A-Z</h3>
+      <p>Best for MVP discovery: welcoming for new visitors, still efficient for direct lookup.</p>
+    </div>
+  </div>
+</div>

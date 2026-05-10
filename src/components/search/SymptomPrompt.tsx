@@ -10,7 +10,7 @@ export function SymptomPrompt() {
 
   const go = (q: string) => {
     if (!q.trim()) return;
-    navigate({ to: "/buscar", search: { q } as never });
+    navigate({ to: "/search", search: { q } as never });
   };
 
   return (

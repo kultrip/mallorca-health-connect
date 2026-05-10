@@ -14,7 +14,7 @@ export function SearchBar() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     navigate({
-      to: "/profesionales",
+      to: "/professionals",
       search: { q: q || undefined, municipio: loc || undefined } as never,
     });
   };

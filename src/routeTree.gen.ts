@@ -9,18 +9,39 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrustRouteImport } from './routes/trust'
+import { Route as TherapiesRouteImport } from './routes/therapies'
 import { Route as TerapiasRouteImport } from './routes/terapias'
 import { Route as SoyProfesionalRouteImport } from './routes/soy-profesional'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as RegistroRouteImport } from './routes/registro'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ProfessionalsRouteImport } from './routes/professionals'
 import { Route as ProfesionalesRouteImport } from './routes/profesionales'
+import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PlanesRouteImport } from './routes/planes'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as ConfianzaRouteImport } from './routes/confianza'
 import { Route as BuscarRouteImport } from './routes/buscar'
+import { Route as ActivitiesRouteImport } from './routes/activities'
 import { Route as ActividadesRouteImport } from './routes/actividades'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ProfesionalesSlugRouteImport } from './routes/profesionales.$slug'
+import { Route as TherapiesSlugRouteImport } from './routes/therapies_.$slug'
+import { Route as TerapiasSlugRouteImport } from './routes/terapias_.$slug'
+import { Route as ProfessionalsSlugRouteImport } from './routes/professionals_.$slug'
+import { Route as ProfesionalesSlugRouteImport } from './routes/profesionales_.$slug'
 
+const TrustRoute = TrustRouteImport.update({
+  id: '/trust',
+  path: '/trust',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TherapiesRoute = TherapiesRouteImport.update({
+  id: '/therapies',
+  path: '/therapies',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TerapiasRoute = TerapiasRouteImport.update({
   id: '/terapias',
   path: '/terapias',
@@ -31,14 +52,34 @@ const SoyProfesionalRoute = SoyProfesionalRouteImport.update({
   path: '/soy-profesional',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegistroRoute = RegistroRouteImport.update({
   id: '/registro',
   path: '/registro',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfessionalsRoute = ProfessionalsRouteImport.update({
+  id: '/professionals',
+  path: '/professionals',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfesionalesRoute = ProfesionalesRouteImport.update({
   id: '/profesionales',
   path: '/profesionales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlansRoute = PlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanesRoute = PlanesRouteImport.update({
@@ -51,6 +92,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForProfessionalsRoute = ForProfessionalsRouteImport.update({
+  id: '/for-professionals',
+  path: '/for-professionals',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConfianzaRoute = ConfianzaRouteImport.update({
   id: '/confianza',
   path: '/confianza',
@@ -59,6 +105,11 @@ const ConfianzaRoute = ConfianzaRouteImport.update({
 const BuscarRoute = BuscarRouteImport.update({
   id: '/buscar',
   path: '/buscar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActivitiesRoute = ActivitiesRouteImport.update({
+  id: '/activities',
+  path: '/activities',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ActividadesRoute = ActividadesRouteImport.update({
@@ -71,109 +122,216 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TherapiesSlugRoute = TherapiesSlugRouteImport.update({
+  id: '/therapies_/$slug',
+  path: '/therapies/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TerapiasSlugRoute = TerapiasSlugRouteImport.update({
+  id: '/terapias_/$slug',
+  path: '/terapias/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfessionalsSlugRoute = ProfessionalsSlugRouteImport.update({
+  id: '/professionals_/$slug',
+  path: '/professionals/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfesionalesSlugRoute = ProfesionalesSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => ProfesionalesRoute,
+  id: '/profesionales_/$slug',
+  path: '/profesionales/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/actividades': typeof ActividadesRoute
+  '/activities': typeof ActivitiesRoute
   '/buscar': typeof BuscarRoute
   '/confianza': typeof ConfianzaRoute
+  '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
   '/planes': typeof PlanesRoute
-  '/profesionales': typeof ProfesionalesRouteWithChildren
+  '/plans': typeof PlansRoute
+  '/profesionales': typeof ProfesionalesRoute
+  '/professionals': typeof ProfessionalsRoute
+  '/register': typeof RegisterRoute
   '/registro': typeof RegistroRoute
+  '/search': typeof SearchRoute
   '/soy-profesional': typeof SoyProfesionalRoute
   '/terapias': typeof TerapiasRoute
+  '/therapies': typeof TherapiesRoute
+  '/trust': typeof TrustRoute
   '/profesionales/$slug': typeof ProfesionalesSlugRoute
+  '/professionals/$slug': typeof ProfessionalsSlugRoute
+  '/terapias/$slug': typeof TerapiasSlugRoute
+  '/therapies/$slug': typeof TherapiesSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/actividades': typeof ActividadesRoute
+  '/activities': typeof ActivitiesRoute
   '/buscar': typeof BuscarRoute
   '/confianza': typeof ConfianzaRoute
+  '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
   '/planes': typeof PlanesRoute
-  '/profesionales': typeof ProfesionalesRouteWithChildren
+  '/plans': typeof PlansRoute
+  '/profesionales': typeof ProfesionalesRoute
+  '/professionals': typeof ProfessionalsRoute
+  '/register': typeof RegisterRoute
   '/registro': typeof RegistroRoute
+  '/search': typeof SearchRoute
   '/soy-profesional': typeof SoyProfesionalRoute
   '/terapias': typeof TerapiasRoute
+  '/therapies': typeof TherapiesRoute
+  '/trust': typeof TrustRoute
   '/profesionales/$slug': typeof ProfesionalesSlugRoute
+  '/professionals/$slug': typeof ProfessionalsSlugRoute
+  '/terapias/$slug': typeof TerapiasSlugRoute
+  '/therapies/$slug': typeof TherapiesSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/actividades': typeof ActividadesRoute
+  '/activities': typeof ActivitiesRoute
   '/buscar': typeof BuscarRoute
   '/confianza': typeof ConfianzaRoute
+  '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
   '/planes': typeof PlanesRoute
-  '/profesionales': typeof ProfesionalesRouteWithChildren
+  '/plans': typeof PlansRoute
+  '/profesionales': typeof ProfesionalesRoute
+  '/professionals': typeof ProfessionalsRoute
+  '/register': typeof RegisterRoute
   '/registro': typeof RegistroRoute
+  '/search': typeof SearchRoute
   '/soy-profesional': typeof SoyProfesionalRoute
   '/terapias': typeof TerapiasRoute
-  '/profesionales/$slug': typeof ProfesionalesSlugRoute
+  '/therapies': typeof TherapiesRoute
+  '/trust': typeof TrustRoute
+  '/profesionales_/$slug': typeof ProfesionalesSlugRoute
+  '/professionals_/$slug': typeof ProfessionalsSlugRoute
+  '/terapias_/$slug': typeof TerapiasSlugRoute
+  '/therapies_/$slug': typeof TherapiesSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/actividades'
+    | '/activities'
     | '/buscar'
     | '/confianza'
+    | '/for-professionals'
     | '/login'
     | '/planes'
+    | '/plans'
     | '/profesionales'
+    | '/professionals'
+    | '/register'
     | '/registro'
+    | '/search'
     | '/soy-profesional'
     | '/terapias'
+    | '/therapies'
+    | '/trust'
     | '/profesionales/$slug'
+    | '/professionals/$slug'
+    | '/terapias/$slug'
+    | '/therapies/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/actividades'
+    | '/activities'
     | '/buscar'
     | '/confianza'
+    | '/for-professionals'
     | '/login'
     | '/planes'
+    | '/plans'
     | '/profesionales'
+    | '/professionals'
+    | '/register'
     | '/registro'
+    | '/search'
     | '/soy-profesional'
     | '/terapias'
+    | '/therapies'
+    | '/trust'
     | '/profesionales/$slug'
+    | '/professionals/$slug'
+    | '/terapias/$slug'
+    | '/therapies/$slug'
   id:
     | '__root__'
     | '/'
     | '/actividades'
+    | '/activities'
     | '/buscar'
     | '/confianza'
+    | '/for-professionals'
     | '/login'
     | '/planes'
+    | '/plans'
     | '/profesionales'
+    | '/professionals'
+    | '/register'
     | '/registro'
+    | '/search'
     | '/soy-profesional'
     | '/terapias'
-    | '/profesionales/$slug'
+    | '/therapies'
+    | '/trust'
+    | '/profesionales_/$slug'
+    | '/professionals_/$slug'
+    | '/terapias_/$slug'
+    | '/therapies_/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActividadesRoute: typeof ActividadesRoute
+  ActivitiesRoute: typeof ActivitiesRoute
   BuscarRoute: typeof BuscarRoute
   ConfianzaRoute: typeof ConfianzaRoute
+  ForProfessionalsRoute: typeof ForProfessionalsRoute
   LoginRoute: typeof LoginRoute
   PlanesRoute: typeof PlanesRoute
-  ProfesionalesRoute: typeof ProfesionalesRouteWithChildren
+  PlansRoute: typeof PlansRoute
+  ProfesionalesRoute: typeof ProfesionalesRoute
+  ProfessionalsRoute: typeof ProfessionalsRoute
+  RegisterRoute: typeof RegisterRoute
   RegistroRoute: typeof RegistroRoute
+  SearchRoute: typeof SearchRoute
   SoyProfesionalRoute: typeof SoyProfesionalRoute
   TerapiasRoute: typeof TerapiasRoute
+  TherapiesRoute: typeof TherapiesRoute
+  TrustRoute: typeof TrustRoute
+  ProfesionalesSlugRoute: typeof ProfesionalesSlugRoute
+  ProfessionalsSlugRoute: typeof ProfessionalsSlugRoute
+  TerapiasSlugRoute: typeof TerapiasSlugRoute
+  TherapiesSlugRoute: typeof TherapiesSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/trust': {
+      id: '/trust'
+      path: '/trust'
+      fullPath: '/trust'
+      preLoaderRoute: typeof TrustRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/therapies': {
+      id: '/therapies'
+      path: '/therapies'
+      fullPath: '/therapies'
+      preLoaderRoute: typeof TherapiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terapias': {
       id: '/terapias'
       path: '/terapias'
@@ -188,6 +346,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SoyProfesionalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/registro': {
       id: '/registro'
       path: '/registro'
@@ -195,11 +360,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegistroRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/professionals': {
+      id: '/professionals'
+      path: '/professionals'
+      fullPath: '/professionals'
+      preLoaderRoute: typeof ProfessionalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profesionales': {
       id: '/profesionales'
       path: '/profesionales'
       fullPath: '/profesionales'
       preLoaderRoute: typeof ProfesionalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plans': {
+      id: '/plans'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof PlansRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planes': {
@@ -216,6 +402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/for-professionals': {
+      id: '/for-professionals'
+      path: '/for-professionals'
+      fullPath: '/for-professionals'
+      preLoaderRoute: typeof ForProfessionalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/confianza': {
       id: '/confianza'
       path: '/confianza'
@@ -228,6 +421,13 @@ declare module '@tanstack/react-router' {
       path: '/buscar'
       fullPath: '/buscar'
       preLoaderRoute: typeof BuscarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/activities': {
+      id: '/activities'
+      path: '/activities'
+      fullPath: '/activities'
+      preLoaderRoute: typeof ActivitiesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/actividades': {
@@ -244,40 +444,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/profesionales/$slug': {
-      id: '/profesionales/$slug'
-      path: '/$slug'
+    '/therapies_/$slug': {
+      id: '/therapies_/$slug'
+      path: '/therapies/$slug'
+      fullPath: '/therapies/$slug'
+      preLoaderRoute: typeof TherapiesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terapias_/$slug': {
+      id: '/terapias_/$slug'
+      path: '/terapias/$slug'
+      fullPath: '/terapias/$slug'
+      preLoaderRoute: typeof TerapiasSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/professionals_/$slug': {
+      id: '/professionals_/$slug'
+      path: '/professionals/$slug'
+      fullPath: '/professionals/$slug'
+      preLoaderRoute: typeof ProfessionalsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profesionales_/$slug': {
+      id: '/profesionales_/$slug'
+      path: '/profesionales/$slug'
       fullPath: '/profesionales/$slug'
       preLoaderRoute: typeof ProfesionalesSlugRouteImport
-      parentRoute: typeof ProfesionalesRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface ProfesionalesRouteChildren {
-  ProfesionalesSlugRoute: typeof ProfesionalesSlugRoute
-}
-
-const ProfesionalesRouteChildren: ProfesionalesRouteChildren = {
-  ProfesionalesSlugRoute: ProfesionalesSlugRoute,
-}
-
-const ProfesionalesRouteWithChildren = ProfesionalesRoute._addFileChildren(
-  ProfesionalesRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActividadesRoute: ActividadesRoute,
+  ActivitiesRoute: ActivitiesRoute,
   BuscarRoute: BuscarRoute,
   ConfianzaRoute: ConfianzaRoute,
+  ForProfessionalsRoute: ForProfessionalsRoute,
   LoginRoute: LoginRoute,
   PlanesRoute: PlanesRoute,
-  ProfesionalesRoute: ProfesionalesRouteWithChildren,
+  PlansRoute: PlansRoute,
+  ProfesionalesRoute: ProfesionalesRoute,
+  ProfessionalsRoute: ProfessionalsRoute,
+  RegisterRoute: RegisterRoute,
   RegistroRoute: RegistroRoute,
+  SearchRoute: SearchRoute,
   SoyProfesionalRoute: SoyProfesionalRoute,
   TerapiasRoute: TerapiasRoute,
+  TherapiesRoute: TherapiesRoute,
+  TrustRoute: TrustRoute,
+  ProfesionalesSlugRoute: ProfesionalesSlugRoute,
+  ProfessionalsSlugRoute: ProfessionalsSlugRoute,
+  TerapiasSlugRoute: TerapiasSlugRoute,
+  TherapiesSlugRoute: TherapiesSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
