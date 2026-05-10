@@ -118,11 +118,11 @@ Create focused feature modules:
   - keeps route metadata.
   - renders `TherapiesPage`.
 
-- `src/routes/therapies.$slug.tsx`
+- `src/routes/therapies_.$slug.tsx`
   - route metadata using the slug.
   - renders `TherapyDetailPage`.
 
-- `src/routes/terapias.$slug.tsx`
+- `src/routes/terapias_.$slug.tsx`
   - compatibility redirect to `/therapies/$slug`.
 
 Update:

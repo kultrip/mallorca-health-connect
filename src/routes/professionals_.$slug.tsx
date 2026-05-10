@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ProfessionalProfilePage } from "@/features/professionals/ProfessionalProfilePage";
 
-export const Route = createFileRoute("/professionals/$slug")({
+export const Route = createFileRoute("/professionals_/$slug")({
   head: ({ params }) => ({
     meta: [{ title: `${params.slug} — Mallorca Holística` }],
   }),
