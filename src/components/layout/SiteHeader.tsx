@@ -4,10 +4,10 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { to: "/profesionales", label: "Profesionales" },
-  { to: "/actividades", label: "Actividades" },
-  { to: "/terapias", label: "Terapias" },
-  { to: "/soy-profesional", label: "Soy profesional" },
+  { to: "/professionals", label: "Profesionales" },
+  { to: "/activities", label: "Actividades" },
+  { to: "/therapies", label: "Terapias" },
+  { to: "/for-professionals", label: "Soy profesional" },
 ] as const;
 
 export function SiteHeader({ transparent = false }: { transparent?: boolean }) {
@@ -46,11 +46,7 @@ export function SiteHeader({ transparent = false }: { transparent?: boolean }) {
           </Link>
         </nav>
 
-        <button
-          aria-label="Menú"
-          className="md:hidden"
-          onClick={() => setOpen((v) => !v)}
-        >
+        <button aria-label="Menú" className="md:hidden" onClick={() => setOpen((v) => !v)}>
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>

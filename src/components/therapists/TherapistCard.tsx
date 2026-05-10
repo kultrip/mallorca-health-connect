@@ -17,7 +17,7 @@ export type TherapistCardData = {
 export function TherapistCard({ t }: { t: TherapistCardData }) {
   return (
     <Link
-      to="/profesionales/$slug"
+      to="/professionals/$slug"
       params={{ slug: t.slug }}
       className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:shadow-md"
     >
@@ -47,9 +47,7 @@ export function TherapistCard({ t }: { t: TherapistCardData }) {
         </div>
         <h3 className="font-display mt-1 text-2xl leading-tight">{t.full_name}</h3>
         {t.frase_clave && (
-          <p className="mt-2 line-clamp-2 text-sm italic text-foreground/70">
-            "{t.frase_clave}"
-          </p>
+          <p className="mt-2 line-clamp-2 text-sm italic text-foreground/70">"{t.frase_clave}"</p>
         )}
         <div className="mt-auto flex items-center gap-3 pt-4 text-xs text-muted-foreground">
           {t.municipalities?.name && (
@@ -59,9 +57,7 @@ export function TherapistCard({ t }: { t: TherapistCardData }) {
           )}
           {t.modalities && t.modalities.length > 0 && (
             <span className="inline-flex items-center gap-1.5">
-              {t.modalities.slice(0, 3).map((m) => (
-                <span key={m} className="capitalize">{m}</span>
-              )).reduce((prev: any, curr, i) => i === 0 ? [curr] : [...prev, " · ", curr], [])}
+              {t.modalities.slice(0, 3).join(" · ")}
             </span>
           )}
         </div>

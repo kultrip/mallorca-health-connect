@@ -3,19 +3,19 @@ import { Users, Calendar, Compass, ArrowUpRight } from "lucide-react";
 
 const items = [
   {
-    to: "/profesionales",
+    to: "/professionals",
     title: "Profesionales",
     desc: "Encuentra terapeutas verificados cerca de ti.",
     icon: Users,
   },
   {
-    to: "/actividades",
+    to: "/activities",
     title: "Actividades",
     desc: "Talleres, retiros y encuentros en la isla.",
     icon: Calendar,
   },
   {
-    to: "/terapias",
+    to: "/therapies",
     title: "Descubrir",
     desc: "Una guía clara de terapias y en qué pueden ayudarte.",
     icon: Compass,
