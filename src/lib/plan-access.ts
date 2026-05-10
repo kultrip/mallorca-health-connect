@@ -1,8 +1,11 @@
-type PlanLike = {
-  slug?: string | null;
-  name?: string | null;
-  price_monthly_cents?: number | null;
-} | null | undefined;
+type PlanLike =
+  | {
+      slug?: string | null;
+      name?: string | null;
+      price_monthly_cents?: number | null;
+    }
+  | null
+  | undefined;
 
 const paidPlanSlugs = new Set([
   "profesional",

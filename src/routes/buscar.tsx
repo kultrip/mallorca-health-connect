@@ -17,8 +17,7 @@ export const Route = createFileRoute("/buscar")({
       { title: "Encuentra acompañamiento — Mallorca Holística" },
       {
         name: "description",
-        content:
-          "Cuéntanos cómo te sientes y te mostramos profesionales que pueden acompañarte.",
+        content: "Cuéntanos cómo te sientes y te mostramos profesionales que pueden acompañarte.",
       },
     ],
   }),
@@ -68,9 +67,7 @@ function Page() {
             <Sparkles className="h-3.5 w-3.5" />
             Búsqueda por como te sientes
           </div>
-          <p className="font-display text-2xl leading-snug text-foreground/90 md:text-3xl">
-            "{q}"
-          </p>
+          <p className="font-display text-2xl leading-snug text-foreground/90 md:text-3xl">"{q}"</p>
         </div>
 
         {/* AI intro */}
@@ -84,7 +81,9 @@ function Page() {
           {isError && (
             <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-sm text-destructive-foreground">
               No pudimos completar la búsqueda. Por favor, inténtalo de nuevo en un momento.{" "}
-              <button onClick={() => refetch()} className="underline">Reintentar</button>
+              <button onClick={() => refetch()} className="underline">
+                Reintentar
+              </button>
             </div>
           )}
           {data && (
@@ -123,9 +122,7 @@ function Page() {
           </div>
         ) : data && data.therapists.length > 0 ? (
           <>
-            <h2 className="font-display mb-6 text-2xl">
-              Profesionales que pueden acompañarte
-            </h2>
+            <h2 className="font-display mb-6 text-2xl">Profesionales que pueden acompañarte</h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {data.therapists.map((t) => (
                 <TherapistCard key={t.id} t={t} />
@@ -138,8 +135,8 @@ function Page() {
               Aún no tenemos profesionales que encajen con esto.
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Estamos ampliando nuestra red con mucho cuidado. Prueba a explorar
-              el directorio completo de profesionales.
+              Estamos ampliando nuestra red con mucho cuidado. Prueba a explorar el directorio
+              completo de profesionales.
             </p>
             <Link
               to="/profesionales"

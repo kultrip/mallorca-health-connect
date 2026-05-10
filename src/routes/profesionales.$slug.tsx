@@ -17,11 +17,41 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { planSupportsDirectContact } from "@/lib/plan-access";
 
+type NamedSlug = {
+  slug: string;
+  name: string;
+};
+
+type TherapyLink = {
+  therapies: NamedSlug | NamedSlug[] | null;
+};
+
+type HelpAreaLink = {
+  help_areas: NamedSlug | NamedSlug[] | null;
+};
+
+type Session = {
+  nombre?: string | null;
+  duracion?: string | null;
+  precio?: number | string | null;
+};
+
+type PlanData = {
+  slug?: string | null;
+  name?: string | null;
+  price_monthly_cents?: number | null;
+};
+
+type TherapistExtras = {
+  therapist_therapies?: TherapyLink[] | null;
+  therapist_help_areas?: HelpAreaLink[] | null;
+  sessions?: Session[] | null;
+  plans?: PlanData | PlanData[] | null;
+};
+
 export const Route = createFileRoute("/profesionales/$slug")({
   head: ({ params }) => ({
-    meta: [
-      { title: `${params.slug} — Mallorca Holística` },
-    ],
+    meta: [{ title: `${params.slug} — Mallorca Holística` }],
   }),
   component: Page,
 });
@@ -35,7 +65,7 @@ function Page() {
       const { data, error } = await supabase
         .from("therapists")
         .select(
-          "*, municipalities(name,slug), plans(slug,name,price_monthly_cents), therapist_therapies(therapies(slug,name)), therapist_help_areas(help_areas(slug,name))"
+          "*, municipalities(name,slug), plans(slug,name,price_monthly_cents), therapist_therapies(therapies(slug,name)), therapist_help_areas(help_areas(slug,name))",
         )
         .eq("slug", slug)
         .eq("status", "published")
@@ -62,7 +92,10 @@ function Page() {
           <p className="font-display text-2xl text-foreground/80">
             No encontramos este profesional.
           </p>
-          <Link to="/profesionales" className="mt-6 inline-flex rounded-full border border-border bg-background px-5 py-2 text-sm hover:bg-muted">
+          <Link
+            to="/profesionales"
+            className="mt-6 inline-flex rounded-full border border-border bg-background px-5 py-2 text-sm hover:bg-muted"
+          >
             Ver directorio
           </Link>
         </div>
@@ -70,12 +103,17 @@ function Page() {
     );
   }
 
-  const therapies = (data.therapist_therapies ?? []).map((tt: any) => tt.therapies).filter(Boolean);
-  const helpAreas = (data.therapist_help_areas ?? []).map((th: any) => th.help_areas).filter(Boolean);
-  const sessions = Array.isArray((data as any).sessions) ? (data as any).sessions : [];
+  const extra = data as typeof data & TherapistExtras;
+  const therapies = (extra.therapist_therapies ?? [])
+    .map((tt) => firstRelation(tt.therapies))
+    .filter(Boolean);
+  const helpAreas = (extra.therapist_help_areas ?? [])
+    .map((th) => firstRelation(th.help_areas))
+    .filter(Boolean);
+  const sessions = Array.isArray(extra.sessions) ? extra.sessions : [];
   const name = data.full_name ?? "";
   const contactName = firstName(name);
-  const canShowDirectContact = planSupportsDirectContact((data as any).plans);
+  const canShowDirectContact = planSupportsDirectContact(firstRelation(extra.plans));
   const hasContactActions =
     canShowDirectContact && (data.whatsapp || data.link_reserva || data.website);
   const hasMap = data.lat != null && data.lng != null;
@@ -140,8 +178,8 @@ function Page() {
                   <div className="absolute left-0 z-20 mt-2 w-72 rounded-2xl border border-border bg-popover p-4 text-left text-xs leading-relaxed text-popover-foreground shadow-lg">
                     <p className="font-medium">Perfil verificado por Mallorca Holística</p>
                     <p className="mt-2 text-muted-foreground">
-                      Este profesional ha aportado formación, experiencia profesional,
-                      seguro de responsabilidad civil y adhesión al código deontológico.
+                      Este profesional ha aportado formación, experiencia profesional, seguro de
+                      responsabilidad civil y adhesión al código deontológico.
                     </p>
                   </div>
                 </details>
@@ -154,9 +192,7 @@ function Page() {
               {data.modalities && data.modalities.length > 0 && (
                 <span className="capitalize">{data.modalities.join(" · ")}</span>
               )}
-              {data.years_experience && (
-                <span>{data.years_experience} años de experiencia</span>
-              )}
+              {data.years_experience && <span>{data.years_experience} años de experiencia</span>}
             </div>
 
             {data.frase_clave && (
@@ -202,8 +238,8 @@ function Page() {
                 </>
               ) : (
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  Este perfil forma parte del ecosistema Mallorca Holística. Pronto
-                  habrá más formas de contacto visibles según el plan del profesional.
+                  Este perfil forma parte del ecosistema Mallorca Holística. Pronto habrá más formas
+                  de contacto visibles según el plan del profesional.
                 </p>
               )}
             </div>
@@ -211,16 +247,14 @@ function Page() {
         </div>
 
         <div className="mt-16 grid gap-10 md:grid-cols-[1.1fr,0.9fr]">
-          {data.sobre_mi && (
-            <Section title="Sobre mí">{data.sobre_mi}</Section>
-          )}
+          {data.sobre_mi && <Section title="Sobre mí">{data.sobre_mi}</Section>}
           {helpAreas.length > 0 && (
             <div>
               <h3 className="text-xs uppercase tracking-wider text-muted-foreground">
                 Te acompaño en
               </h3>
               <div className="mt-3 flex flex-wrap gap-2">
-                {helpAreas.map((h: any) => (
+                {helpAreas.map((h) => (
                   <span
                     key={h.slug}
                     className="rounded-full bg-muted px-3.5 py-1.5 text-sm text-foreground/80"
@@ -238,8 +272,11 @@ function Page() {
             <div>
               <h3 className="text-xs uppercase tracking-wider text-muted-foreground">Terapias</h3>
               <div className="mt-3 flex flex-wrap gap-2">
-                {therapies.map((t: any) => (
-                  <span key={t.slug} className="rounded-full border border-border bg-card px-3.5 py-1.5 text-sm">
+                {therapies.map((t) => (
+                  <span
+                    key={t.slug}
+                    className="rounded-full border border-border bg-card px-3.5 py-1.5 text-sm"
+                  >
                     {t.name}
                   </span>
                 ))}
@@ -251,7 +288,7 @@ function Page() {
             <div>
               <h3 className="text-xs uppercase tracking-wider text-muted-foreground">Sesiones</h3>
               <ul className="mt-3 space-y-2 text-sm text-foreground/80">
-                {sessions.map((session: any, index: number) => (
+                {sessions.map((session, index) => (
                   <li key={session.nombre ?? index}>
                     {session.nombre}
                     {session.duracion ? ` (${session.duracion})` : ""}
@@ -297,6 +334,11 @@ function whatsappHref(phone: string, name: string) {
   const number = phone.replace(/[^0-9]/g, "");
   const message = `Hola ${name}, te he encontrado en Mallorca Holística. Me gustaría saber cómo puedes ayudarme y consultar tu disponibilidad. Gracias`;
   return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+}
+
+function firstRelation<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
