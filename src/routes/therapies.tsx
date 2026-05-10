@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageShell, PageHeader, ComingSoon } from "@/components/layout/PageShell";
+import { TherapiesPage } from "@/features/therapies/TherapiesPage";
 
 export const Route = createFileRoute("/therapies")({
   head: () => ({
@@ -12,18 +12,5 @@ export const Route = createFileRoute("/therapies")({
       },
     ],
   }),
-  component: Page,
+  component: TherapiesPage,
 });
-
-function Page() {
-  return (
-    <PageShell>
-      <PageHeader
-        eyebrow="Guía"
-        title="Guía de terapias"
-        intro="Explora las terapias disponibles en Mallorca Holística y descubre en qué consiste cada una y cómo puede ayudarte. Poco a poco vamos incorporando nuevas disciplinas."
-      />
-      <ComingSoon note="Listado A–Z y fichas de cada terapia en construcción." />
-    </PageShell>
-  );
-}
