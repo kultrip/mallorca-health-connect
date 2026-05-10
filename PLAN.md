@@ -2,10 +2,10 @@
 
 ## Current Stage
 
-Owner-visible polish and public route alignment are complete on branch:
+Owner-visible polish, public route alignment, and Therapy guide MVP are complete on branch:
 
 ```text
-codex-owner-visible-polish
+codex-therapy-guide
 ```
 
 The work is not merged into `main` yet.
@@ -47,6 +47,15 @@ The work is not merged into `main` yet.
   - `/register`
   - `/for-professionals`
 - [x] Kept Spanish public routes as compatibility redirects.
+- [x] Wrote and committed Therapy guide design spec:
+  - `docs/superpowers/specs/2026-05-11-therapy-guide-design.md`
+- [x] Wrote and committed Therapy guide implementation plan:
+  - `docs/superpowers/plans/2026-05-11-therapy-guide.md`
+- [x] Implemented Therapy guide MVP:
+  - `/therapies` A-Z Supabase-powered guide
+  - `/therapies/$slug` detail pages
+  - related professionals via `therapist_therapies`
+  - `/terapias/$slug` compatibility redirect
 
 ## Remaining Integration Decision
 
@@ -63,9 +72,7 @@ User has not yet chosen an integration option.
 
 1. Let the user visually review the branch at `http://localhost:8080/`.
 2. If approved, merge locally or create a PR.
-3. Next product pass: public MVP skeleton:
-   - therapy A-Z page
-   - therapy detail pages
+3. Next product pass: Activities:
    - activities list
    - activity detail pages
 4. Later passes:
@@ -78,17 +85,12 @@ User has not yet chosen an integration option.
 
 ## Verification Commands
 
-Run from:
-
-```text
-/Users/charles.santana/Kultrip/gemini-dev/mallorca-health-connect/.worktrees/owner-visible-polish
-```
-
 Commands:
 
 ```bash
 npm run build
 npx eslint src/lib/plan-access.ts src/lib/routes.ts src/lib/redirects.ts src/lib/route-schemas.ts src/features/professionals/ProfessionalsPage.tsx src/features/professionals/ProfessionalProfilePage.tsx src/features/search/ConversationalSearchPage.tsx src/routes/professionals.tsx 'src/routes/professionals.$slug.tsx' src/routes/search.tsx src/components/home/Testimonials.tsx src/routes/__root.tsx
+npx eslint src/features/therapies/types.ts src/features/therapies/therapy-utils.ts src/features/therapies/TherapiesPage.tsx src/features/therapies/TherapyDetailPage.tsx src/routes/therapies.tsx 'src/routes/therapies.$slug.tsx' 'src/routes/terapias.$slug.tsx' src/lib/routes.ts src/lib/redirects.ts
 npm run dev
 ```
 
@@ -114,6 +116,10 @@ src/components/therapists/TherapistCard.tsx
 src/features/professionals/ProfessionalProfilePage.tsx
 src/features/professionals/ProfessionalsPage.tsx
 src/features/search/ConversationalSearchPage.tsx
+src/features/therapies/TherapiesPage.tsx
+src/features/therapies/TherapyDetailPage.tsx
+src/features/therapies/therapy-utils.ts
+src/features/therapies/types.ts
 src/lib/plan-access.ts
 src/lib/redirects.ts
 src/lib/route-schemas.ts

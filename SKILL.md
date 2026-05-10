@@ -46,6 +46,7 @@ Use these checks for the current branch:
 ```bash
 npm run build
 npx eslint src/lib/plan-access.ts src/lib/routes.ts src/lib/redirects.ts src/lib/route-schemas.ts src/features/professionals/ProfessionalsPage.tsx src/features/professionals/ProfessionalProfilePage.tsx src/features/search/ConversationalSearchPage.tsx src/routes/professionals.tsx 'src/routes/professionals.$slug.tsx' src/routes/search.tsx src/components/home/Testimonials.tsx src/routes/__root.tsx
+npx eslint src/features/therapies/types.ts src/features/therapies/therapy-utils.ts src/features/therapies/TherapiesPage.tsx src/features/therapies/TherapyDetailPage.tsx src/routes/therapies.tsx 'src/routes/therapies.$slug.tsx' 'src/routes/terapias.$slug.tsx' src/lib/routes.ts src/lib/redirects.ts
 ```
 
 Do not claim full repo lint is clean unless `npm run lint` passes. It currently fails because of pre-existing files outside this pass.
@@ -59,22 +60,19 @@ Do not claim full repo lint is clean unless `npm run lint` passes. It currently 
 
 ## Next High-Value Work
 
-After owner-visible polish and route alignment are integrated:
+After owner-visible polish, route alignment, and Therapy guide are integrated:
 
-1. Therapy guide:
-   - A-Z clickable list
-   - detail pages
-   - related professionals
-2. Activities:
+1. Activities:
    - listing with image cards
    - activity detail pages
-3. Admin/professional workflows.
+2. Admin/professional workflows.
 
 ## Canonical Route Map
 
 - `/professionals`
 - `/professionals/$slug`
 - `/therapies`
+- `/therapies/$slug`
 - `/activities`
 - `/search`
 - `/trust`
@@ -83,3 +81,9 @@ After owner-visible polish and route alignment are integrated:
 - `/for-professionals`
 
 Legacy Spanish public routes should redirect to these canonical routes.
+
+## Therapy Guide
+
+- `/therapies` is a database-first A-Z guide powered by Supabase `therapies`.
+- `/therapies/$slug` shows one therapy and related published professionals.
+- `/terapias/$slug` redirects to `/therapies/$slug`.

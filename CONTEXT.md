@@ -50,6 +50,7 @@ Especially important files:
   - `/professionals`
   - `/professionals/$slug`
   - `/therapies`
+  - `/therapies/$slug`
   - `/activities`
   - `/search`
   - `/trust`
@@ -63,13 +64,7 @@ Especially important files:
 Feature branch:
 
 ```text
-codex-owner-visible-polish
-```
-
-Worktree:
-
-```text
-/Users/charles.santana/Kultrip/gemini-dev/mallorca-health-connect/.worktrees/owner-visible-polish
+codex-therapy-guide
 ```
 
 Implemented on the branch:
@@ -79,6 +74,11 @@ Implemented on the branch:
 - conversational search intro forced to concise owner-approved tone
 - testimonials reduced to three natural owner-provided quotes
 - public URL routes aligned to English/OpenAPI names with Spanish redirects
+- Therapy guide MVP implemented:
+  - `/therapies` is a Supabase-powered A-Z directory
+  - `/therapies/$slug` is the therapy detail page
+  - `/terapias/$slug` redirects to `/therapies/$slug`
+  - related published professionals render from `therapist_therapies`
 
 ## Verification Status
 
@@ -87,6 +87,7 @@ Passing:
 ```bash
 npm run build
 npx eslint src/lib/plan-access.ts src/lib/routes.ts src/lib/redirects.ts src/lib/route-schemas.ts src/features/professionals/ProfessionalsPage.tsx src/features/professionals/ProfessionalProfilePage.tsx src/features/search/ConversationalSearchPage.tsx src/routes/professionals.tsx 'src/routes/professionals.$slug.tsx' src/routes/search.tsx src/components/home/Testimonials.tsx src/routes/__root.tsx
+npx eslint src/features/therapies/types.ts src/features/therapies/therapy-utils.ts src/features/therapies/TherapiesPage.tsx src/features/therapies/TherapyDetailPage.tsx src/routes/therapies.tsx 'src/routes/therapies.$slug.tsx' 'src/routes/terapias.$slug.tsx' src/lib/routes.ts src/lib/redirects.ts
 ```
 
 Known non-blocking/current issues:
@@ -108,6 +109,8 @@ Checked:
 - homepage uses the branch/plant hero image
 - conversational search page eventually shows:
   `Gracias por compartirlo. Aquí tienes personas y propuestas que pueden acompañarte.`
+- `/therapies` loads the A-Z guide when therapy data exists, or the empty state when it does not
+- `/terapias/$slug` redirects to `/therapies/$slug`
 
 Directory/profile data may show zero professionals depending on connected Supabase data.
 

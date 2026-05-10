@@ -34,11 +34,10 @@ It should not feel like:
 
 ## Current Branch
 
-Active feature branch/worktree:
+Active feature branch:
 
 ```text
-codex-owner-visible-polish
-/Users/charles.santana/Kultrip/gemini-dev/mallorca-health-connect/.worktrees/owner-visible-polish
+codex-therapy-guide
 ```
 
 Base branch:
@@ -53,6 +52,7 @@ main
 npm install
 npm run build
 npx eslint src/lib/plan-access.ts src/lib/routes.ts src/lib/redirects.ts src/lib/route-schemas.ts src/features/professionals/ProfessionalsPage.tsx src/features/professionals/ProfessionalProfilePage.tsx src/features/search/ConversationalSearchPage.tsx src/routes/professionals.tsx 'src/routes/professionals.$slug.tsx' src/routes/search.tsx src/components/home/Testimonials.tsx src/routes/__root.tsx
+npx eslint src/features/therapies/types.ts src/features/therapies/therapy-utils.ts src/features/therapies/TherapiesPage.tsx src/features/therapies/TherapyDetailPage.tsx src/routes/therapies.tsx 'src/routes/therapies.$slug.tsx' 'src/routes/terapias.$slug.tsx' src/lib/routes.ts src/lib/redirects.ts
 npm run dev
 ```
 
@@ -70,6 +70,8 @@ Notes:
 - `docs/superpowers/specs/2026-05-10-owner-visible-polish-design.md`: approved design spec.
 - `docs/superpowers/plans/2026-05-10-owner-visible-polish.md`: implementation plan.
 - `docs/superpowers/plans/2026-05-10-public-route-alignment.md`: public route alignment plan.
+- `docs/superpowers/specs/2026-05-11-therapy-guide-design.md`: approved Therapy guide design.
+- `docs/superpowers/plans/2026-05-11-therapy-guide.md`: Therapy guide implementation plan.
 
 ## Canonical Public Routes
 
@@ -78,6 +80,7 @@ Use English/OpenAPI-aligned public routes in new links:
 - `/professionals`
 - `/professionals/$slug`
 - `/therapies`
+- `/therapies/$slug`
 - `/activities`
 - `/search`
 - `/trust`
