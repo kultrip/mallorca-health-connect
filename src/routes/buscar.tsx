@@ -49,7 +49,6 @@ function Page() {
     },
   });
   const warmIntro =
-    data?.intro?.trim() ||
     "Gracias por compartirlo. Aquí tienes personas y propuestas que pueden acompañarte.";
 
   return (
