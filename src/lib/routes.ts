@@ -3,6 +3,7 @@ export const ROUTES = {
   professionals: "/professionals",
   professionalProfile: "/professionals/$slug",
   therapies: "/therapies",
+  therapyDetail: "/therapies/$slug",
   activities: "/activities",
   search: "/search",
   trust: "/trust",
