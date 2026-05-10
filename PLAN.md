@@ -2,7 +2,7 @@
 
 ## Current Stage
 
-Owner-visible polish implementation is complete on branch:
+Owner-visible polish and public route alignment are complete on branch:
 
 ```text
 codex-owner-visible-polish
@@ -34,6 +34,19 @@ The work is not merged into `main` yet.
   - concise conversational search intro
   - refined testimonials
 - [x] Verified build and targeted lint on touched files.
+- [x] Wrote and committed route alignment plan:
+  - `docs/superpowers/plans/2026-05-10-public-route-alignment.md`
+- [x] Implemented canonical public routes:
+  - `/professionals`
+  - `/professionals/$slug`
+  - `/therapies`
+  - `/activities`
+  - `/search`
+  - `/trust`
+  - `/plans`
+  - `/register`
+  - `/for-professionals`
+- [x] Kept Spanish public routes as compatibility redirects.
 
 ## Remaining Integration Decision
 
@@ -50,13 +63,12 @@ User has not yet chosen an integration option.
 
 1. Let the user visually review the branch at `http://localhost:8080/`.
 2. If approved, merge locally or create a PR.
-3. Next product pass: route/API alignment.
-4. Then build public MVP skeleton:
+3. Next product pass: public MVP skeleton:
    - therapy A-Z page
    - therapy detail pages
    - activities list
    - activity detail pages
-5. Later passes:
+4. Later passes:
    - professional registration
    - admin validation
    - dashboard
@@ -76,7 +88,7 @@ Commands:
 
 ```bash
 npm run build
-npx eslint src/lib/plan-access.ts src/routes/buscar.tsx 'src/routes/profesionales.$slug.tsx' src/components/home/Testimonials.tsx src/routes/__root.tsx
+npx eslint src/lib/plan-access.ts src/lib/routes.ts src/lib/redirects.ts src/lib/route-schemas.ts src/features/professionals/ProfessionalsPage.tsx src/features/professionals/ProfessionalProfilePage.tsx src/features/search/ConversationalSearchPage.tsx src/routes/professionals.tsx 'src/routes/professionals.$slug.tsx' src/routes/search.tsx src/components/home/Testimonials.tsx src/routes/__root.tsx
 npm run dev
 ```
 
@@ -93,10 +105,21 @@ Known:
 
 ```text
 src/components/home/Testimonials.tsx
+src/components/home/StartHere.tsx
+src/components/layout/SiteFooter.tsx
+src/components/layout/SiteHeader.tsx
+src/components/search/SearchBar.tsx
+src/components/search/SymptomPrompt.tsx
+src/components/therapists/TherapistCard.tsx
+src/features/professionals/ProfessionalProfilePage.tsx
+src/features/professionals/ProfessionalsPage.tsx
+src/features/search/ConversationalSearchPage.tsx
 src/lib/plan-access.ts
+src/lib/redirects.ts
+src/lib/route-schemas.ts
+src/lib/routes.ts
 src/routes/__root.tsx
-src/routes/buscar.tsx
-src/routes/profesionales.$slug.tsx
+src/routes/*
 ```
 
 Handoff files added:

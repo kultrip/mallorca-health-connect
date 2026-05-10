@@ -29,7 +29,8 @@ git status --short
 - Do not build internal bookings for the MVP.
 - Do not add visitor accounts for the MVP.
 - Contact actions are plan-aware.
-- Keep Spanish routes until the dedicated route-rename pass.
+- Use canonical English public routes for new links.
+- Keep Spanish public route files only as compatibility redirects.
 - Prefer visible product clarity over SaaS complexity.
 
 ## Current Plan-Aware Contact Rule
@@ -44,7 +45,7 @@ Use these checks for the current branch:
 
 ```bash
 npm run build
-npx eslint src/lib/plan-access.ts src/routes/buscar.tsx 'src/routes/profesionales.$slug.tsx' src/components/home/Testimonials.tsx src/routes/__root.tsx
+npx eslint src/lib/plan-access.ts src/lib/routes.ts src/lib/redirects.ts src/lib/route-schemas.ts src/features/professionals/ProfessionalsPage.tsx src/features/professionals/ProfessionalProfilePage.tsx src/features/search/ConversationalSearchPage.tsx src/routes/professionals.tsx 'src/routes/professionals.$slug.tsx' src/routes/search.tsx src/components/home/Testimonials.tsx src/routes/__root.tsx
 ```
 
 Do not claim full repo lint is clean unless `npm run lint` passes. It currently fails because of pre-existing files outside this pass.
@@ -58,17 +59,27 @@ Do not claim full repo lint is clean unless `npm run lint` passes. It currently 
 
 ## Next High-Value Work
 
-After owner-visible polish is integrated:
+After owner-visible polish and route alignment are integrated:
 
-1. Route/API rename pass:
-   - `/professionals`
-   - `/therapies`
-   - `/activities`
-2. Therapy guide:
+1. Therapy guide:
    - A-Z clickable list
    - detail pages
    - related professionals
-3. Activities:
+2. Activities:
    - listing with image cards
    - activity detail pages
-4. Admin/professional workflows.
+3. Admin/professional workflows.
+
+## Canonical Route Map
+
+- `/professionals`
+- `/professionals/$slug`
+- `/therapies`
+- `/activities`
+- `/search`
+- `/trust`
+- `/plans`
+- `/register`
+- `/for-professionals`
+
+Legacy Spanish public routes should redirect to these canonical routes.

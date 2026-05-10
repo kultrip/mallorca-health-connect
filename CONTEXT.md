@@ -46,14 +46,17 @@ Especially important files:
   - `Presencia` / Free: basic public presence, search appearance, specialties, location, no prominent direct conversion block unless Nadège confirms.
   - `Profesional`: direct contact/reservation block, richer presentation, highlighted tags.
   - `Centros & Organizadores`: includes Profesional contact capabilities plus activity/agenda emphasis.
-- Route renaming to OpenAPI/brief names is deferred:
+- Public routes are now aligned to OpenAPI/brief names:
   - `/professionals`
+  - `/professionals/$slug`
   - `/therapies`
   - `/activities`
-- Current app keeps Spanish routes for now:
-  - `/profesionales`
-  - `/terapias`
-  - `/actividades`
+  - `/search`
+  - `/trust`
+  - `/plans`
+  - `/register`
+  - `/for-professionals`
+- Spanish public routes are compatibility redirects only.
 
 ## Current Implementation State
 
@@ -75,6 +78,7 @@ Implemented on the branch:
 - therapist profile page reworked toward Nadège MVP spec
 - conversational search intro forced to concise owner-approved tone
 - testimonials reduced to three natural owner-provided quotes
+- public URL routes aligned to English/OpenAPI names with Spanish redirects
 
 ## Verification Status
 
@@ -82,7 +86,7 @@ Passing:
 
 ```bash
 npm run build
-npx eslint src/lib/plan-access.ts src/routes/buscar.tsx 'src/routes/profesionales.$slug.tsx' src/components/home/Testimonials.tsx src/routes/__root.tsx
+npx eslint src/lib/plan-access.ts src/lib/routes.ts src/lib/redirects.ts src/lib/route-schemas.ts src/features/professionals/ProfessionalsPage.tsx src/features/professionals/ProfessionalProfilePage.tsx src/features/search/ConversationalSearchPage.tsx src/routes/professionals.tsx 'src/routes/professionals.$slug.tsx' src/routes/search.tsx src/components/home/Testimonials.tsx src/routes/__root.tsx
 ```
 
 Known non-blocking/current issues:
@@ -111,7 +115,7 @@ Directory/profile data may show zero professionals depending on connected Supaba
 
 - Do not add visitor accounts.
 - Do not build internal bookings.
-- Do not rename routes in the owner-visible polish pass.
+- Do not add new Spanish public links; use canonical English route names.
 - Do not wire analytics into the wrong table.
 - Do not commit generated `package-lock.json` if it appears from `npm install`; this repo currently uses `bun.lock`.
 - Do not commit generated `src/routeTree.gen.ts` changes unless the route files actually changed.

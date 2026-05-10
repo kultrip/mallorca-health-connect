@@ -52,7 +52,7 @@ main
 ```bash
 npm install
 npm run build
-npx eslint src/lib/plan-access.ts src/routes/buscar.tsx 'src/routes/profesionales.$slug.tsx' src/components/home/Testimonials.tsx src/routes/__root.tsx
+npx eslint src/lib/plan-access.ts src/lib/routes.ts src/lib/redirects.ts src/lib/route-schemas.ts src/features/professionals/ProfessionalsPage.tsx src/features/professionals/ProfessionalProfilePage.tsx src/features/search/ConversationalSearchPage.tsx src/routes/professionals.tsx 'src/routes/professionals.$slug.tsx' src/routes/search.tsx src/components/home/Testimonials.tsx src/routes/__root.tsx
 npm run dev
 ```
 
@@ -69,6 +69,23 @@ Notes:
 - `SKILL.md`: instructions for an AI agent continuing Mallorca Holística work.
 - `docs/superpowers/specs/2026-05-10-owner-visible-polish-design.md`: approved design spec.
 - `docs/superpowers/plans/2026-05-10-owner-visible-polish.md`: implementation plan.
+- `docs/superpowers/plans/2026-05-10-public-route-alignment.md`: public route alignment plan.
+
+## Canonical Public Routes
+
+Use English/OpenAPI-aligned public routes in new links:
+
+- `/professionals`
+- `/professionals/$slug`
+- `/therapies`
+- `/activities`
+- `/search`
+- `/trust`
+- `/plans`
+- `/register`
+- `/for-professionals`
+
+Spanish routes are compatibility redirects only.
 
 ## Documentation Zip
 
