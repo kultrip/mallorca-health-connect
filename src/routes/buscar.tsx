@@ -49,6 +49,9 @@ function Page() {
       return data as SearchResult;
     },
   });
+  const warmIntro =
+    data?.intro?.trim() ||
+    "Gracias por compartirlo. Aquí tienes personas y propuestas que pueden acompañarte.";
 
   return (
     <PageShell>
@@ -84,9 +87,9 @@ function Page() {
               <button onClick={() => refetch()} className="underline">Reintentar</button>
             </div>
           )}
-          {data?.intro && (
+          {data && (
             <p className="font-display text-xl leading-relaxed text-foreground/85 md:text-2xl">
-              {data.intro}
+              {warmIntro}
             </p>
           )}
         </div>
@@ -135,7 +138,8 @@ function Page() {
               Aún no tenemos profesionales que encajen con esto.
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Prueba a explorar el directorio completo de profesionales.
+              Estamos ampliando nuestra red con mucho cuidado. Prueba a explorar
+              el directorio completo de profesionales.
             </p>
             <Link
               to="/profesionales"
