@@ -13,15 +13,9 @@ const testimonials = [
   },
   {
     quote:
-      "Encontré a mi osteópata en menos de cinco minutos. La verificación me dio mucha confianza.",
-    name: "Laura M.",
+      "Me gustó poder ver quién estaba detrás de cada perfil. Eso me dio confianza para decidirme.",
+    name: "Joana",
     place: "Palma",
-  },
-  {
-    quote:
-      "El buscador entendió exactamente lo que necesitaba. Me recomendó profesionales perfectos para mi caso.",
-    name: "Marta R.",
-    place: "Pollença",
   },
 ];
 
@@ -43,14 +37,14 @@ export function Testimonials() {
           Lo que dicen quienes ya han pasado por aquí.
         </p>
       </div>
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-8 md:grid-cols-3">
         {testimonials.map((t) => (
           <figure
             key={t.name + t.place}
             className="rounded-3xl border border-border bg-card p-8"
           >
-            <blockquote className="font-display text-xl leading-snug text-foreground/90">
-              “{t.quote}”
+            <blockquote className="text-sm leading-relaxed text-foreground/80">
+              {t.quote}
             </blockquote>
             <figcaption className="mt-6 flex items-center gap-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-xs font-medium text-foreground/70">
