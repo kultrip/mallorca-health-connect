@@ -19,6 +19,7 @@ import { Route as ConfianzaRouteImport } from './routes/confianza'
 import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as ActividadesRouteImport } from './routes/actividades'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfesionalesSlugRouteImport } from './routes/profesionales.$slug'
 
 const TerapiasRoute = TerapiasRouteImport.update({
   id: '/terapias',
@@ -70,6 +71,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfesionalesSlugRoute = ProfesionalesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ProfesionalesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -78,10 +84,11 @@ export interface FileRoutesByFullPath {
   '/confianza': typeof ConfianzaRoute
   '/login': typeof LoginRoute
   '/planes': typeof PlanesRoute
-  '/profesionales': typeof ProfesionalesRoute
+  '/profesionales': typeof ProfesionalesRouteWithChildren
   '/registro': typeof RegistroRoute
   '/soy-profesional': typeof SoyProfesionalRoute
   '/terapias': typeof TerapiasRoute
+  '/profesionales/$slug': typeof ProfesionalesSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -90,10 +97,11 @@ export interface FileRoutesByTo {
   '/confianza': typeof ConfianzaRoute
   '/login': typeof LoginRoute
   '/planes': typeof PlanesRoute
-  '/profesionales': typeof ProfesionalesRoute
+  '/profesionales': typeof ProfesionalesRouteWithChildren
   '/registro': typeof RegistroRoute
   '/soy-profesional': typeof SoyProfesionalRoute
   '/terapias': typeof TerapiasRoute
+  '/profesionales/$slug': typeof ProfesionalesSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -103,10 +111,11 @@ export interface FileRoutesById {
   '/confianza': typeof ConfianzaRoute
   '/login': typeof LoginRoute
   '/planes': typeof PlanesRoute
-  '/profesionales': typeof ProfesionalesRoute
+  '/profesionales': typeof ProfesionalesRouteWithChildren
   '/registro': typeof RegistroRoute
   '/soy-profesional': typeof SoyProfesionalRoute
   '/terapias': typeof TerapiasRoute
+  '/profesionales/$slug': typeof ProfesionalesSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/registro'
     | '/soy-profesional'
     | '/terapias'
+    | '/profesionales/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/registro'
     | '/soy-profesional'
     | '/terapias'
+    | '/profesionales/$slug'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/registro'
     | '/soy-profesional'
     | '/terapias'
+    | '/profesionales/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -154,7 +166,7 @@ export interface RootRouteChildren {
   ConfianzaRoute: typeof ConfianzaRoute
   LoginRoute: typeof LoginRoute
   PlanesRoute: typeof PlanesRoute
-  ProfesionalesRoute: typeof ProfesionalesRoute
+  ProfesionalesRoute: typeof ProfesionalesRouteWithChildren
   RegistroRoute: typeof RegistroRoute
   SoyProfesionalRoute: typeof SoyProfesionalRoute
   TerapiasRoute: typeof TerapiasRoute
@@ -232,8 +244,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profesionales/$slug': {
+      id: '/profesionales/$slug'
+      path: '/$slug'
+      fullPath: '/profesionales/$slug'
+      preLoaderRoute: typeof ProfesionalesSlugRouteImport
+      parentRoute: typeof ProfesionalesRoute
+    }
   }
 }
+
+interface ProfesionalesRouteChildren {
+  ProfesionalesSlugRoute: typeof ProfesionalesSlugRoute
+}
+
+const ProfesionalesRouteChildren: ProfesionalesRouteChildren = {
+  ProfesionalesSlugRoute: ProfesionalesSlugRoute,
+}
+
+const ProfesionalesRouteWithChildren = ProfesionalesRoute._addFileChildren(
+  ProfesionalesRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -242,7 +273,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfianzaRoute: ConfianzaRoute,
   LoginRoute: LoginRoute,
   PlanesRoute: PlanesRoute,
-  ProfesionalesRoute: ProfesionalesRoute,
+  ProfesionalesRoute: ProfesionalesRouteWithChildren,
   RegistroRoute: RegistroRoute,
   SoyProfesionalRoute: SoyProfesionalRoute,
   TerapiasRoute: TerapiasRoute,
