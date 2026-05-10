@@ -12,7 +12,7 @@ Key decisions:
 - Mallorca Holística is not an internal booking marketplace in the MVP.
 - The public experience should feel human, calm, clear, professional, and warm.
 - Visitors do not have accounts in the MVP.
-- Therapist contact is direct: WhatsApp/phone plus optional external reservation link.
+- Therapist contact is plan-aware: direct contact/reservation is a visible conversion feature for paid plans, while free profiles keep a lighter presence unless the owner confirms otherwise.
 - English route names are deferred to a later pass.
 
 ## Scope
@@ -37,11 +37,12 @@ Rework the public therapist profile page around the product document structure:
 2. Static reviews placeholder: five stars and `Opiniones verificadas próximamente`.
 3. Key phrase from `frase_clave`.
 4. Action block:
-   - Show `Solicitar sesión` only when `link_reserva` exists.
-   - Show WhatsApp contact when `whatsapp` exists.
+   - Show `Solicitar sesión` only when `link_reserva` exists and the therapist's plan supports direct contact/reservation.
+   - Show WhatsApp contact only when `whatsapp` exists and the therapist's plan supports direct contact.
    - WhatsApp opens `https://wa.me/...` with a prefilled message:
      `Hola {nombre}, te he encontrado en Mallorca Holística. Me gustaría saber cómo puedes ayudarme y consultar tu disponibilidad. Gracias`
    - Use supportive copy: `Consulta disponibilidad directamente con {nombre}`.
+   - For free/presence profiles, keep the profile useful and human, but avoid presenting a paid-plan direct conversion block until the plan rules are confirmed.
 5. `Sobre mí`.
 6. `Te acompaño en` tags from help areas.
 7. Optional sessions block only if session data exists.
@@ -49,6 +50,20 @@ Rework the public therapist profile page around the product document structure:
 9. Optional map area only if coordinates exist.
 
 The profile should feel personal and spacious, with contact actions easy to find.
+
+### Plan-Aware Contact Interpretation
+
+The subscription materials conflict slightly:
+
+- Older MVP scope/mock data says `Contacto directo` is available in Free/Pro/Premium.
+- The newer plan architecture says `Botón directo de contacto / reserva` belongs to `Profesional`, and `Centros & Organizadores` includes everything in `Profesional`.
+- Meeting notes explicitly question whether direct email/phone contact should exist for Free.
+
+For this implementation pass, treat the latest plan architecture as stronger than the older mock data:
+
+- `Presencia` / free: profile, search presence, location, specialties, and basic information; no prominent direct contact/reservation block unless explicitly approved later.
+- `Profesional`: direct contact/reservation block, richer profile presentation, highlighted tags, basic stats later.
+- `Centros & Organizadores`: same direct contact/reservation capability as Profesional, plus activity/agenda emphasis later.
 
 ### Testimonials
 
