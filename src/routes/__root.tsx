@@ -72,14 +72,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Mallorca Holística — Profesionales verificados de bienestar" },
+      {
+        name: "description",
+        content:
+          "Encuentra terapeutas y profesionales verificados en terapias naturales y complementarias en Mallorca.",
+      },
+      { name: "author", content: "Mallorca Holística" },
+      { property: "og:title", content: "Mallorca Holística" },
+      {
+        property: "og:description",
+        content:
+          "Un espacio de confianza para encontrar profesionales verificados de bienestar en Mallorca.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
