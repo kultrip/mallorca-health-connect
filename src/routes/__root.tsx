@@ -4,11 +4,20 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 
 import appCss from "../styles.css?url";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  REMEMBER_SESSION_STORAGE_KEY,
+  getRememberSessionPreference,
+  shouldAutoSignOutOnVisibilityHidden,
+} from "@/lib/session-timeout";
 
 function NotFoundComponent() {
   return (
@@ -120,7 +129,119 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SessionActivityGuard />
       <Outlet />
     </QueryClientProvider>
   );
+}
+
+function SessionActivityGuard() {
+  const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
+  const timerRef = useRef<number | null>(null);
+  const signingOutRef = useRef(false);
+
+  const clearTimer = useCallback(() => {
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  const hasRememberPreference = useCallback(() => {
+    if (typeof window === "undefined") return false;
+    return getRememberSessionPreference(window.localStorage.getItem(REMEMBER_SESSION_STORAGE_KEY));
+  }, []);
+
+  const signOutAndRedirect = useCallback(async () => {
+    if (signingOutRef.current) return;
+    signingOutRef.current = true;
+    clearTimer();
+
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      navigate({ to: "/login", search: { reason: "inactive" } });
+    }
+  }, [clearTimer, navigate]);
+
+  const resetTimer = useCallback(() => {
+    clearTimer();
+    if (!session) return;
+
+    timerRef.current = window.setTimeout(
+      () => {
+        void signOutAndRedirect();
+      },
+      30 * 60 * 1000,
+    );
+  }, [clearTimer, session, signOutAndRedirect]);
+
+  useEffect(() => {
+    let active = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      setSession(data.session);
+      if (!data.session) signingOutRef.current = false;
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      if (!nextSession) {
+        signingOutRef.current = false;
+        clearTimer();
+        return;
+      }
+
+      signingOutRef.current = false;
+      clearTimer();
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+      clearTimer();
+    };
+  }, [clearTimer]);
+
+  useEffect(() => {
+    if (!session) return;
+
+    resetTimer();
+
+    const handleActivity = () => resetTimer();
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === "hidden" &&
+        shouldAutoSignOutOnVisibilityHidden(hasRememberPreference())
+      ) {
+        void signOutAndRedirect();
+      }
+    };
+    const handlePageHide = () => {
+      if (shouldAutoSignOutOnVisibilityHidden(hasRememberPreference())) {
+        void signOutAndRedirect();
+      }
+    };
+
+    window.addEventListener("mousemove", handleActivity, { passive: true });
+    window.addEventListener("keydown", handleActivity);
+    window.addEventListener("scroll", handleActivity, { passive: true });
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      window.removeEventListener("mousemove", handleActivity);
+      window.removeEventListener("keydown", handleActivity);
+      window.removeEventListener("scroll", handleActivity);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", handlePageHide);
+      clearTimer();
+    };
+  }, [clearTimer, hasRememberPreference, resetTimer, session, signOutAndRedirect]);
+
+  return null;
 }

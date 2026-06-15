@@ -13,7 +13,7 @@ type TherapistAccessLike = {
   subscription_status?: string | null;
 };
 
-const premiumPlanSlugs = new Set(["profesional", "centros-organizadores"]);
+export const premiumPlanSlugs = new Set(["profesional", "centros-organizadores"]);
 
 export function isActivePaidSubscription(status: string | null | undefined): boolean {
   return status === "active";
@@ -22,6 +22,10 @@ export function isActivePaidSubscription(status: string | null | undefined): boo
 export function planSupportsDirectContact(plan: PlanLike): boolean {
   const slug = plan?.slug?.toLowerCase();
   return Boolean(slug && premiumPlanSlugs.has(slug));
+}
+
+export function planSupportsPaidPriority(plan: PlanLike): boolean {
+  return planSupportsDirectContact(plan);
 }
 
 export function planSupportsPremiumPublicProfile(plan: PlanLike): boolean {
@@ -36,6 +40,17 @@ export function therapistHasPremiumPublicAccess(
     therapist.status === "published" &&
     isActivePaidSubscription(therapist.subscription_status) &&
     planSupportsPremiumPublicProfile(plan)
+  );
+}
+
+export function therapistHasPaidPriorityAccess(
+  therapist: TherapistAccessLike,
+  plan: PlanLike,
+): boolean {
+  return (
+    therapist.status === "published" &&
+    isActivePaidSubscription(therapist.subscription_status) &&
+    planSupportsPaidPriority(plan)
   );
 }
 

@@ -3,9 +3,17 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { PageShell } from "@/components/layout/PageShell";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TherapistCard, type TherapistCardData } from "@/components/therapists/TherapistCard";
+import { ProfessionalResultsWithMap } from "@/components/therapists/ProfessionalResultsWithMap";
+import type { TherapistCardData } from "@/components/therapists/TherapistCard";
 import { supabase } from "@/integrations/supabase/client";
-import type { RelatedTherapistRow, Therapy } from "./types";
+import { sortProfessionalsByPriority } from "@/lib/professional-ranking";
+import type { RelatedTherapistRow, Therapy, TherapyDetailSection } from "./types";
+import { fallbackTherapiesBySlug } from "./therapy-guide-content";
+
+type RankedTherapistCardData = TherapistCardData & {
+  subscription_status?: string | null;
+  plans?: { slug?: string | null } | null;
+};
 
 export function TherapyDetailPage({ slug }: { slug: string }) {
   const {
@@ -15,15 +23,18 @@ export function TherapyDetailPage({ slug }: { slug: string }) {
     refetch: refetchTherapy,
   } = useQuery<Therapy | null>({
     queryKey: ["therapy", slug],
+    initialData: fallbackTherapiesBySlug.get(slug) ?? null,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("therapies")
-        .select("id, slug, name, category, short_description, description")
+        .select(
+          "id, slug, name, category, short_description, description, detail_sections, benefits, session_description, medical_disclaimer, empty_professionals_message",
+        )
         .eq("slug", slug)
         .maybeSingle();
 
-      if (error) throw error;
-      return data;
+      if (error) return fallbackTherapiesBySlug.get(slug) ?? null;
+      return data ?? fallbackTherapiesBySlug.get(slug) ?? null;
     },
   });
 
@@ -32,24 +43,27 @@ export function TherapyDetailPage({ slug }: { slug: string }) {
     data: relatedTherapists = [],
     isLoading: areTherapistsLoading,
     isError: areTherapistsError,
-  } = useQuery<TherapistCardData[]>({
+  } = useQuery<RankedTherapistCardData[]>({
     queryKey: ["therapy-related-therapists", therapyId],
-    enabled: !!therapyId,
+    enabled: !!therapyId && !therapyId.startsWith("local-"),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("therapist_therapies")
         .select(
-          "therapists(id, slug, full_name, headline, frase_clave, photo_url, especialidad, modalities, verified, municipalities(name,slug))",
+          "therapists(id, slug, full_name, headline, frase_clave, photo_url, especialidad, modalities, verified, city, address, lat, lng, subscription_status, municipalities(name,slug,lat,lng), plans!therapists_plan_id_fkey(slug))",
         )
         .eq("therapy_id", therapyId!)
         .eq("therapists.status", "published")
-        .limit(12);
+        .limit(100);
 
       if (error) throw error;
 
-      return (data as RelatedTherapistRow[])
-        .map((row) => firstRelation(row.therapists))
-        .filter((therapist): therapist is TherapistCardData => Boolean(therapist));
+      return sortProfessionalsByPriority(
+        (data as RelatedTherapistRow[])
+          .map((row) => firstRelation(row.therapists))
+          .filter((therapist): therapist is RankedTherapistCardData => Boolean(therapist))
+          .slice(0, 12),
+      );
     },
   });
 
@@ -100,6 +114,13 @@ export function TherapyDetailPage({ slug }: { slug: string }) {
     );
   }
 
+  const detailSections = getDetailSections(therapy.detail_sections);
+  const benefits = therapy.benefits ?? [];
+  const hasStructuredContent =
+    detailSections.length > 0 ||
+    benefits.length > 0 ||
+    Boolean(therapy.session_description || therapy.medical_disclaimer);
+
   return (
     <PageShell>
       <article className="mx-auto max-w-[900px] px-6 pb-16 pt-12 md:px-10 md:pt-16">
@@ -123,7 +144,54 @@ export function TherapyDetailPage({ slug }: { slug: string }) {
           </p>
         )}
 
-        {therapy.description ? (
+        {hasStructuredContent ? (
+          <div className="mt-10 space-y-10">
+            {detailSections.map((section) => (
+              <section key={section.title}>
+                <h2 className="font-display text-2xl">{section.title}</h2>
+                <p className="mt-3 text-sm leading-relaxed text-foreground/80 md:text-base">
+                  {section.body}
+                </p>
+              </section>
+            ))}
+
+            {benefits.length > 0 && (
+              <section>
+                <h2 className="font-display text-2xl">En qué puede ayudar</h2>
+                <p className="mt-3 text-sm leading-relaxed text-foreground/80 md:text-base">
+                  Muchas personas recurren a la {therapy.name.toLowerCase()} para acompañar procesos
+                  como:
+                </p>
+                <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {benefits.map((benefit) => (
+                    <li
+                      key={benefit}
+                      className="rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground/80"
+                    >
+                      {benefit}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {therapy.session_description && (
+              <section>
+                <h2 className="font-display text-2xl">Cómo es una sesión</h2>
+                <p className="mt-3 text-sm leading-relaxed text-foreground/80 md:text-base">
+                  {therapy.session_description}
+                </p>
+              </section>
+            )}
+
+            {therapy.medical_disclaimer && (
+              <aside className="rounded-2xl border border-border bg-muted/40 p-5 text-sm leading-relaxed text-muted-foreground">
+                <strong className="block text-foreground/80">Nota importante</strong>
+                <span className="mt-2 block">{therapy.medical_disclaimer}</span>
+              </aside>
+            )}
+          </div>
+        ) : therapy.description ? (
           <div className="mt-10 rounded-3xl border border-border bg-card p-6 md:p-8">
             <div className="whitespace-pre-line text-sm leading-relaxed text-foreground/80 md:text-base">
               {therapy.description}
@@ -149,18 +217,18 @@ export function TherapyDetailPage({ slug }: { slug: string }) {
             No pudimos cargar los profesionales relacionados en este momento.
           </div>
         ) : relatedTherapists.length > 0 ? (
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {relatedTherapists.map((therapist) => (
-              <TherapistCard key={therapist.id} t={therapist} />
-            ))}
-          </div>
+          <ProfessionalResultsWithMap
+            professionals={relatedTherapists as TherapistCardData[]}
+            className="mt-6"
+            mapTitle={`Profesionales de ${therapy.name}`}
+          />
         ) : (
           <div className="mt-6 rounded-3xl border border-dashed border-border bg-card/50 p-8 text-center">
             <p className="font-display text-xl text-foreground/80">
               Todavía no tenemos profesionales vinculados a esta terapia.
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Puedes explorar el directorio completo.
+              {therapy.empty_professionals_message ?? "Puedes explorar el directorio completo."}
             </p>
             <Link
               to="/professionals"
@@ -178,4 +246,13 @@ export function TherapyDetailPage({ slug }: { slug: string }) {
 function firstRelation<T>(value: T | T[] | null | undefined): T | null {
   if (Array.isArray(value)) return value[0] ?? null;
   return value ?? null;
+}
+
+function getDetailSections(value: Therapy["detail_sections"]): TherapyDetailSection[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.filter((section): section is TherapyDetailSection => {
+    if (!section || typeof section !== "object" || Array.isArray(section)) return false;
+    return typeof section.title === "string" && typeof section.body === "string";
+  });
 }
