@@ -651,6 +651,9 @@ export type Database = {
           address: string | null;
           accepted_deontological_code: boolean | null;
           accepted_truthfulness: boolean | null;
+          accepted_privacy_policy: boolean | null;
+          accepted_terms_of_use: boolean | null;
+          accepted_publication: boolean | null;
           accompaniment_modalities: string[] | null;
           approach_text: string | null;
           center_id: string | null;
@@ -725,6 +728,9 @@ export type Database = {
           address?: string | null;
           accepted_deontological_code?: boolean | null;
           accepted_truthfulness?: boolean | null;
+          accepted_privacy_policy?: boolean | null;
+          accepted_terms_of_use?: boolean | null;
+          accepted_publication?: boolean | null;
           accompaniment_modalities?: string[] | null;
           approach_text?: string | null;
           center_id?: string | null;
@@ -799,6 +805,9 @@ export type Database = {
           address?: string | null;
           accepted_deontological_code?: boolean | null;
           accepted_truthfulness?: boolean | null;
+          accepted_privacy_policy?: boolean | null;
+          accepted_terms_of_use?: boolean | null;
+          accepted_publication?: boolean | null;
           accompaniment_modalities?: string[] | null;
           approach_text?: string | null;
           center_id?: string | null;
