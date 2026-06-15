@@ -1,20 +1,24 @@
-export type OnboardingPlan = "presencia" | "profesional";
+export type OnboardingPlan = "presencia" | "profesional" | "centro";
 
 export type OnboardingPlanConfig = {
   slug: OnboardingPlan;
   label: string;
+  title: string;
   isProfessional: boolean;
+  isOrganisation: boolean;
   therapyCap: number | null;
   helpAreaCap: number | null;
-  locationLimit: number;
+  locationLimit: number | null;
   presentationMaxLength: number;
   approachMaxLength: number;
   differentiatorMaxLength: number;
   formationMaxItems: number | null;
   logoEnabled: boolean;
+  logoRequired: boolean;
   socialLinksEnabled: boolean;
   extraLocationEnabled: boolean;
   verificationUploadsEnabled: boolean;
+  galleryMaxFiles: number | null;
 };
 
 export type OnboardingPlanSource = {
@@ -24,11 +28,13 @@ export type OnboardingPlanSource = {
   pendingPlanSlug?: string | null;
 };
 
-const professionalPlanSlugs = new Set<string>(["profesional", "centros-organizadores"]);
+const professionalPlanSlugs = new Set<string>(["profesional"]);
+const organisationPlanSlugs = new Set<string>(["centros-organizadores"]);
 
 export function resolveOnboardingPlan(source: OnboardingPlanSource): OnboardingPlan {
   const candidate =
     source.searchPlan ?? source.metadataPlan ?? source.profilePlanSlug ?? source.pendingPlanSlug;
+  if (candidate && organisationPlanSlugs.has(candidate)) return "centro";
   if (candidate && professionalPlanSlugs.has(candidate)) return "profesional";
   return "presencia";
 }
@@ -45,7 +51,9 @@ export function getOnboardingPlanConfig(plan: OnboardingPlan): OnboardingPlanCon
     return {
       slug: plan,
       label: "Profesional",
+      title: "Plan Profesional",
       isProfessional: true,
+      isOrganisation: false,
       therapyCap: null,
       helpAreaCap: null,
       locationLimit: 5,
@@ -54,16 +62,43 @@ export function getOnboardingPlanConfig(plan: OnboardingPlan): OnboardingPlanCon
       differentiatorMaxLength: 1000,
       formationMaxItems: 12,
       logoEnabled: true,
+      logoRequired: false,
       socialLinksEnabled: true,
       extraLocationEnabled: true,
       verificationUploadsEnabled: true,
+      galleryMaxFiles: null,
+    };
+  }
+
+  if (plan === "centro") {
+    return {
+      slug: plan,
+      label: "Centros / Organizadores",
+      title: "Plan Centros / Organizadores",
+      isProfessional: false,
+      isOrganisation: true,
+      therapyCap: null,
+      helpAreaCap: null,
+      locationLimit: null,
+      presentationMaxLength: 3000,
+      approachMaxLength: 2000,
+      differentiatorMaxLength: 1000,
+      formationMaxItems: null,
+      logoEnabled: true,
+      logoRequired: true,
+      socialLinksEnabled: true,
+      extraLocationEnabled: true,
+      verificationUploadsEnabled: false,
+      galleryMaxFiles: 15,
     };
   }
 
   return {
     slug: plan,
     label: "Presencia",
+    title: "Plan Presencia",
     isProfessional: false,
+    isOrganisation: false,
     therapyCap: 3,
     helpAreaCap: 5,
     locationLimit: 1,
@@ -72,9 +107,11 @@ export function getOnboardingPlanConfig(plan: OnboardingPlan): OnboardingPlanCon
     differentiatorMaxLength: 0,
     formationMaxItems: 0,
     logoEnabled: false,
+    logoRequired: false,
     socialLinksEnabled: false,
     extraLocationEnabled: false,
     verificationUploadsEnabled: false,
+    galleryMaxFiles: null,
   };
 }
 

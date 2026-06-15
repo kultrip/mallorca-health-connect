@@ -6,6 +6,7 @@ import {
   Award,
   Check,
   ChevronDown,
+  Building2,
   GripVertical,
   Heart,
   Home,
@@ -32,6 +33,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { stampOrganisationSubmission } from "@/lib/organisation-onboarding";
 import { notifyAdminOfProfessionalRequest } from "@/lib/professional-verification";
 import {
   getOnboardingPlanConfig,
@@ -54,6 +56,12 @@ type LocationDraft = {
   municipalityId: string;
 };
 
+type TeamMemberDraft = {
+  name: string;
+  role: string;
+  photoFile: File | null;
+};
+
 type FormationDraft = {
   formation: string;
   school: string;
@@ -67,16 +75,22 @@ type WizardDraft = {
   email: string;
   phone: string;
   whatsapp: string;
+  organizationName: string;
   municipalityId: string;
+  organizationType: string;
   therapyIds: string[];
   helpAreaIds: string[];
   targetAudience: string[];
   accompanimentModalities: string[];
+  organizationPublicAudience: string[];
+  organizationActivities: string[];
   sessionModalities: string[];
   homeVisitRadius: string;
   presentationText: string;
   approachText: string;
   differentiatorText: string;
+  missionText: string;
+  facilities: string[];
   tagline: string;
   languages: string[];
   website: string;
@@ -96,8 +110,18 @@ type WizardDraft = {
   acceptedPrivacyPolicy: boolean;
   acceptedTermsOfUse: boolean;
   acceptedPublication: boolean;
+  declaresLegalAuthority: boolean;
+  legalEntityName: string;
+  legalEntityTaxId: string;
+  responsibleFirstName: string;
+  responsibleLastName: string;
+  responsibleRole: string;
+  responsibleEmail: string;
+  responsiblePhone: string;
+  signatureName: string;
   locations: LocationDraft[];
   formations: FormationDraft[];
+  teamMembers: TeamMemberDraft[];
 };
 
 type CatalogItem = {
@@ -156,19 +180,25 @@ function createInitialDraft(): WizardDraft {
     firstName: "",
     lastName: "",
     professionalName: "",
+    organizationName: "",
     email: "",
     phone: "",
     whatsapp: "",
     municipalityId: "",
+    organizationType: "",
     therapyIds: [],
     helpAreaIds: [],
     targetAudience: [],
     accompanimentModalities: [],
+    organizationPublicAudience: [],
+    organizationActivities: [],
     sessionModalities: [],
     homeVisitRadius: "",
     presentationText: "",
     approachText: "",
     differentiatorText: "",
+    missionText: "",
+    facilities: [],
     tagline: "",
     languages: ["Español"],
     website: "",
@@ -188,8 +218,18 @@ function createInitialDraft(): WizardDraft {
     acceptedPrivacyPolicy: false,
     acceptedTermsOfUse: false,
     acceptedPublication: false,
+    declaresLegalAuthority: false,
+    legalEntityName: "",
+    legalEntityTaxId: "",
+    responsibleFirstName: "",
+    responsibleLastName: "",
+    responsibleRole: "",
+    responsibleEmail: "",
+    responsiblePhone: "",
+    signatureName: "",
     locations: [{ centerName: "", address: "", municipalityId: "" }],
     formations: [{ formation: "", school: "", year: "" }],
+    teamMembers: [{ name: "", role: "", photoFile: null }],
   };
 }
 
@@ -218,6 +258,7 @@ function OnboardingPage() {
   const [draft, setDraft] = useState<WizardDraft>(createInitialDraft());
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [diplomaFile, setDiplomaFile] = useState<File | null>(null);
   const [extraDocuments, setExtraDocuments] = useState<File[]>([]);
   const [therapySearch, setTherapySearch] = useState("");
@@ -261,6 +302,8 @@ function OnboardingPage() {
         sobre_mi: string | null;
         approach_text: string | null;
         differentiator_text: string | null;
+        mission_text: string | null;
+        organisation_type: string | null;
         website: string | null;
         instagram_url: string | null;
         facebook_url: string | null;
@@ -278,11 +321,22 @@ function OnboardingPage() {
         accepted_privacy_policy: boolean | null;
         accepted_terms_of_use: boolean | null;
         accepted_publication: boolean | null;
+        declares_legal_authority: boolean | null;
         target_audience: string[] | null;
         accompaniment_modalities: string[] | null;
         session_modalities: string[] | null;
         home_visit_radius: string | null;
         languages: string[] | null;
+        gallery_urls: string[] | null;
+        team_members: unknown[] | null;
+        responsible_first_name: string | null;
+        responsible_last_name: string | null;
+        responsible_role: string | null;
+        responsible_email: string | null;
+        responsible_phone: string | null;
+        legal_entity_name: string | null;
+        legal_entity_tax_id: string | null;
+        organization_signature_name: string | null;
         therapist_therapies?: Array<{ therapy_id: string }> | null;
         therapist_help_areas?: Array<{ help_area_id: string }> | null;
         plans?: { slug: string | null } | null;
@@ -291,7 +345,7 @@ function OnboardingPage() {
       const { data: therapist } = await supabase
         .from("therapists")
         .select(
-          "id, slug, pending_plan_slug, plan_id, full_name, professional_name, email, phone, whatsapp, municipality_id, center_name, address, headline, frase_clave, sobre_mi, approach_text, differentiator_text, website, instagram_url, facebook_url, linkedin_url, youtube_url, calendly_url, fresha_url, whatsapp_business_url, other_booking_url, show_whatsapp_public, show_email_public, has_liability_insurance, accepted_deontological_code, accepted_truthfulness, accepted_privacy_policy, accepted_terms_of_use, accepted_publication, target_audience, accompaniment_modalities, session_modalities, home_visit_radius, languages, therapist_therapies(therapy_id), therapist_help_areas(help_area_id), plans!therapists_plan_id_fkey(slug)",
+          "id, slug, pending_plan_slug, plan_id, full_name, professional_name, email, phone, whatsapp, municipality_id, center_name, address, headline, frase_clave, sobre_mi, approach_text, differentiator_text, mission_text, organisation_type, website, instagram_url, facebook_url, linkedin_url, youtube_url, calendly_url, fresha_url, whatsapp_business_url, other_booking_url, show_whatsapp_public, show_email_public, has_liability_insurance, accepted_deontological_code, accepted_truthfulness, accepted_privacy_policy, accepted_terms_of_use, accepted_publication, declares_legal_authority, target_audience, accompaniment_modalities, session_modalities, home_visit_radius, languages, facilities, gallery_urls, team_members, responsible_first_name, responsible_last_name, responsible_role, responsible_email, responsible_phone, legal_entity_name, legal_entity_tax_id, organization_signature_name, therapist_therapies(therapy_id), therapist_help_areas(help_area_id), plans!therapists_plan_id_fkey(slug)",
         )
         .eq("user_id", currentUser.id)
         .maybeSingle();
@@ -308,6 +362,8 @@ function OnboardingPage() {
           lastName:
             currentTherapistLookup.full_name.split(" ").slice(1).join(" ") || current.lastName,
           professionalName: currentTherapistLookup.professional_name ?? current.professionalName,
+          organizationName: currentTherapistLookup.full_name ?? current.organizationName,
+          organizationType: currentTherapistLookup.organisation_type ?? current.organizationType,
           email: currentTherapistLookup.email ?? current.email,
           phone: currentTherapistLookup.phone ?? current.phone,
           whatsapp: currentTherapistLookup.whatsapp ?? current.whatsapp,
@@ -345,14 +401,48 @@ function OnboardingPage() {
             currentTherapistLookup.accepted_terms_of_use ?? current.acceptedTermsOfUse,
           acceptedPublication:
             currentTherapistLookup.accepted_publication ?? current.acceptedPublication,
+          declaresLegalAuthority:
+            currentTherapistLookup.declares_legal_authority ?? current.declaresLegalAuthority,
           targetAudience: currentTherapistLookup.target_audience ?? current.targetAudience,
           accompanimentModalities:
             currentTherapistLookup.accompaniment_modalities ?? current.accompanimentModalities,
+          organizationPublicAudience:
+            currentTherapistLookup.target_audience ?? current.organizationPublicAudience,
+          organizationActivities:
+            currentTherapistLookup.accompaniment_modalities ?? current.organizationActivities,
           sessionModalities: currentTherapistLookup.session_modalities ?? current.sessionModalities,
           homeVisitRadius: currentTherapistLookup.home_visit_radius ?? current.homeVisitRadius,
           languages: currentTherapistLookup.languages?.length
             ? currentTherapistLookup.languages
             : current.languages,
+          facilities: currentTherapistLookup.facilities?.length
+            ? currentTherapistLookup.facilities
+            : current.facilities,
+          responsibleFirstName:
+            currentTherapistLookup.responsible_first_name ?? current.responsibleFirstName,
+          responsibleLastName:
+            currentTherapistLookup.responsible_last_name ?? current.responsibleLastName,
+          responsibleRole: currentTherapistLookup.responsible_role ?? current.responsibleRole,
+          responsibleEmail: currentTherapistLookup.responsible_email ?? current.responsibleEmail,
+          responsiblePhone: currentTherapistLookup.responsible_phone ?? current.responsiblePhone,
+          legalEntityName: currentTherapistLookup.legal_entity_name ?? current.legalEntityName,
+          legalEntityTaxId: currentTherapistLookup.legal_entity_tax_id ?? current.legalEntityTaxId,
+          signatureName:
+            currentTherapistLookup.organization_signature_name ?? current.signatureName,
+          missionText: currentTherapistLookup.mission_text ?? current.missionText,
+          teamMembers: Array.isArray(currentTherapistLookup.team_members)
+            ? currentTherapistLookup.team_members.map((item) => ({
+                name:
+                  typeof (item as { name?: unknown }).name === "string"
+                    ? ((item as { name?: string }).name ?? "")
+                    : "",
+                role:
+                  typeof (item as { role?: unknown }).role === "string"
+                    ? ((item as { role?: string }).role ?? "")
+                    : "",
+                photoFile: null,
+              }))
+            : current.teamMembers,
           therapyIds:
             (currentTherapistLookup.therapist_therapies ?? []).map(
               (relation) => relation.therapy_id,
@@ -446,12 +536,14 @@ function OnboardingPage() {
             Plan {planLabel}
           </div>
           <h1 className="font-display text-4xl text-[#11100e] md:text-5xl">
-            Crear mi ficha profesional
+            {config.isOrganisation ? "Crear mi ficha de centro" : "Crear mi ficha profesional"}
           </h1>
           <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-[#342b22]">
-            {config.isProfessional
-              ? "Te acompañamos paso a paso para construir un perfil más completo, con varias ubicaciones y más detalle profesional."
-              : "Te acompañamos paso a paso para crear una presencia clara, cálida y bien organizada."}
+            {config.isOrganisation
+              ? "Te acompañamos paso a paso para construir la presencia de tu organización con orden, claridad y calidez."
+              : config.isProfessional
+                ? "Te acompañamos paso a paso para construir un perfil más completo, con varias ubicaciones y más detalle profesional."
+                : "Te acompañamos paso a paso para crear una presencia clara, cálida y bien organizada."}
           </p>
           <WizardProgress step={step} isProfessional={config.isProfessional} />
         </section>
@@ -460,81 +552,105 @@ function OnboardingPage() {
           <div className="rounded-[1.6rem] border border-[#eadfce] bg-white/78 p-6 shadow-[0_18px_60px_rgba(96,68,31,0.08)] md:p-8">
             {step === 1 && (
               <StepShell
-                icon={User}
+                icon={config.isOrganisation ? Building2 : User}
                 title="1. Información general"
-                intro="Primero necesitamos conocerte un poco mejor."
+                intro={
+                  config.isOrganisation
+                    ? "Empezamos por los datos principales de la organización."
+                    : "Primero necesitamos conocerte un poco mejor."
+                }
               >
-                <div className="grid gap-5 md:grid-cols-2">
-                  <Field label="Nombre *">
-                    <Input
-                      value={draft.firstName}
-                      onChange={(event) => updateDraft(setDraft, { firstName: event.target.value })}
-                      autoComplete="given-name"
-                      required
-                    />
-                  </Field>
-                  <Field label="Apellidos *">
-                    <Input
-                      value={draft.lastName}
-                      onChange={(event) => updateDraft(setDraft, { lastName: event.target.value })}
-                      autoComplete="family-name"
-                      required
-                    />
-                  </Field>
-                  <Field label="Nombre profesional (opcional)">
-                    <Input
-                      value={draft.professionalName}
-                      onChange={(event) =>
-                        updateDraft(setDraft, { professionalName: event.target.value })
-                      }
-                      placeholder="Ej: Alma Holística"
-                    />
-                  </Field>
-                  <Field label="Municipio principal *">
-                    <MunicipalitySelect
-                      value={draft.municipalityId}
-                      municipalities={sortedMunicipalities}
-                      onChange={(value) => updateDraft(setDraft, { municipalityId: value })}
-                    />
-                  </Field>
-                  <Field label="Isla">
-                    <ReadOnlyPill>{islandName}</ReadOnlyPill>
-                  </Field>
-                  <Field label="Correo electrónico *">
-                    <Input
-                      type="email"
-                      value={draft.email}
-                      onChange={(event) => updateDraft(setDraft, { email: event.target.value })}
-                      autoComplete="email"
-                      required
-                    />
-                  </Field>
-                  <Field label="Teléfono *">
-                    <Input
-                      value={draft.phone}
-                      onChange={(event) => updateDraft(setDraft, { phone: event.target.value })}
-                      autoComplete="tel"
-                      required
-                    />
-                  </Field>
-                  <Field label="WhatsApp">
-                    <Input
-                      value={draft.whatsapp}
-                      onChange={(event) => updateDraft(setDraft, { whatsapp: event.target.value })}
-                      autoComplete="tel"
-                      placeholder="Puede ser el mismo número"
-                    />
-                  </Field>
-                  <Field label="Foto principal">
-                    <UploadBox
-                      file={photoFile}
-                      label="Subir foto"
-                      accept="image/*"
-                      onChange={setPhotoFile}
-                    />
-                  </Field>
-                  {config.logoEnabled && (
-                    <Field label="Logo profesional (opcional)">
+                {config.isOrganisation ? (
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <Field label="Nombre de la organización *">
+                      <Input
+                        value={draft.organizationName}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { organizationName: event.target.value })
+                        }
+                        placeholder="Ej: Espacio Holístico Mallorca"
+                        required
+                      />
+                    </Field>
+                    <Field label="Nombre comercial (opcional)">
+                      <Input
+                        value={draft.professionalName}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { professionalName: event.target.value })
+                        }
+                        placeholder="Ej: Espacio Mallorca Holística"
+                      />
+                    </Field>
+                    <Field label="Tipo de organización *">
+                      <div className="grid gap-2 md:grid-cols-2">
+                        {[
+                          "Centro Holístico",
+                          "Escuela o Centro de Formación",
+                          "Asociación",
+                          "Cooperativa",
+                          "Clínica Integrativa",
+                          "Organizador de Eventos",
+                          "Organizador de Retiros",
+                          "Espacio de Bienestar",
+                          "Empresa relacionada con el bienestar",
+                          "Otro",
+                        ].map((option) => {
+                          const selected = draft.organizationType === option;
+                          return (
+                            <button
+                              key={option}
+                              type="button"
+                              onClick={() => updateDraft(setDraft, { organizationType: option })}
+                              className={`rounded-2xl border px-4 py-3 text-left text-sm transition-colors ${
+                                selected
+                                  ? "border-[#526046] bg-[#f4ede6] text-[#1f1c18]"
+                                  : "border-[#eadfce] bg-white text-[#342b22] hover:bg-[#fffaf4]"
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </Field>
+                    <Field label="Municipio principal *">
+                      <MunicipalitySelect
+                        value={draft.municipalityId}
+                        municipalities={sortedMunicipalities}
+                        onChange={(value) => updateDraft(setDraft, { municipalityId: value })}
+                      />
+                    </Field>
+                    <Field label="Isla">
+                      <ReadOnlyPill>{islandName}</ReadOnlyPill>
+                    </Field>
+                    <Field label="Correo electrónico *">
+                      <Input
+                        type="email"
+                        value={draft.email}
+                        onChange={(event) => updateDraft(setDraft, { email: event.target.value })}
+                        autoComplete="email"
+                        required
+                      />
+                    </Field>
+                    <Field label="Teléfono *">
+                      <Input
+                        value={draft.phone}
+                        onChange={(event) => updateDraft(setDraft, { phone: event.target.value })}
+                        autoComplete="tel"
+                        required
+                      />
+                    </Field>
+                    <Field label="WhatsApp">
+                      <Input
+                        value={draft.whatsapp}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { whatsapp: event.target.value })
+                        }
+                        autoComplete="tel"
+                        placeholder="Puede ser el mismo número"
+                      />
+                    </Field>
+                    <Field label="Logo *">
                       <UploadBox
                         file={logoFile}
                         label="Subir logo"
@@ -542,25 +658,130 @@ function OnboardingPage() {
                         onChange={setLogoFile}
                       />
                     </Field>
-                  )}
-                </div>
+                    <Field label="Imagen principal">
+                      <UploadBox
+                        file={photoFile}
+                        label="Subir imagen principal"
+                        accept="image/*"
+                        onChange={setPhotoFile}
+                      />
+                    </Field>
+                  </div>
+                ) : (
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <Field label="Nombre *">
+                      <Input
+                        value={draft.firstName}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { firstName: event.target.value })
+                        }
+                        autoComplete="given-name"
+                        required
+                      />
+                    </Field>
+                    <Field label="Apellidos *">
+                      <Input
+                        value={draft.lastName}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { lastName: event.target.value })
+                        }
+                        autoComplete="family-name"
+                        required
+                      />
+                    </Field>
+                    <Field label="Nombre profesional (opcional)">
+                      <Input
+                        value={draft.professionalName}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { professionalName: event.target.value })
+                        }
+                        placeholder="Ej: Alma Holística"
+                      />
+                    </Field>
+                    <Field label="Municipio principal *">
+                      <MunicipalitySelect
+                        value={draft.municipalityId}
+                        municipalities={sortedMunicipalities}
+                        onChange={(value) => updateDraft(setDraft, { municipalityId: value })}
+                      />
+                    </Field>
+                    <Field label="Isla">
+                      <ReadOnlyPill>{islandName}</ReadOnlyPill>
+                    </Field>
+                    <Field label="Correo electrónico *">
+                      <Input
+                        type="email"
+                        value={draft.email}
+                        onChange={(event) => updateDraft(setDraft, { email: event.target.value })}
+                        autoComplete="email"
+                        required
+                      />
+                    </Field>
+                    <Field label="Teléfono *">
+                      <Input
+                        value={draft.phone}
+                        onChange={(event) => updateDraft(setDraft, { phone: event.target.value })}
+                        autoComplete="tel"
+                        required
+                      />
+                    </Field>
+                    <Field label="WhatsApp">
+                      <Input
+                        value={draft.whatsapp}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { whatsapp: event.target.value })
+                        }
+                        autoComplete="tel"
+                        placeholder="Puede ser el mismo número"
+                      />
+                    </Field>
+                    <Field label="Foto principal">
+                      <UploadBox
+                        file={photoFile}
+                        label="Subir foto"
+                        accept="image/*"
+                        onChange={setPhotoFile}
+                      />
+                    </Field>
+                    {config.logoEnabled && (
+                      <Field label="Logo profesional (opcional)">
+                        <UploadBox
+                          file={logoFile}
+                          label="Subir logo"
+                          accept="image/*"
+                          onChange={setLogoFile}
+                        />
+                      </Field>
+                    )}
+                  </div>
+                )}
               </StepShell>
             )}
 
             {step === 2 && (
               <StepShell
                 icon={Heart}
-                title="2. Actividad profesional"
-                intro="Selecciona las terapias, áreas y públicos con los que trabajas."
+                title="2. Actividad"
+                intro={
+                  config.isOrganisation
+                    ? "Selecciona las áreas y servicios que ofrece tu organización."
+                    : "Selecciona las terapias, áreas y públicos con los que trabajas."
+                }
               >
                 <CatalogPicker
-                  title="Specialidades y terapias"
-                  description={
-                    config.isProfessional
-                      ? "Busca tus terapias principales. En el plan Profesional no hay límite."
-                      : "Busca tus terapias principales. En el plan Free puedes seleccionar hasta 3."
+                  title={
+                    config.isOrganisation
+                      ? "Especialidades y servicios"
+                      : "Specialidades y terapias"
                   }
-                  placeholder="Buscar una terapia..."
+                  description={
+                    config.isOrganisation
+                      ? "Busca todos los servicios y especialidades que ofrece la organización."
+                      : config.isProfessional
+                        ? "Busca tus terapias principales. En el plan Profesional no hay límite."
+                        : "Busca tus terapias principales. En el plan Free puedes seleccionar hasta 3."
+                  }
+                  placeholder="Buscar una terapia o servicio..."
                   items={sortedTherapies}
                   selectedIds={draft.therapyIds}
                   maxSelection={config.therapyCap}
@@ -568,8 +789,8 @@ function OnboardingPage() {
                   onSearchChange={setTherapySearch}
                   onChange={(values) => updateDraft(setDraft, { therapyIds: values })}
                   helperText={
-                    config.isProfessional
-                      ? "Plan Profesional: selección libre."
+                    config.isOrganisation || config.isProfessional
+                      ? "Selección libre."
                       : "Plan Free: máximo 3 terapias."
                   }
                   draggedIndex={draggedTherapyIndex}
@@ -577,11 +798,13 @@ function OnboardingPage() {
                 />
 
                 <CatalogPicker
-                  title="Áreas de especialización"
+                  title={config.isOrganisation ? "Áreas de ayuda" : "Áreas de especialización"}
                   description={
-                    config.isProfessional
-                      ? "Añade todas las áreas en las que acompañas."
-                      : "Añade las áreas en las que más acompañas. En Free puedes seleccionar hasta 5."
+                    config.isOrganisation
+                      ? "Añade todas las áreas que aborda la organización."
+                      : config.isProfessional
+                        ? "Añade todas las áreas en las que acompañas."
+                        : "Añade las áreas en las que más acompañas. En Free puedes seleccionar hasta 5."
                   }
                   placeholder="Buscar un área..."
                   items={sortedHelpAreas}
@@ -591,8 +814,8 @@ function OnboardingPage() {
                   onSearchChange={setHelpAreaSearch}
                   onChange={(values) => updateDraft(setDraft, { helpAreaIds: values })}
                   helperText={
-                    config.isProfessional
-                      ? "Plan Profesional: selección libre."
+                    config.isOrganisation || config.isProfessional
+                      ? "Selección libre."
                       : "Plan Free: máximo 5 áreas."
                   }
                   draggedIndex={draggedHelpAreaIndex}
@@ -600,20 +823,79 @@ function OnboardingPage() {
                 />
 
                 <CheckboxGrid
-                  title="Público al que acompañas"
-                  description="Marca todos los públicos que forman parte de tu práctica."
-                  items={freeTargetAudienceOptions}
-                  values={draft.targetAudience}
-                  onChange={(values) => updateDraft(setDraft, { targetAudience: values })}
+                  title={config.isOrganisation ? "Público" : "Público al que acompañas"}
+                  description={
+                    config.isOrganisation
+                      ? "Marca los públicos a los que se dirige la organización."
+                      : "Marca todos los públicos que forman parte de tu práctica."
+                  }
+                  items={
+                    config.isOrganisation
+                      ? [
+                          "Mujeres",
+                          "Hombres",
+                          "Adultos",
+                          "Adolescentes",
+                          "Niños",
+                          "Personas mayores",
+                          "Familias",
+                          "Parejas",
+                          "Empresas",
+                          "Personas neurodivergentes",
+                        ]
+                      : freeTargetAudienceOptions
+                  }
+                  values={
+                    config.isOrganisation ? draft.organizationPublicAudience : draft.targetAudience
+                  }
+                  onChange={(values) => {
+                    if (config.isOrganisation) {
+                      updateDraft(setDraft, { organizationPublicAudience: values });
+                    } else {
+                      updateDraft(setDraft, { targetAudience: values });
+                    }
+                  }}
                   columns="md:grid-cols-2 lg:grid-cols-3"
                 />
 
                 <CheckboxGrid
-                  title="Modalidades de acompañamiento"
-                  description="Selecciona los formatos en los que ofreces tu trabajo."
-                  items={accompanimentOptions}
-                  values={draft.accompanimentModalities}
-                  onChange={(values) => updateDraft(setDraft, { accompanimentModalities: values })}
+                  title={
+                    config.isOrganisation
+                      ? "Actividades organizadas"
+                      : "Modalidades de acompañamiento"
+                  }
+                  description={
+                    config.isOrganisation
+                      ? "Selecciona las actividades, eventos y formatos que organizas."
+                      : "Selecciona los formatos en los que ofreces tu trabajo."
+                  }
+                  items={
+                    config.isOrganisation
+                      ? [
+                          "Talleres",
+                          "Cursos",
+                          "Formaciones",
+                          "Eventos",
+                          "Conferencias",
+                          "Retiros",
+                          "Encuentros",
+                          "Actividades recurrentes",
+                          "Otro",
+                        ]
+                      : accompanimentOptions
+                  }
+                  values={
+                    config.isOrganisation
+                      ? draft.organizationActivities
+                      : draft.accompanimentModalities
+                  }
+                  onChange={(values) => {
+                    if (config.isOrganisation) {
+                      updateDraft(setDraft, { organizationActivities: values });
+                    } else {
+                      updateDraft(setDraft, { accompanimentModalities: values });
+                    }
+                  }}
                   columns="md:grid-cols-2 lg:grid-cols-3"
                 />
               </StepShell>
@@ -622,58 +904,68 @@ function OnboardingPage() {
             {step === 3 && (
               <StepShell
                 icon={Award}
-                title="3. Consultas y modalidades"
-                intro="Definimos cómo ofreces tus sesiones y dónde atiendes."
+                title="3. Centro y ubicaciones"
+                intro={
+                  config.isOrganisation
+                    ? "Ordenamos la sede principal y, si lo necesitas, otras ubicaciones."
+                    : "Definimos cómo ofreces tus sesiones y dónde atiendes."
+                }
               >
-                <CheckboxGrid
-                  title="Modalidades de sesión"
-                  description="Puedes ofrecer una o varias formas de atención."
-                  items={sessionModalityOptions}
-                  values={draft.sessionModalities}
-                  onChange={(values) => updateDraft(setDraft, { sessionModalities: values })}
-                  columns="md:grid-cols-2"
-                  helperByItem={{
-                    "A distancia":
-                      "A distancia significa acompañamiento remoto, sin videollamada ni presencia física.",
-                  }}
-                />
-
-                {draft.sessionModalities.includes("Presencial a domicilio") && (
-                  <Field label="Radio de desplazamiento">
-                    <div className="grid gap-3 md:grid-cols-5">
-                      {homeVisitRadiusOptions.map((option) => {
-                        const selected = draft.homeVisitRadius === option;
-                        return (
-                          <button
-                            key={option}
-                            type="button"
-                            onClick={() => updateDraft(setDraft, { homeVisitRadius: option })}
-                            className={`rounded-2xl border px-4 py-3 text-sm transition-colors ${
-                              selected
-                                ? "border-[#526046] bg-[#f4ede6] text-[#1f1c18]"
-                                : "border-[#eadfce] bg-white text-[#342b22] hover:bg-[#fffaf4]"
-                            }`}
-                          >
-                            {option}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </Field>
+                {!config.isOrganisation && (
+                  <CheckboxGrid
+                    title="Modalidades de sesión"
+                    description="Puedes ofrecer una o varias formas de atención."
+                    items={sessionModalityOptions}
+                    values={draft.sessionModalities}
+                    onChange={(values) => updateDraft(setDraft, { sessionModalities: values })}
+                    columns="md:grid-cols-2"
+                    helperByItem={{
+                      "A distancia":
+                        "A distancia significa acompañamiento remoto, sin videollamada ni presencia física.",
+                    }}
+                  />
                 )}
+
+                {!config.isOrganisation &&
+                  draft.sessionModalities.includes("Presencial a domicilio") && (
+                    <Field label="Radio de desplazamiento">
+                      <div className="grid gap-3 md:grid-cols-5">
+                        {homeVisitRadiusOptions.map((option) => {
+                          const selected = draft.homeVisitRadius === option;
+                          return (
+                            <button
+                              key={option}
+                              type="button"
+                              onClick={() => updateDraft(setDraft, { homeVisitRadius: option })}
+                              className={`rounded-2xl border px-4 py-3 text-sm transition-colors ${
+                                selected
+                                  ? "border-[#526046] bg-[#f4ede6] text-[#1f1c18]"
+                                  : "border-[#eadfce] bg-white text-[#342b22] hover:bg-[#fffaf4]"
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </Field>
+                  )}
 
                 <div className="space-y-4">
                   <div className="flex items-end justify-between gap-3">
                     <div>
                       <h4 className="font-display text-lg text-[#11100e]">Ubicaciones</h4>
                       <p className="text-sm text-[#6d5b43]">
-                        {config.isProfessional
-                          ? "Añade la ubicación principal y, si lo necesitas, una o varias consultas más."
-                          : "El plan Free incluye una única ubicación."}
+                        {config.isOrganisation
+                          ? "Puedes añadir todas las ubicaciones que necesite la organización."
+                          : config.isProfessional
+                            ? "Añade la ubicación principal y, si lo necesitas, una o varias consultas más."
+                            : "El plan Free incluye una única ubicación."}
                       </p>
                     </div>
                     {config.extraLocationEnabled &&
-                      draft.locations.length < config.locationLimit && (
+                      (config.locationLimit === null ||
+                        draft.locations.length < config.locationLimit) && (
                         <Button
                           type="button"
                           variant="outline"
@@ -687,7 +979,8 @@ function OnboardingPage() {
                             })
                           }
                         >
-                          <Plus className="h-4 w-4" /> Añadir otra consulta
+                          <Plus className="h-4 w-4" />{" "}
+                          {config.isOrganisation ? "Añadir otra ubicación" : "Añadir otra consulta"}
                         </Button>
                       )}
                   </div>
@@ -700,7 +993,13 @@ function OnboardingPage() {
                       <div className="mb-4 flex items-center justify-between">
                         <div className="flex items-center gap-2 text-sm font-medium text-[#5d5144]">
                           <MapPin className="h-4 w-4" />
-                          {index === 0 ? "Ubicación principal" : `Consulta ${index + 1}`}
+                          {index === 0
+                            ? config.isOrganisation
+                              ? "Ubicación principal"
+                              : "Ubicación principal"
+                            : config.isOrganisation
+                              ? `Ubicación ${index + 1}`
+                              : `Consulta ${index + 1}`}
                         </div>
                         {index > 0 && (
                           <button
@@ -719,7 +1018,7 @@ function OnboardingPage() {
                         )}
                       </div>
                       <div className="grid gap-5 md:grid-cols-2">
-                        <Field label="Centro name *">
+                        <Field label="Nombre del centro *">
                           <Input
                             value={location.centerName}
                             onChange={(event) =>
@@ -727,7 +1026,7 @@ function OnboardingPage() {
                                 centerName: event.target.value,
                               })
                             }
-                            placeholder="Ej: Consulta Palma Holística"
+                            placeholder="Ej: Espacio Mallorca"
                             required={index === 0}
                           />
                         </Field>
@@ -757,16 +1056,54 @@ function OnboardingPage() {
                     </div>
                   ))}
                 </div>
+
+                {config.isOrganisation && (
+                  <>
+                    <CheckboxGrid
+                      title="Instalaciones"
+                      description="Marca los recursos e instalaciones disponibles en la organización."
+                      items={[
+                        "Salas de terapia",
+                        "Salas de formación",
+                        "Espacios para eventos",
+                        "Jardín",
+                        "Alojamiento",
+                        "Restaurante",
+                        "Cafetería",
+                        "Otro",
+                      ]}
+                      values={draft.facilities}
+                      onChange={(values) => updateDraft(setDraft, { facilities: values })}
+                      columns="md:grid-cols-2 lg:grid-cols-3"
+                    />
+
+                    <Field label="Galería de imágenes">
+                      <MultiUploadBox
+                        files={galleryFiles}
+                        onChange={setGalleryFiles}
+                        maxFiles={15}
+                        label="Subir imágenes de la galería"
+                        accept="image/*"
+                        helperText="Puedes añadir hasta 15 imágenes."
+                        emptyText="Puedes subir hasta 15 imágenes."
+                      />
+                    </Field>
+                  </>
+                )}
               </StepShell>
             )}
 
             {step === 4 && (
               <StepShell
                 icon={MapPin}
-                title="4. Experiencia y perfil"
-                intro="Cuenta brevemente cómo trabajas y qué te distingue."
+                title="4. Perfil"
+                intro={
+                  config.isOrganisation
+                    ? "Contamos quién sois y qué queréis transmitir."
+                    : "Cuenta brevemente cómo trabajas y qué te distingue."
+                }
               >
-                <Field label={config.isProfessional ? "Presentación *" : "Presentación breve *"}>
+                <Field label={config.isOrganisation ? "Quiénes somos *" : "Presentación *"}>
                   <div className="space-y-2">
                     <Textarea
                       value={draft.presentationText}
@@ -777,17 +1114,21 @@ function OnboardingPage() {
                       maxLength={config.presentationMaxLength}
                       className="min-h-44"
                       placeholder={
-                        config.isProfessional
-                          ? "Cuéntanos tu recorrido, tu manera de acompañar y cómo se vive una sesión contigo."
-                          : "Cuéntanos tu manera de acompañar y qué necesita saber alguien antes de conocerte."
+                        config.isOrganisation
+                          ? "Contad brevemente quiénes sois y qué proponéis."
+                          : config.isProfessional
+                            ? "Cuéntanos tu recorrido, tu manera de acompañar y cómo se vive una sesión contigo."
+                            : "Cuéntanos tu manera de acompañar y qué necesita saber alguien antes de conocerte."
                       }
                       required
                     />
                     <div className="flex items-center justify-between text-xs text-[#6d5b43]">
                       <span>
-                        {config.isProfessional
-                          ? "Puedes ampliar mucho más tu historia profesional."
-                          : "Mantén un tono claro, amable y breve."}
+                        {config.isOrganisation
+                          ? "Un texto cálido y claro para presentar la organización."
+                          : config.isProfessional
+                            ? "Puedes ampliar mucho más tu historia profesional."
+                            : "Mantén un tono claro, amable y breve."}
                       </span>
                       <span>
                         {draft.presentationText.length}/{config.presentationMaxLength}
@@ -796,7 +1137,7 @@ function OnboardingPage() {
                   </div>
                 </Field>
 
-                <Field label="Tagline *">
+                <Field label="Frase de presentación *">
                   <div className="space-y-2">
                     <Input
                       value={draft.tagline}
@@ -805,7 +1146,7 @@ function OnboardingPage() {
                         updateDraft(setDraft, { tagline: next });
                       }}
                       maxLength={120}
-                      placeholder="Te acompaño a recuperar calma, claridad y bienestar."
+                      placeholder="Creamos espacios de bienestar con cercanía y criterio."
                       required
                     />
                     <div className="flex items-center justify-between text-xs text-[#6d5b43]">
@@ -815,7 +1156,73 @@ function OnboardingPage() {
                   </div>
                 </Field>
 
-                {config.isProfessional && (
+                {config.isOrganisation ? (
+                  <>
+                    <Field label="Nuestra misión *">
+                      <div className="space-y-2">
+                        <Textarea
+                          value={draft.missionText}
+                          onChange={(event) =>
+                            updateDraft(setDraft, {
+                              missionText: event.target.value.slice(0, 2000),
+                            })
+                          }
+                          maxLength={2000}
+                          className="min-h-40"
+                          placeholder="Explica el propósito, la visión y el impacto que buscáis."
+                          required
+                        />
+                        <div className="flex items-center justify-between text-xs text-[#6d5b43]">
+                          <span>Máximo 2000 caracteres.</span>
+                          <span>{draft.missionText.length}/2000</span>
+                        </div>
+                      </div>
+                    </Field>
+
+                    <Field label="Qué nos diferencia (opcional)">
+                      <div className="space-y-2">
+                        <Textarea
+                          value={draft.differentiatorText}
+                          onChange={(event) =>
+                            updateDraft(setDraft, {
+                              differentiatorText: event.target.value.slice(0, 1000),
+                            })
+                          }
+                          maxLength={1000}
+                          className="min-h-32"
+                          placeholder="Comparte aquello que os hace especialmente reconocibles."
+                        />
+                        <div className="flex items-center justify-between text-xs text-[#6d5b43]">
+                          <span>Máximo 1000 caracteres.</span>
+                          <span>{draft.differentiatorText.length}/1000</span>
+                        </div>
+                      </div>
+                    </Field>
+
+                    <CheckboxGrid
+                      title="Idiomas disponibles"
+                      description="Selecciona los idiomas en los que la organización puede atender."
+                      items={[
+                        "Español",
+                        "Catalán",
+                        "Inglés",
+                        "Alemán",
+                        "Francés",
+                        "Italiano",
+                        "Holandés",
+                        "Otro",
+                      ]}
+                      values={draft.languages}
+                      onChange={(values) => updateDraft(setDraft, { languages: values })}
+                      columns="md:grid-cols-2 lg:grid-cols-3"
+                    />
+
+                    <TeamEditor
+                      members={draft.teamMembers}
+                      onChange={(teamMembers) => updateDraft(setDraft, { teamMembers })}
+                    />
+                  </>
+                ) : (
                   <>
                     <Field label="Mi enfoque *">
                       <div className="space-y-2">
@@ -884,28 +1291,38 @@ function OnboardingPage() {
             {step === 5 && (
               <StepShell
                 icon={ShieldCheck}
-                title="5. Redes y compromisos"
-                intro="Revisamos tus datos públicos y las aceptaciones finales."
+                title={
+                  config.isOrganisation
+                    ? "5. Redes, verificación y compromisos"
+                    : "5. Redes y compromisos"
+                }
+                intro={
+                  config.isOrganisation
+                    ? "Terminamos con los datos públicos, la verificación y la firma responsable."
+                    : "Revisamos tus datos públicos y las aceptaciones finales."
+                }
               >
-                <div className="grid gap-5 md:grid-cols-2">
-                  <Field label="Página web">
-                    <Input
-                      value={draft.website}
-                      onChange={(event) => updateDraft(setDraft, { website: event.target.value })}
-                      placeholder="https://..."
-                    />
-                  </Field>
-                  <Field label="Instagram">
-                    <Input
-                      value={draft.instagramUrl}
-                      onChange={(event) =>
-                        updateDraft(setDraft, { instagramUrl: event.target.value })
-                      }
-                      placeholder="https://instagram.com/..."
-                    />
-                  </Field>
-                  {config.isProfessional && (
-                    <>
+                {config.isOrganisation ? (
+                  <>
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <Field label="Página web">
+                        <Input
+                          value={draft.website}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { website: event.target.value })
+                          }
+                          placeholder="https://..."
+                        />
+                      </Field>
+                      <Field label="Instagram">
+                        <Input
+                          value={draft.instagramUrl}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { instagramUrl: event.target.value })
+                          }
+                          placeholder="https://instagram.com/..."
+                        />
+                      </Field>
                       <Field label="Facebook">
                         <Input
                           value={draft.facebookUrl}
@@ -942,24 +1359,6 @@ function OnboardingPage() {
                           placeholder="https://calendly.com/..."
                         />
                       </Field>
-                      <Field label="Fresha">
-                        <Input
-                          value={draft.freshaUrl}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { freshaUrl: event.target.value })
-                          }
-                          placeholder="https://fresha.com/..."
-                        />
-                      </Field>
-                      <Field label="WhatsApp Business">
-                        <Input
-                          value={draft.whatsappBusinessUrl}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { whatsappBusinessUrl: event.target.value })
-                          }
-                          placeholder="https://wa.me/..."
-                        />
-                      </Field>
                       <Field label="Otra plataforma">
                         <Input
                           value={draft.otherBookingUrl}
@@ -969,94 +1368,321 @@ function OnboardingPage() {
                           placeholder="https://..."
                         />
                       </Field>
-                    </>
-                  )}
-                </div>
+                    </div>
 
-                <div className="grid gap-5 md:grid-cols-2">
-                  <Field label="WhatsApp visible en el perfil">
-                    <BinaryToggle
-                      value={draft.showWhatsappPublic}
-                      onChange={(value) => updateDraft(setDraft, { showWhatsappPublic: value })}
-                    />
-                  </Field>
-                  <Field label="Correo visible en el perfil">
-                    <BinaryToggle
-                      value={draft.showEmailPublic}
-                      onChange={(value) => updateDraft(setDraft, { showEmailPublic: value })}
-                    />
-                  </Field>
-                </div>
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <Field label="Responsable de la organización — Nombre *">
+                        <Input
+                          value={draft.responsibleFirstName}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { responsibleFirstName: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="Apellidos *">
+                        <Input
+                          value={draft.responsibleLastName}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { responsibleLastName: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="Cargo *">
+                        <Input
+                          value={draft.responsibleRole}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { responsibleRole: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="Email *">
+                        <Input
+                          type="email"
+                          value={draft.responsibleEmail}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { responsibleEmail: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="Teléfono *">
+                        <Input
+                          value={draft.responsiblePhone}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { responsiblePhone: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="Nombre legal *">
+                        <Input
+                          value={draft.legalEntityName}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { legalEntityName: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="CIF/NIF *">
+                        <Input
+                          value={draft.legalEntityTaxId}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { legalEntityTaxId: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="Nombre completo del firmante *">
+                        <Input
+                          value={draft.signatureName}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { signatureName: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                    </div>
 
-                {config.isProfessional && (
-                  <div className="space-y-4 rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
-                    <h4 className="font-display text-lg text-[#11100e]">
-                      Verificación Mallorca Holística
-                    </h4>
-                    <ConsentCheckbox
-                      checked={draft.hasLiabilityInsurance}
-                      onChange={(value) => updateDraft(setDraft, { hasLiabilityInsurance: value })}
-                    >
-                      Declaro disponer de un Seguro de Responsabilidad Civil vigente.
-                    </ConsentCheckbox>
-                    <Field label="Diploma o Certificado *">
-                      <UploadBox
-                        file={diplomaFile}
-                        label="Subir diploma"
-                        accept=".pdf,.png,.jpg,.jpeg"
-                        onChange={setDiplomaFile}
-                      />
-                    </Field>
-                    <Field label="Certificados adicionales (máx. 5)">
-                      <MultiUploadBox
-                        files={extraDocuments}
-                        onChange={setExtraDocuments}
-                        maxFiles={5}
-                        label="Añadir certificados"
-                      />
-                    </Field>
-                  </div>
+                    <div className="space-y-4 rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
+                      <ConsentCheckbox
+                        checked={draft.declaresLegalAuthority}
+                        onChange={(value) =>
+                          updateDraft(setDraft, { declaresLegalAuthority: value })
+                        }
+                      >
+                        Declaro representar legalmente o contar con autorización para actuar en
+                        nombre de esta organización.
+                      </ConsentCheckbox>
+                      <ConsentCheckbox
+                        checked={draft.acceptedTruthfulness}
+                        onChange={(value) => updateDraft(setDraft, { acceptedTruthfulness: value })}
+                      >
+                        Declaro que la información aportada es veraz.
+                      </ConsentCheckbox>
+                      <ConsentCheckbox
+                        checked={draft.acceptedDeontologicalCode}
+                        onChange={(value) =>
+                          updateDraft(setDraft, { acceptedDeontologicalCode: value })
+                        }
+                      >
+                        He leído y acepto el Código Deontológico de Mallorca Holística.
+                      </ConsentCheckbox>
+                    </div>
+
+                    <div className="space-y-4 rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
+                      <ConsentCheckbox
+                        checked={draft.acceptedPrivacyPolicy}
+                        onChange={(value) =>
+                          updateDraft(setDraft, { acceptedPrivacyPolicy: value })
+                        }
+                      >
+                        Acepto la Política de Privacidad.
+                      </ConsentCheckbox>
+                      <ConsentCheckbox
+                        checked={draft.acceptedTermsOfUse}
+                        onChange={(value) => updateDraft(setDraft, { acceptedTermsOfUse: value })}
+                      >
+                        Acepto las Condiciones de Uso.
+                      </ConsentCheckbox>
+                      <ConsentCheckbox
+                        checked={draft.acceptedPublication}
+                        onChange={(value) => updateDraft(setDraft, { acceptedPublication: value })}
+                      >
+                        Autorizo la publicación de mi perfil en Mallorca Holística.
+                      </ConsentCheckbox>
+                    </div>
+
+                    <div className="rounded-2xl border border-[#eadfce] bg-[#f7efe7] p-5 text-sm leading-7 text-[#5d5144]">
+                      <p className="font-medium text-[#342b22]">Firma</p>
+                      <p>
+                        Nombre completo del firmante: <strong>{draft.signatureName || "—"}</strong>
+                      </p>
+                      <p>(Fecha, hora e IP registradas automáticamente)</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <Field label="Página web">
+                        <Input
+                          value={draft.website}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { website: event.target.value })
+                          }
+                          placeholder="https://..."
+                        />
+                      </Field>
+                      <Field label="Instagram">
+                        <Input
+                          value={draft.instagramUrl}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { instagramUrl: event.target.value })
+                          }
+                          placeholder="https://instagram.com/..."
+                        />
+                      </Field>
+                      {config.isProfessional && (
+                        <>
+                          <Field label="Facebook">
+                            <Input
+                              value={draft.facebookUrl}
+                              onChange={(event) =>
+                                updateDraft(setDraft, { facebookUrl: event.target.value })
+                              }
+                              placeholder="https://facebook.com/..."
+                            />
+                          </Field>
+                          <Field label="LinkedIn">
+                            <Input
+                              value={draft.linkedinUrl}
+                              onChange={(event) =>
+                                updateDraft(setDraft, { linkedinUrl: event.target.value })
+                              }
+                              placeholder="https://linkedin.com/..."
+                            />
+                          </Field>
+                          <Field label="YouTube">
+                            <Input
+                              value={draft.youtubeUrl}
+                              onChange={(event) =>
+                                updateDraft(setDraft, { youtubeUrl: event.target.value })
+                              }
+                              placeholder="https://youtube.com/..."
+                            />
+                          </Field>
+                          <Field label="Calendly">
+                            <Input
+                              value={draft.calendlyUrl}
+                              onChange={(event) =>
+                                updateDraft(setDraft, { calendlyUrl: event.target.value })
+                              }
+                              placeholder="https://calendly.com/..."
+                            />
+                          </Field>
+                          <Field label="Fresha">
+                            <Input
+                              value={draft.freshaUrl}
+                              onChange={(event) =>
+                                updateDraft(setDraft, { freshaUrl: event.target.value })
+                              }
+                              placeholder="https://fresha.com/..."
+                            />
+                          </Field>
+                          <Field label="WhatsApp Business">
+                            <Input
+                              value={draft.whatsappBusinessUrl}
+                              onChange={(event) =>
+                                updateDraft(setDraft, { whatsappBusinessUrl: event.target.value })
+                              }
+                              placeholder="https://wa.me/..."
+                            />
+                          </Field>
+                          <Field label="Otra plataforma">
+                            <Input
+                              value={draft.otherBookingUrl}
+                              onChange={(event) =>
+                                updateDraft(setDraft, { otherBookingUrl: event.target.value })
+                              }
+                              placeholder="https://..."
+                            />
+                          </Field>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <Field label="WhatsApp visible en el perfil">
+                        <BinaryToggle
+                          value={draft.showWhatsappPublic}
+                          onChange={(value) => updateDraft(setDraft, { showWhatsappPublic: value })}
+                        />
+                      </Field>
+                      <Field label="Correo visible en el perfil">
+                        <BinaryToggle
+                          value={draft.showEmailPublic}
+                          onChange={(value) => updateDraft(setDraft, { showEmailPublic: value })}
+                        />
+                      </Field>
+                    </div>
+
+                    {config.isProfessional && (
+                      <div className="space-y-4 rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
+                        <h4 className="font-display text-lg text-[#11100e]">
+                          Verificación Mallorca Holística
+                        </h4>
+                        <ConsentCheckbox
+                          checked={draft.hasLiabilityInsurance}
+                          onChange={(value) =>
+                            updateDraft(setDraft, { hasLiabilityInsurance: value })
+                          }
+                        >
+                          Declaro disponer de un Seguro de Responsabilidad Civil vigente.
+                        </ConsentCheckbox>
+                        <Field label="Diploma o Certificado *">
+                          <UploadBox
+                            file={diplomaFile}
+                            label="Subir diploma"
+                            accept=".pdf,.png,.jpg,.jpeg"
+                            onChange={setDiplomaFile}
+                          />
+                        </Field>
+                        <Field label="Certificados adicionales (máx. 5)">
+                          <MultiUploadBox
+                            files={extraDocuments}
+                            onChange={setExtraDocuments}
+                            maxFiles={5}
+                            label="Añadir certificados"
+                          />
+                        </Field>
+                      </div>
+                    )}
+
+                    <div className="space-y-4 rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
+                      <ConsentCheckbox
+                        checked={draft.acceptedDeontologicalCode}
+                        onChange={(value) =>
+                          updateDraft(setDraft, { acceptedDeontologicalCode: value })
+                        }
+                      >
+                        He leído y acepto el Código Deontológico de Mallorca Holística.
+                      </ConsentCheckbox>
+                      <ConsentCheckbox
+                        checked={draft.acceptedTruthfulness}
+                        onChange={(value) => updateDraft(setDraft, { acceptedTruthfulness: value })}
+                      >
+                        Declaro que toda la información aportada es veraz y está actualizada.
+                      </ConsentCheckbox>
+                      <ConsentCheckbox
+                        checked={draft.acceptedPrivacyPolicy}
+                        onChange={(value) =>
+                          updateDraft(setDraft, { acceptedPrivacyPolicy: value })
+                        }
+                      >
+                        Acepto la Política de Privacidad.
+                      </ConsentCheckbox>
+                      <ConsentCheckbox
+                        checked={draft.acceptedTermsOfUse}
+                        onChange={(value) => updateDraft(setDraft, { acceptedTermsOfUse: value })}
+                      >
+                        Acepto las Condiciones de Uso.
+                      </ConsentCheckbox>
+                      <ConsentCheckbox
+                        checked={draft.acceptedPublication}
+                        onChange={(value) => updateDraft(setDraft, { acceptedPublication: value })}
+                      >
+                        Autorizo la publicación de mi perfil en Mallorca Holística.
+                      </ConsentCheckbox>
+                    </div>
+
+                    <div className="rounded-2xl border border-[#eadfce] bg-[#f7efe7] p-5 text-sm leading-7 text-[#5d5144]">
+                      Revisa el resumen antes de finalizar. Tu perfil se publicará solo cuando el
+                      equipo complete la revisión.
+                    </div>
+                  </>
                 )}
-
-                <div className="space-y-4 rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
-                  <ConsentCheckbox
-                    checked={draft.acceptedDeontologicalCode}
-                    onChange={(value) =>
-                      updateDraft(setDraft, { acceptedDeontologicalCode: value })
-                    }
-                  >
-                    He leído y acepto el Código Deontológico de Mallorca Holística.
-                  </ConsentCheckbox>
-                  <ConsentCheckbox
-                    checked={draft.acceptedTruthfulness}
-                    onChange={(value) => updateDraft(setDraft, { acceptedTruthfulness: value })}
-                  >
-                    Declaro que toda la información aportada es veraz y está actualizada.
-                  </ConsentCheckbox>
-                  <ConsentCheckbox
-                    checked={draft.acceptedPrivacyPolicy}
-                    onChange={(value) => updateDraft(setDraft, { acceptedPrivacyPolicy: value })}
-                  >
-                    Acepto la Política de Privacidad.
-                  </ConsentCheckbox>
-                  <ConsentCheckbox
-                    checked={draft.acceptedTermsOfUse}
-                    onChange={(value) => updateDraft(setDraft, { acceptedTermsOfUse: value })}
-                  >
-                    Acepto las Condiciones de Uso.
-                  </ConsentCheckbox>
-                  <ConsentCheckbox
-                    checked={draft.acceptedPublication}
-                    onChange={(value) => updateDraft(setDraft, { acceptedPublication: value })}
-                  >
-                    Autorizo la publicación de mi perfil en Mallorca Holística.
-                  </ConsentCheckbox>
-                </div>
-
-                <div className="rounded-2xl border border-[#eadfce] bg-[#f7efe7] p-5 text-sm leading-7 text-[#5d5144]">
-                  Revisa el resumen antes de finalizar. Tu perfil se publicará solo cuando el equipo
-                  complete la revisión.
-                </div>
               </StepShell>
             )}
 
@@ -1097,15 +1723,19 @@ function OnboardingPage() {
             <InfoCard icon={Search} title="Perfil más claro">
               Cuanto más ordenada esté tu información, más fácil será encontrar tu trabajo.
             </InfoCard>
-            {config.isProfessional && (
+            {config.isOrganisation ? (
+              <InfoCard icon={Building2} title="Más ubicaciones">
+                Las organizaciones pueden sumar varias sedes para mostrar mejor su actividad.
+              </InfoCard>
+            ) : config.isProfessional ? (
               <InfoCard icon={Home} title="Más ubicaciones">
                 El plan Profesional permite sumar varias consultas para mostrar mejor tu actividad.
               </InfoCard>
-            )}
+            ) : null}
           </aside>
         </section>
 
-        <BenefitsStrip isProfessional={config.isProfessional} />
+        <BenefitsStrip plan={config.slug} />
         <footer className="mx-auto flex max-w-[1180px] flex-col gap-3 px-6 pb-8 text-xs text-[#5d5144] md:flex-row md:items-center md:justify-between md:px-10">
           <span>
             <Lock className="mr-2 inline h-4 w-4" />
@@ -1141,7 +1771,13 @@ function OnboardingPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const validationError = validateStep(step, draft, config, Boolean(diplomaFile));
+    const validationError = validateStep(
+      step,
+      draft,
+      config,
+      Boolean(logoFile),
+      Boolean(diplomaFile),
+    );
     if (validationError) {
       toast.error(validationError);
       return;
@@ -1162,10 +1798,14 @@ function OnboardingPage() {
 
     setSaving(true);
     try {
-      const publicFullName = [draft.firstName.trim(), draft.lastName.trim()]
-        .filter(Boolean)
-        .join(" ");
-      const slugBase = slugify(draft.professionalName.trim() || publicFullName);
+      const isOrganisation = config.isOrganisation;
+      const publicFullName = isOrganisation
+        ? draft.organizationName.trim()
+        : [draft.firstName.trim(), draft.lastName.trim()].filter(Boolean).join(" ");
+      const slugBase = slugify(
+        draft.professionalName.trim() ||
+          (isOrganisation ? draft.organizationName.trim() : publicFullName),
+      );
       const therapistSlug =
         currentTherapistSlug || `${slugBase}-${Math.floor(Math.random() * 1000)}`;
 
@@ -1180,6 +1820,26 @@ function OnboardingPage() {
         config.logoEnabled && logoFile
           ? await uploadPublicFile(logoFile, "therapist-photos", user.id)
           : null;
+      const galleryUrls = isOrganisation
+        ? await Promise.all(
+            galleryFiles
+              .slice(0, 15)
+              .map((file) => uploadPublicFile(file, "therapist-photos", user.id)),
+          )
+        : [];
+      const teamMembersPayload = isOrganisation
+        ? await Promise.all(
+            draft.teamMembers
+              .filter((member) => member.name.trim() || member.role.trim() || member.photoFile)
+              .map(async (member) => ({
+                name: member.name.trim(),
+                role: member.role.trim(),
+                photo_url: member.photoFile
+                  ? await uploadPublicFile(member.photoFile, "therapist-photos", user.id)
+                  : null,
+              })),
+          )
+        : [];
       const diplomaUpload =
         config.verificationUploadsEnabled && diplomaFile
           ? await uploadPrivateFile(diplomaFile, "verification-docs", user.id)
@@ -1212,7 +1872,11 @@ function OnboardingPage() {
         frase_clave: draft.tagline.trim() || null,
         sobre_mi: draft.presentationText.trim() || null,
         approach_text: config.isProfessional ? draft.approachText.trim() || null : null,
-        differentiator_text: config.isProfessional ? draft.differentiatorText.trim() || null : null,
+        differentiator_text: config.isOrganisation
+          ? draft.differentiatorText.trim() || null
+          : config.isProfessional
+            ? draft.differentiatorText.trim() || null
+            : null,
         formacion: config.isProfessional ? formatFormations(draft.formations) : null,
         experiencia: null,
         photo_url: photoUrl,
@@ -1242,23 +1906,40 @@ function OnboardingPage() {
         other_booking_url: draft.otherBookingUrl.trim() || null,
         show_whatsapp_public: draft.showWhatsappPublic,
         show_email_public: draft.showEmailPublic,
-        languages: config.isProfessional ? draft.languages : ["Español"],
-        target_audience: draft.targetAudience,
-        accompaniment_modalities: draft.accompanimentModalities,
+        languages: config.isOrganisation
+          ? draft.languages
+          : config.isProfessional
+            ? draft.languages
+            : ["Español"],
+        target_audience: isOrganisation ? draft.organizationPublicAudience : draft.targetAudience,
+        accompaniment_modalities: isOrganisation
+          ? draft.organizationActivities
+          : draft.accompanimentModalities,
         session_modalities: draft.sessionModalities,
         home_visit_radius: draft.sessionModalities.includes("Presencial a domicilio")
           ? draft.homeVisitRadius || null
           : null,
         tagline: draft.tagline.trim() || null,
-        mission_text: null,
+        mission_text: isOrganisation ? draft.missionText.trim() || null : null,
         accepted_deontological_code: draft.acceptedDeontologicalCode,
         accepted_truthfulness: draft.acceptedTruthfulness,
         accepted_privacy_policy: draft.acceptedPrivacyPolicy,
         accepted_terms_of_use: draft.acceptedTermsOfUse,
         accepted_publication: draft.acceptedPublication,
         has_liability_insurance: config.isProfessional ? draft.hasLiabilityInsurance : false,
-        organisation_type: null,
-        facilities: null,
+        organisation_type: isOrganisation ? draft.organizationType.trim() || null : null,
+        facilities: isOrganisation ? draft.facilities : null,
+        gallery_urls: isOrganisation ? galleryUrls : null,
+        team_members: isOrganisation ? teamMembersPayload : null,
+        responsible_first_name: isOrganisation ? draft.responsibleFirstName.trim() || null : null,
+        responsible_last_name: isOrganisation ? draft.responsibleLastName.trim() || null : null,
+        responsible_role: isOrganisation ? draft.responsibleRole.trim() || null : null,
+        responsible_email: isOrganisation ? draft.responsibleEmail.trim() || null : null,
+        responsible_phone: isOrganisation ? draft.responsiblePhone.trim() || null : null,
+        legal_entity_name: isOrganisation ? draft.legalEntityName.trim() || null : null,
+        legal_entity_tax_id: isOrganisation ? draft.legalEntityTaxId.trim() || null : null,
+        declares_legal_authority: isOrganisation ? draft.declaresLegalAuthority : false,
+        organization_signature_name: isOrganisation ? draft.signatureName.trim() || null : null,
         status: "pending",
         verified: false,
         plan_id: planId,
@@ -1282,6 +1963,23 @@ function OnboardingPage() {
       await replaceTherapistRelations(therapist.id, draft.therapyIds, draft.helpAreaIds);
 
       await replaceTherapistCentres(therapist.id, [mainCenter, ...extraCenters]);
+
+      if (isOrganisation) {
+        try {
+          const accessToken = await getAccessToken();
+          await stampOrganisationSubmission({
+            data: {
+              therapistId: therapist.id,
+            },
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+        } catch (stampError) {
+          console.error(stampError);
+          toast.warning("Perfil guardado, pero no pudimos registrar la marca temporal de firma.");
+        }
+      }
 
       try {
         const accessToken = await getAccessToken();
@@ -1582,11 +2280,17 @@ function MultiUploadBox({
   onChange,
   maxFiles,
   label,
+  accept = ".pdf,.png,.jpg,.jpeg",
+  helperText,
+  emptyText,
 }: {
   files: File[];
   onChange: (files: File[]) => void;
   maxFiles: number;
   label: string;
+  accept?: string;
+  helperText?: string;
+  emptyText?: string;
 }) {
   return (
     <div className="rounded-2xl border border-dashed border-[#d8c6b0] bg-white p-4">
@@ -1597,7 +2301,7 @@ function MultiUploadBox({
         </span>
         <Input
           type="file"
-          accept=".pdf,.png,.jpg,.jpeg"
+          accept={accept}
           multiple
           onChange={(event) => onChange(Array.from(event.target.files ?? []).slice(0, maxFiles))}
           className="hidden"
@@ -1607,9 +2311,10 @@ function MultiUploadBox({
             ? `${files.length} archivo${files.length === 1 ? "" : "s"} seleccionado${
                 files.length === 1 ? "" : "s"
               }`
-            : "Puedes subir hasta 5 certificados adicionales"}
+            : (emptyText ?? "Puedes subir hasta 5 certificados adicionales")}
         </span>
       </label>
+      {helperText && <p className="mt-2 text-xs text-[#6d5b43]">{helperText}</p>}
       {files.length > 0 && (
         <ul className="mt-3 space-y-1 text-xs text-[#6d5b43]">
           {files.map((file) => (
@@ -1741,18 +2446,25 @@ function InfoCard({
   );
 }
 
-function BenefitsStrip({ isProfessional }: { isProfessional: boolean }) {
-  const benefits = isProfessional
-    ? [
-        "Más de una ubicación para mostrar tu actividad.",
-        "Más espacio para contar tu enfoque profesional.",
-        "Verificación con documentación profesional.",
-      ]
-    : [
-        "Un formulario claro y amable para empezar sin fricción.",
-        "Límites suaves para mantener la ficha ordenada.",
-        "Un perfil simple pero coherente desde el primer día.",
-      ];
+function BenefitsStrip({ plan }: { plan: OnboardingPlan }) {
+  const benefits =
+    plan === "centro"
+      ? [
+          "Varias ubicaciones para mostrar todo el espacio.",
+          "Un perfil completo para organizaciones y equipos.",
+          "Firma y verificación con trazabilidad de la organización.",
+        ]
+      : plan === "profesional"
+        ? [
+            "Más de una ubicación para mostrar tu actividad.",
+            "Más espacio para contar tu enfoque profesional.",
+            "Verificación con documentación profesional.",
+          ]
+        : [
+            "Un formulario claro y amable para empezar sin fricción.",
+            "Límites suaves para mantener la ficha ordenada.",
+            "Un perfil simple pero coherente desde el primer día.",
+          ];
 
   return (
     <section className="mx-auto max-w-[1180px] px-6 pb-8 md:px-10">
@@ -1990,6 +2702,89 @@ function FormationEditor({
   );
 }
 
+function TeamEditor({
+  members,
+  onChange,
+}: {
+  members: TeamMemberDraft[];
+  onChange: (members: TeamMemberDraft[]) => void;
+}) {
+  function addMember() {
+    onChange([...members, { name: "", role: "", photoFile: null }]);
+  }
+
+  function updateMember(index: number, next: Partial<TeamMemberDraft>) {
+    onChange(
+      members.map((item, currentIndex) => (currentIndex === index ? { ...item, ...next } : item)),
+    );
+  }
+
+  function removeMember(index: number) {
+    onChange(members.filter((_, currentIndex) => currentIndex !== index));
+  }
+
+  return (
+    <div className="space-y-4 rounded-3xl border border-[#eadfce] bg-[#fffaf4] p-5">
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <h4 className="font-display text-lg text-[#11100e]">Equipo</h4>
+          <p className="mt-1 text-sm text-[#6d5b43]">
+            Añade a las personas clave del centro si quieres mostrar el equipo.
+          </p>
+        </div>
+        <Button type="button" variant="outline" className="rounded-full" onClick={addMember}>
+          <Plus className="h-4 w-4" /> Añadir miembro
+        </Button>
+      </div>
+      <div className="space-y-4">
+        {members.map((member, index) => (
+          <div
+            key={`${index}-${member.name}`}
+            className="rounded-2xl border border-[#eadfce] bg-white p-4"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-sm font-medium text-[#5d5144]">Miembro {index + 1}</span>
+              {members.length > 1 && (
+                <button
+                  type="button"
+                  className="text-xs font-medium text-[#8a6550] hover:underline"
+                  onClick={() => removeMember(index)}
+                >
+                  Eliminar
+                </button>
+              )}
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <Field label="Nombre">
+                <Input
+                  value={member.name}
+                  onChange={(event) => updateMember(index, { name: event.target.value })}
+                  placeholder="Ej: Marta"
+                />
+              </Field>
+              <Field label="Especialidad / Cargo">
+                <Input
+                  value={member.role}
+                  onChange={(event) => updateMember(index, { role: event.target.value })}
+                  placeholder="Ej: Psicóloga"
+                />
+              </Field>
+              <Field label="Foto">
+                <UploadBox
+                  file={member.photoFile}
+                  label="Subir foto"
+                  accept="image/*"
+                  onChange={(file) => updateMember(index, { photoFile: file })}
+                />
+              </Field>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function updateDraft<K extends keyof WizardDraft>(
   setDraft: React.Dispatch<React.SetStateAction<WizardDraft>>,
   update: Pick<WizardDraft, K>,
@@ -2014,10 +2809,19 @@ function validateStep(
   step: WizardStep,
   draft: WizardDraft,
   config: ReturnType<typeof getOnboardingPlanConfig>,
+  hasLogoFile: boolean,
   hasDiplomaFile: boolean,
 ) {
   if (step === 1) {
-    if (!draft.firstName.trim() || !draft.lastName.trim()) return "Completa tu nombre y apellidos.";
+    if (config.isOrganisation) {
+      if (!draft.organizationName.trim()) return "Completa el nombre de la organización.";
+      if (!draft.organizationType.trim()) return "Selecciona el tipo de organización.";
+      if (!draft.municipalityId) return "Elige el municipio principal.";
+      if (!draft.email.trim()) return "Añade el correo electrónico.";
+      if (!draft.phone.trim()) return "Añade el teléfono.";
+      if (!hasLogoFile) return "Añade el logo de la organización.";
+    } else if (!draft.firstName.trim() || !draft.lastName.trim())
+      return "Completa tu nombre y apellidos.";
     if (!draft.municipalityId) return "Elige tu municipio principal.";
     if (!draft.email.trim()) return "Añade tu correo electrónico.";
     if (!draft.phone.trim()) return "Añade tu teléfono.";
@@ -2031,9 +2835,12 @@ function validateStep(
   }
 
   if (step === 3) {
-    if (draft.sessionModalities.length === 0) return "Selecciona al menos una modalidad de sesión.";
-    if (draft.sessionModalities.includes("Presencial a domicilio") && !draft.homeVisitRadius) {
-      return "Indica el radio de desplazamiento.";
+    if (!config.isOrganisation) {
+      if (draft.sessionModalities.length === 0)
+        return "Selecciona al menos una modalidad de sesión.";
+      if (draft.sessionModalities.includes("Presencial a domicilio") && !draft.homeVisitRadius) {
+        return "Indica el radio de desplazamiento.";
+      }
     }
     if (!draft.locations[0]?.centerName.trim()) return "Añade el nombre de la ubicación principal.";
     if (!draft.locations[0]?.address.trim()) return "Añade la dirección de la ubicación principal.";
@@ -2045,13 +2852,36 @@ function validateStep(
   if (step === 4) {
     if (!draft.presentationText.trim()) return "Añade tu presentación.";
     if (!draft.tagline.trim()) return "Añade una frase de presentación.";
-    if (config.isProfessional && draft.formations.every((item) => !item.formation.trim())) {
+    if (config.isOrganisation) {
+      if (!draft.missionText.trim()) return "Añade la misión de la organización.";
+    } else if (config.isProfessional && draft.formations.every((item) => !item.formation.trim())) {
       return "Añade al menos una formación principal.";
     }
     return null;
   }
 
   if (step === 5) {
+    if (config.isOrganisation) {
+      if (!draft.responsibleFirstName.trim()) return "Añade el nombre de la persona responsable.";
+      if (!draft.responsibleLastName.trim())
+        return "Añade los apellidos de la persona responsable.";
+      if (!draft.responsibleRole.trim()) return "Añade el cargo de la persona responsable.";
+      if (!draft.responsibleEmail.trim()) return "Añade el email de la persona responsable.";
+      if (!draft.responsiblePhone.trim()) return "Añade el teléfono de la persona responsable.";
+      if (!draft.legalEntityName.trim()) return "Añade el nombre legal de la entidad.";
+      if (!draft.legalEntityTaxId.trim()) return "Añade el CIF/NIF de la entidad.";
+      if (!draft.signatureName.trim()) return "Añade el nombre completo del firmante.";
+      if (!draft.declaresLegalAuthority) {
+        return "Debes declarar que representas legalmente a la organización.";
+      }
+      if (!draft.acceptedTruthfulness) return "Debes declarar que la información es veraz.";
+      if (!draft.acceptedDeontologicalCode) return "Debes aceptar el Código Deontológico.";
+      if (!draft.acceptedPrivacyPolicy) return "Debes aceptar la Política de Privacidad.";
+      if (!draft.acceptedTermsOfUse) return "Debes aceptar las Condiciones de Uso.";
+      if (!draft.acceptedPublication) return "Debes autorizar la publicación del perfil.";
+      return null;
+    }
+
     if (!draft.website.trim() && !draft.instagramUrl.trim()) {
       return "Añade al menos una forma de encontrarte online.";
     }
