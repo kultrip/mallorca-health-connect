@@ -28,7 +28,11 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { trackAnalyticsEventSoon } from "@/lib/analytics";
-import { therapistCanShowDirectContact } from "@/lib/plan-access";
+import {
+  planSupportsPremiumPublicProfile,
+  therapistCanShowDirectContact,
+  therapistCanShowVerificationBadge,
+} from "@/lib/plan-access";
 
 type NamedSlug = {
   slug: string;
@@ -38,6 +42,17 @@ type NamedSlug = {
 type MunicipalityData = NamedSlug & {
   lat?: number | null;
   lng?: number | null;
+};
+
+type CenterData = {
+  id: string;
+  name: string;
+  address: string | null;
+  photo_url: string | null;
+  phone: string | null;
+  website: string | null;
+  municipality_id: string | null;
+  municipalities?: MunicipalityData | MunicipalityData[] | null;
 };
 
 type TherapyLink = {
@@ -99,6 +114,23 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
     },
   });
 
+  const { data: centers = [] } = useQuery({
+    queryKey: ["therapist-centers", data?.user_id ?? slug],
+    enabled: Boolean(data?.user_id),
+    queryFn: async () => {
+      const { data: centersData, error } = await supabase
+        .from("centers")
+        .select(
+          "id,name,address,photo_url,phone,website,municipality_id, municipalities(name,slug,lat,lng)",
+        )
+        .eq("owner_user_id", data?.user_id ?? "")
+        .eq("status", "published")
+        .order("created_at");
+      if (error) throw error;
+      return (centersData ?? []) as CenterData[];
+    },
+  });
+
   useEffect(() => {
     if (data?.id) {
       supabase.rpc("track_profile_view", { _therapist_id: data.id }).then();
@@ -145,6 +177,11 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
     .map((th) => firstRelation(th.help_areas))
     .filter((helpArea): helpArea is NamedSlug => Boolean(helpArea));
   const sessions = (extra.therapist_sessions ?? []).slice().sort((a, b) => a.position - b.position);
+  const plan = firstRelation(extra.plans);
+  const isPremiumPlan = planSupportsPremiumPublicProfile(plan);
+  const isOrganisationPlan = plan?.slug?.toLowerCase() === "centros-organizadores";
+  const visibleTherapies = isPremiumPlan ? therapies : therapies.slice(0, 3);
+  const visibleHelpAreas = isPremiumPlan ? helpAreas : helpAreas.slice(0, 5);
   const name = data.full_name ?? "";
   const contactName = firstName(name);
   const municipality = firstRelation(
@@ -164,6 +201,11 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
   const modalityLabel = formatModalities(data.modalities);
   const galleryUrls = Array.isArray(extra.gallery_urls) ? extra.gallery_urls : [];
   const teamMembers = Array.isArray(extra.team_members) ? extra.team_members : [];
+  const locations = buildLocationCards(data, centers, municipality);
+  const hasMultipleLocations = locations.length > 1;
+  const premiumProfileReady = therapistCanShowDirectContact(data, plan);
+  const showVerificationBadge = therapistCanShowVerificationBadge(data, plan);
+  const shortBio = truncateText(data.sobre_mi ?? "", 500);
 
   return (
     <PageShell>
@@ -216,7 +258,7 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
                 <p className="mt-4 text-lg text-[#31291f]">
                   {[data.especialidad, data.headline].filter(Boolean).join(" · ")}
                 </p>
-                {extra.organisation_type && (
+                {isOrganisationPlan && extra.organisation_type && (
                   <p className="mt-2 text-sm uppercase tracking-[0.12em] text-[#6d5b43]">
                     {extra.organisation_type}
                   </p>
@@ -235,13 +277,15 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
                 </div>
                 <p className="mt-7 max-w-[560px] text-base leading-8 text-[#31291f]">{aboutLead}</p>
 
-                <ContactActions
-                  data={data}
-                  contactName={contactName}
-                  hasContactActions={hasContactActions}
-                />
+                {premiumProfileReady && (
+                  <ContactActions
+                    data={data}
+                    contactName={contactName}
+                    hasContactActions={hasContactActions}
+                  />
+                )}
 
-                {data.verified && (
+                {showVerificationBadge && (
                   <p className="mt-5 inline-flex items-center gap-2 text-sm text-[#435039]">
                     <ShieldCheck className="h-4 w-4" />
                     Perfil verificado por Mallorca Holística
@@ -255,51 +299,53 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
 
         <section className="mx-auto grid max-w-[1180px] gap-8 px-6 py-10 md:px-10 lg:grid-cols-[1fr_360px]">
           <div className="space-y-8 rounded-[1.8rem] border border-[#eadfce] bg-white/68 p-6 shadow-[0_18px_60px_rgba(96,68,31,0.08)] md:p-8">
-            <ProfileSection eyebrow="Sobre mí">
+            <ProfileSection eyebrow={isPremiumPlan ? "Presentación" : "Sobre mí"}>
               <h2 className="font-display text-3xl leading-tight text-[#1f3326] md:text-4xl">
                 {aboutLead}
               </h2>
-              {data.sobre_mi && (
+              {shortBio && (
                 <p className="mt-5 whitespace-pre-line text-base leading-8 text-[#342b22]">
-                  {data.sobre_mi}
+                  {isPremiumPlan ? data.sobre_mi : shortBio}
                 </p>
               )}
             </ProfileSection>
 
-            {(extra.approach_text || extra.differentiator_text || extra.mission_text) && (
-              <ProfileSection eyebrow="Perfil ampliado">
-                <div className="grid gap-5 md:grid-cols-3">
-                  {extra.approach_text && (
-                    <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
-                      <h3 className="font-medium text-[#1f3326]">Mi enfoque</h3>
-                      <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#342b22]">
-                        {extra.approach_text}
-                      </p>
-                    </div>
-                  )}
-                  {extra.differentiator_text && (
-                    <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
-                      <h3 className="font-medium text-[#1f3326]">Qué me diferencia</h3>
-                      <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#342b22]">
-                        {extra.differentiator_text}
-                      </p>
-                    </div>
-                  )}
-                  {extra.mission_text && (
-                    <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
-                      <h3 className="font-medium text-[#1f3326]">Nuestra misión</h3>
-                      <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#342b22]">
-                        {extra.mission_text}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </ProfileSection>
-            )}
+            {isPremiumPlan &&
+              (extra.approach_text || extra.differentiator_text || extra.mission_text) && (
+                <ProfileSection eyebrow="Perfil ampliado">
+                  <div className="grid gap-5 md:grid-cols-3">
+                    {extra.approach_text && (
+                      <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
+                        <h3 className="font-medium text-[#1f3326]">Mi enfoque</h3>
+                        <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#342b22]">
+                          {extra.approach_text}
+                        </p>
+                      </div>
+                    )}
+                    {extra.differentiator_text && (
+                      <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
+                        <h3 className="font-medium text-[#1f3326]">Qué me diferencia</h3>
+                        <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#342b22]">
+                          {extra.differentiator_text}
+                        </p>
+                      </div>
+                    )}
+                    {extra.mission_text && (
+                      <div className="rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
+                        <h3 className="font-medium text-[#1f3326]">Nuestra misión</h3>
+                        <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#342b22]">
+                          {extra.mission_text}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </ProfileSection>
+              )}
 
             {(extra.target_audience?.length ||
               extra.session_modalities?.length ||
-              extra.home_visit_radius) && (
+              extra.home_visit_radius ||
+              visibleHelpAreas.length > 0) && (
               <ProfileSection eyebrow="Modalidades y públicos">
                 <div className="flex flex-wrap gap-3">
                   {(extra.target_audience ?? []).map((item) => (
@@ -313,47 +359,49 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
               </ProfileSection>
             )}
 
-            {helpAreas.length > 0 && (
+            {visibleHelpAreas.length > 0 && (
               <ProfileSection eyebrow="Te acompaño en">
                 <div className="flex flex-wrap gap-3">
-                  {helpAreas.map((area) => (
+                  {visibleHelpAreas.map((area) => (
                     <Pill key={area.slug}>{area.name}</Pill>
                   ))}
                 </div>
               </ProfileSection>
             )}
 
-            <ProfileSection eyebrow="Cómo trabajo">
-              <div className="grid gap-5 md:grid-cols-3">
-                <WorkStyle
-                  icon={HeartHandshake}
-                  title="Escucha y presencia"
-                  text="Creo un espacio seguro para que puedas expresarte y soltar lo que ya no necesitas."
-                />
-                <WorkStyle
-                  icon={Leaf}
-                  title="Acompañamiento integrativo"
-                  text="Integro terapias y recursos adaptados a tu momento vital y a tu proceso."
-                />
-                <WorkStyle
-                  icon={Sun}
-                  title="Equilibrio y conexión"
-                  text="Te acompaño a reconectar contigo y recuperar tu bienestar natural."
-                />
-              </div>
-            </ProfileSection>
+            {isPremiumPlan && (
+              <ProfileSection eyebrow="Cómo trabajo">
+                <div className="grid gap-5 md:grid-cols-3">
+                  <WorkStyle
+                    icon={HeartHandshake}
+                    title="Escucha y presencia"
+                    text="Creo un espacio seguro para que puedas expresarte y soltar lo que ya no necesitas."
+                  />
+                  <WorkStyle
+                    icon={Leaf}
+                    title="Acompañamiento integrativo"
+                    text="Integro terapias y recursos adaptados a tu momento vital y a tu proceso."
+                  />
+                  <WorkStyle
+                    icon={Sun}
+                    title="Equilibrio y conexión"
+                    text="Te acompaño a reconectar contigo y recuperar tu bienestar natural."
+                  />
+                </div>
+              </ProfileSection>
+            )}
 
-            {therapies.length > 0 && (
+            {visibleTherapies.length > 0 && (
               <ProfileSection eyebrow="Terapias">
                 <div className="flex flex-wrap gap-3">
-                  {therapies.map((therapy) => (
+                  {visibleTherapies.map((therapy) => (
                     <Pill key={therapy.slug}>{therapy.name}</Pill>
                   ))}
                 </div>
               </ProfileSection>
             )}
 
-            {sessions.length > 0 && (
+            {isPremiumPlan && sessions.length > 0 && (
               <ProfileSection eyebrow="Sesiones">
                 <div className="grid gap-4 md:grid-cols-2">
                   {sessions.map((session, index) => (
@@ -387,7 +435,33 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
               </ProfileSection>
             )}
 
-            {galleryUrls.length > 0 && (
+            {isOrganisationPlan && extra.logo_url && (
+              <ProfileSection eyebrow="Identidad visual">
+                <div className="inline-flex items-center gap-4 rounded-[1.4rem] border border-[#eadfce] bg-[#fffaf4] px-5 py-4">
+                  <img src={extra.logo_url} alt="" className="h-16 w-16 rounded-2xl object-cover" />
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#6d5b43]">
+                      Logo de la organización
+                    </p>
+                    <p className="mt-1 text-sm text-[#342b22]">
+                      Identidad visual principal mostrada en el perfil público.
+                    </p>
+                  </div>
+                </div>
+              </ProfileSection>
+            )}
+
+            {isOrganisationPlan && extra.facilities?.length ? (
+              <ProfileSection eyebrow="Instalaciones">
+                <div className="flex flex-wrap gap-3">
+                  {extra.facilities.map((item) => (
+                    <Pill key={item}>{item}</Pill>
+                  ))}
+                </div>
+              </ProfileSection>
+            ) : null}
+
+            {isOrganisationPlan && galleryUrls.length > 0 && (
               <ProfileSection eyebrow="Galería">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {galleryUrls.map((url) => (
@@ -402,7 +476,7 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
               </ProfileSection>
             )}
 
-            {teamMembers.length > 0 && (
+            {isOrganisationPlan && teamMembers.length > 0 && (
               <ProfileSection eyebrow="Equipo">
                 <div className="grid gap-4 md:grid-cols-2">
                   {teamMembers.map((member, index) => (
@@ -432,10 +506,22 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
                 </div>
               </ProfileSection>
             )}
+
+            {isPremiumPlan && (
+              <ProfileSection eyebrow="Reseñas y valoraciones">
+                <div className="rounded-2xl border border-dashed border-[#d8c6b0] bg-[#fffaf4] p-5 text-sm leading-7 text-[#5d5144]">
+                  Aún no tenemos valoraciones públicas para mostrar aquí. Esta sección crecerá con
+                  el uso de la plataforma.
+                </div>
+              </ProfileSection>
+            )}
           </div>
 
           <aside className="space-y-6">
-            <SideCard icon={ShieldCheck} title="Perfil verificado">
+            <SideCard
+              icon={ShieldCheck}
+              title={showVerificationBadge ? "Sello Mallorca Holística" : "Perfil público"}
+            >
               <p className="text-sm text-[#5d5144]">
                 {data.years_experience
                   ? `${data.years_experience} años de experiencia`
@@ -455,7 +541,7 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
               </ul>
             </SideCard>
 
-            {(data.formacion || data.experiencia) && (
+            {isPremiumPlan && (data.formacion || data.experiencia) && (
               <SideCard icon={Leaf} title="Formación y experiencia">
                 {data.formacion && (
                   <p className="whitespace-pre-line text-sm leading-7 text-[#342b22]">
@@ -481,6 +567,26 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
                 <div className="mt-4 min-h-40 rounded-2xl border border-[#eadfce] bg-[linear-gradient(135deg,#dfe9d5,#f5eadb)] p-4 text-sm text-[#5d5144]">
                   Ubicación aproximada en Mallorca
                 </div>
+                {hasMultipleLocations && isPremiumPlan && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-[#6d5b43]">
+                      Ubicaciones
+                    </p>
+                    <div className="space-y-3">
+                      {locations.map((location) => (
+                        <div
+                          key={location.id}
+                          className="rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-4"
+                        >
+                          <p className="font-medium text-[#1f3326]">{location.name}</p>
+                          {location.address && (
+                            <p className="mt-1 text-sm text-[#5d5144]">{location.address}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {data.modalities?.includes("online") && (
                   <p className="mt-4 inline-flex items-center gap-2 text-sm text-[#342b22]">
                     <Monitor className="h-4 w-4" /> También disponible online
@@ -488,33 +594,94 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
                 )}
               </SideCard>
             )}
+
+            {premiumProfileReady && (
+              <SideCard icon={MessageCircle} title="Contacto directo">
+                <div className="space-y-3">
+                  {data.phone && (
+                    <ContactLink
+                      href={`tel:${sanitizePhoneHref(data.phone)}`}
+                      label="Llamar"
+                      description={data.phone}
+                    />
+                  )}
+                  {data.show_whatsapp_public && data.whatsapp && (
+                    <ContactLink
+                      href={whatsappHref(data.whatsapp, contactName)}
+                      label="WhatsApp"
+                      description={data.whatsapp}
+                    />
+                  )}
+                  {data.show_email_public && data.email && (
+                    <ContactLink
+                      href={`mailto:${data.email}`}
+                      label="Email"
+                      description={data.email}
+                    />
+                  )}
+                  {data.website && (
+                    <ContactLink href={data.website} label="Web" description={data.website} />
+                  )}
+                  {data.calendly_url && (
+                    <ContactLink
+                      href={data.calendly_url}
+                      label="Calendly"
+                      description="Reserva online"
+                    />
+                  )}
+                  {data.fresha_url && (
+                    <ContactLink
+                      href={data.fresha_url}
+                      label="Fresha"
+                      description="Reserva online"
+                    />
+                  )}
+                  {data.whatsapp_business_url && (
+                    <ContactLink
+                      href={data.whatsapp_business_url}
+                      label="WhatsApp Business"
+                      description="Canal de empresa"
+                    />
+                  )}
+                  {data.other_booking_url && (
+                    <ContactLink
+                      href={data.other_booking_url}
+                      label="Otra plataforma"
+                      description="Reserva externa"
+                    />
+                  )}
+                </div>
+              </SideCard>
+            )}
           </aside>
         </section>
 
-        <section className="mx-auto max-w-[1180px] px-6 pb-10 md:px-10">
-          <div className="rounded-[1.8rem] border border-[#eadfce] bg-[#fffaf4] p-7 md:flex md:items-center md:justify-between md:p-9">
-            <div className="flex items-center gap-5">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#f4ede6] text-[#9a7041]">
-                <Leaf className="h-10 w-10" strokeWidth={1.3} />
+        {premiumProfileReady && (
+          <section className="mx-auto max-w-[1180px] px-6 pb-10 md:px-10">
+            <div className="rounded-[1.8rem] border border-[#eadfce] bg-[#fffaf4] p-7 md:flex md:items-center md:justify-between md:p-9">
+              <div className="flex items-center gap-5">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#f4ede6] text-[#9a7041]">
+                  <Leaf className="h-10 w-10" strokeWidth={1.3} />
+                </div>
+                <div>
+                  <h2 className="font-display text-3xl text-[#1f3326]">
+                    ¿Sientes que es el momento?
+                  </h2>
+                  <p className="mt-2 text-sm text-[#5d5144]">
+                    Reserva tu sesión o habla directamente con {contactName} para resolver cualquier
+                    duda.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="font-display text-3xl text-[#1f3326]">
-                  ¿Sientes que es el momento?
-                </h2>
-                <p className="mt-2 text-sm text-[#5d5144]">
-                  Reserva tu sesión o habla directamente con {contactName} para resolver cualquier
-                  duda.
-                </p>
-              </div>
+              <ContactActions
+                data={data}
+                contactName={contactName}
+                hasContactActions={hasContactActions}
+                compact
+              />
             </div>
-            <ContactActions
-              data={data}
-              contactName={contactName}
-              hasContactActions={hasContactActions}
-              compact
-            />
-          </div>
-        </section>
+          </section>
+        )}
 
         <section className="mx-auto max-w-[1180px] px-6 pb-24 md:px-10">
           <div className="rounded-[1.8rem] border border-[#eadfce] bg-[#fffaf4] p-7">
@@ -700,10 +867,21 @@ function firstName(fullName?: string | null) {
   return fullName?.split(" ")[0] ?? "este profesional";
 }
 
+function truncateText(value: string, maxChars: number) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (trimmed.length <= maxChars) return trimmed;
+  return `${trimmed.slice(0, maxChars).trimEnd()}…`;
+}
+
 function whatsappHref(phone: string, name: string) {
   const number = phone.replace(/[^0-9]/g, "");
   const message = `Hola ${name}, te he encontrado en Mallorca Holística. Me gustaría saber cómo puedes ayudarme y consultar tu disponibilidad. Gracias`;
   return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+}
+
+function sanitizePhoneHref(phone: string) {
+  return phone.replace(/[^\d+]/g, "");
 }
 
 function formatEuro(priceCents: number) {
@@ -733,6 +911,68 @@ function getProfileCoordinates(
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
+}
+
+function buildLocationCards(
+  therapist: {
+    center_id?: string | null;
+    center_name?: string | null;
+    address?: string | null;
+    municipality_id?: string | null;
+  },
+  centers: CenterData[],
+  municipality: MunicipalityData | null,
+) {
+  const cards = centers.map((center) => ({
+    id: center.id,
+    name: center.name,
+    address: center.address ?? "",
+    municipality: firstRelation(center.municipalities)?.name ?? "",
+    phone: center.phone ?? null,
+    website: center.website ?? null,
+    photoUrl: center.photo_url ?? null,
+  }));
+
+  if (cards.length > 0) return cards;
+
+  if (therapist.center_name || therapist.address || municipality) {
+    return [
+      {
+        id: therapist.center_id ?? "main-location",
+        name: therapist.center_name ?? "Ubicación principal",
+        address: therapist.address ?? "",
+        municipality: municipality?.name ?? "",
+        phone: null,
+        website: null,
+        photoUrl: null,
+      },
+    ];
+  }
+
+  return [];
+}
+
+function ContactLink({
+  href,
+  label,
+  description,
+}: {
+  href: string;
+  label: string;
+  description: string;
+}) {
+  const isExternal = href.startsWith("http");
+  return (
+    <a
+      href={href}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noopener" : undefined}
+      className="flex items-center justify-between rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-sm text-[#342b22] transition-colors hover:bg-[#fffaf4]"
+    >
+      <span className="font-medium">{label}</span>
+      <span className="max-w-[60%] truncate text-[#6d5b43]">{description}</span>
+    </a>
+  );
 }
 
 function formatModalities(modalities?: string[] | null) {
