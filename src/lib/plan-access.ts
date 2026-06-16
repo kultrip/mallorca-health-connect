@@ -67,3 +67,7 @@ export function therapistCanShowVerificationBadge(
 ): boolean {
   return therapistHasPremiumPublicAccess(therapist, plan);
 }
+
+export function therapistCanShowReviews(therapist: TherapistAccessLike, plan: PlanLike): boolean {
+  return therapistHasPremiumPublicAccess(therapist, plan);
+}

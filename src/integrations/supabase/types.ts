@@ -948,6 +948,47 @@ export type Database = {
           },
         ];
       };
+      professional_reviews: {
+        Row: {
+          comment: string | null;
+          created_at: string;
+          id: string;
+          is_published: boolean;
+          rating: number;
+          therapist_id: string;
+          reviewer_email: string | null;
+          reviewer_name: string;
+        };
+        Insert: {
+          comment?: string | null;
+          created_at?: string;
+          id?: string;
+          is_published?: boolean;
+          rating: number;
+          therapist_id: string;
+          reviewer_email?: string | null;
+          reviewer_name: string;
+        };
+        Update: {
+          comment?: string | null;
+          created_at?: string;
+          id?: string;
+          is_published?: boolean;
+          rating?: number;
+          therapist_id?: string;
+          reviewer_email?: string | null;
+          reviewer_name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "professional_reviews_therapist_id_fkey";
+            columns: ["therapist_id"];
+            isOneToOne: false;
+            referencedRelation: "therapists";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_roles: {
         Row: {
           created_at: string;

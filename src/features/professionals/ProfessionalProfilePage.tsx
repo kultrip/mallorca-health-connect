@@ -31,8 +31,10 @@ import { trackAnalyticsEventSoon } from "@/lib/analytics";
 import {
   planSupportsPremiumPublicProfile,
   therapistCanShowDirectContact,
+  therapistCanShowReviews,
   therapistCanShowVerificationBadge,
 } from "@/lib/plan-access";
+import { ProfessionalReviewsSection } from "./ProfessionalReviewsSection";
 
 type NamedSlug = {
   slug: string;
@@ -205,6 +207,7 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
   const hasMultipleLocations = locations.length > 1;
   const premiumProfileReady = therapistCanShowDirectContact(data, plan);
   const showVerificationBadge = therapistCanShowVerificationBadge(data, plan);
+  const showReviews = therapistCanShowReviews(data, plan);
   const shortBio = truncateText(data.sobre_mi ?? "", 500);
 
   return (
@@ -507,14 +510,11 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
               </ProfileSection>
             )}
 
-            {isPremiumPlan && (
-              <ProfileSection eyebrow="Reseñas y valoraciones">
-                <div className="rounded-2xl border border-dashed border-[#d8c6b0] bg-[#fffaf4] p-5 text-sm leading-7 text-[#5d5144]">
-                  Aún no tenemos valoraciones públicas para mostrar aquí. Esta sección crecerá con
-                  el uso de la plataforma.
-                </div>
-              </ProfileSection>
-            )}
+            <ProfessionalReviewsSection
+              therapistId={data.id}
+              therapistName={data.full_name ?? "este perfil"}
+              isVisible={showReviews}
+            />
           </div>
 
           <aside className="space-y-6">
