@@ -2,13 +2,11 @@
 
 ## Current Stage
 
-Owner-visible polish, public route alignment, and Therapy guide MVP are complete on branch:
+Owner-visible polish, public route alignment, Therapy guide MVP, and Professional Workflows (Registration, Dashboard, Admin Validation, Analytics) are complete on branch:
 
 ```text
-codex-therapy-guide
+main
 ```
-
-The work is not merged into `main` yet.
 
 ## Completed Work
 
@@ -56,6 +54,43 @@ The work is not merged into `main` yet.
   - `/therapies/$slug` detail pages
   - related professionals via `therapist_therapies`
   - `/terapias/$slug` compatibility redirect
+- [x] Implemented UI/UX polish on the main page (typography, contrast, navigation, search bar, background fade).
+- [x] Implemented Professional Workflows & Admin Dashboard:
+  - `/register` & `/login` using Supabase Auth.
+  - `/onboarding` for new professionals to create a `pending` profile.
+  - `/dashboard` layout and `/dashboard/index` for profile management.
+  - `/dashboard/admin` for admins to approve/reject pending professionals.
+  - `/dashboard/analytics` with a `profile_views` database table and public profile tracking.
+- [x] Expanded Professional profile editor:
+  - complete public therapist ficha editing
+  - direct contact fields
+  - address/location and modalities
+  - therapy links and help-area links for matching
+  - optional session offerings
+- [x] Implemented analytics/search foundation:
+  - `analytics_events`
+  - conversational search logging
+  - profile/contact tracking
+  - professional analytics summary
+  - admin analytics summary
+- [x] Implemented optional billing/fiscal profile:
+  - private `billing_profiles`
+  - optional NIF/NIE/CIF fields
+  - Stripe customer billing metadata sync before Checkout
+- [x] Implemented provider-free map panels alongside professional lists:
+  - `/professionals`
+  - `/search` recommendations
+  - `/therapies/$slug` related professionals
+- [x] Implemented Admin data management:
+  - professional operations
+  - therapy/help-area/activity editing
+  - read-only plan overview
+  - admin email center with `admin_email_logs`
+- [x] Implemented MVP location data completion:
+  - `therapists.city` public city/area field
+  - professional onboarding/dashboard/admin location editing
+  - city-aware public cards, search filtering, and map labels
+  - profile map fallback through municipality coordinates
 
 ## Remaining Integration Decision
 
@@ -70,18 +105,39 @@ User has not yet chosen an integration option.
 
 ## Recommended Next Steps
 
-1. Let the user visually review the branch at `http://localhost:8080/`.
-2. If approved, merge locally or create a PR.
-3. Next product pass: Activities:
-   - activities list
-   - activity detail pages
-4. Later passes:
-   - professional registration
-   - admin validation
-   - dashboard
-   - analytics/tracking table
-   - plan enforcement in backend/admin
-   - multilingual i18n
+User-approved MVP finish sequence:
+
+1. Professional profile editing: done.
+2. Optional billing/fiscal profile for invoices: done.
+   - private `billing_profiles`
+   - optional NIF/NIE/CIF fields
+   - legal billing name and billing address
+   - Stripe customer billing metadata sync before Checkout
+3. Admin data management: done.
+4. End-to-end Stripe test:
+   - checkout
+   - webhook
+   - paid contact benefit unlock
+   - Customer Portal and invoices
+   - preapproval paid plan setup before verification
+5. Production deployment readiness:
+   - env/secrets check
+   - Stripe webhook endpoint check
+   - Resend sender/domain check
+   - production smoke QA
+
+Deferred beyond MVP:
+- Activities/agenda creation and public activity detail/list expansion.
+
+Standing UX requirement:
+- Any professional result list should be paired with a Mallorca map showing the listed professionals where location is useful:
+  - hero/search-box results
+  - conversational AI recommendations
+  - `/professionals`
+  - therapy-related professional lists
+  - future admin/public professional listings
+- Professionals should enter an address and a plain-language city. The city is the important search/display unit; it does not need to be constrained to the formal municipality/town taxonomy.
+- Use `lat`/`lng` for map pins when available. Public lists and profiles fall back to municipality coordinates when exact professional coordinates are missing.
 
 ## Verification Commands
 

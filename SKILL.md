@@ -19,7 +19,7 @@ git status --short
 4. If continuing the current polish pass, work in:
 
 ```text
-/Users/charles.santana/Kultrip/gemini-dev/mallorca-health-connect/.worktrees/owner-visible-polish
+/Users/charles.santana/Kultrip/gemini-dev/mallorca-health-connect
 ```
 
 ## Product Rules
@@ -32,6 +32,16 @@ git status --short
 - Use canonical English public routes for new links.
 - Keep Spanish public route files only as compatibility redirects.
 - Prefer visible product clarity over SaaS complexity.
+- Use `analytics_events` for new dashboard metrics. Keep `profile_views` only for backward compatibility.
+- Conversational search should map text to `help_areas`, then professionals through `therapist_help_areas`.
+- When changing professional profiles, keep `/dashboard`, public profile rendering, and search-matching relations (`therapist_therapies`, `therapist_help_areas`) in sync.
+- Professional location should include address and plain-language city. City is the important user-facing search/display unit; municipality can remain structured metadata.
+- Any professional list should be designed with a companion Mallorca map when locations are available.
+- Professional list maps are provider-free for MVP. Use public therapist `lat`/`lng`, then municipality `lat`/`lng`; never use billing/fiscal addresses.
+- `therapists.city` is the public city/area label. Keep onboarding, `/dashboard`, admin editing, public cards, profiles, search results, and Edge Function recommendation selects in sync when changing location behavior.
+- Subscription benefits must read active Stripe webhook state. Pending paid plans and saved payment methods never unlock public paid features by themselves.
+- Fiscal invoice fields are optional. Do not block paid subscriptions for informal professionals that do not need NIF/CIF/NIE invoices.
+- Admin emails are simple subject/message sends to selected professionals. Do not add email-type taxonomy, campaign scheduling, or internal inbox behavior in MVP.
 
 ## Current Plan-Aware Contact Rule
 
@@ -60,12 +70,12 @@ Do not claim full repo lint is clean unless `npm run lint` passes. It currently 
 
 ## Next High-Value Work
 
-After owner-visible polish, route alignment, and Therapy guide are integrated:
+After owner-visible polish, route alignment, Therapy guide, Professional Dashboard, and profile editing are integrated:
 
-1. Activities:
-   - listing with image cards
-   - activity detail pages
-2. Admin/professional workflows.
+1. End-to-end Stripe test and Customer Portal/invoice check.
+2. Production readiness.
+
+Activities/agenda work is deferred beyond MVP.
 
 ## Canonical Route Map
 

@@ -1,6 +1,6 @@
 
 -- ============ ENUMS ============
-CREATE TYPE public.app_role AS ENUM ('admin', 'therapist', 'user');
+CREATE TYPE public.app_role AS ENUM ('admin', 'professional', 'center', 'patient');
 CREATE TYPE public.therapist_status AS ENUM ('draft', 'pending', 'published', 'suspended');
 CREATE TYPE public.modality AS ENUM ('presencial', 'online', 'domicilio');
 
@@ -237,7 +237,7 @@ RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
   INSERT INTO public.profiles (user_id, display_name)
   VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'display_name', NEW.email));
-  INSERT INTO public.user_roles (user_id, role) VALUES (NEW.id, 'user');
+  INSERT INTO public.user_roles (user_id, role) VALUES (NEW.id, 'patient');
   RETURN NEW;
 END; $$;
 
@@ -258,3 +258,4 @@ CREATE POLICY "activity_images_owner_write" ON storage.objects FOR INSERT WITH C
 
 CREATE POLICY "verification_docs_owner_read" ON storage.objects FOR SELECT USING (bucket_id = 'verification-docs' AND auth.uid()::text = (storage.foldername(name))[1]);
 CREATE POLICY "verification_docs_owner_write" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'verification-docs' AND auth.uid()::text = (storage.foldername(name))[1]);
+CREATE POLICY "verification_docs_admin_read" ON storage.objects FOR SELECT USING (bucket_id = 'verification-docs' AND public.has_role(auth.uid(), 'admin'));

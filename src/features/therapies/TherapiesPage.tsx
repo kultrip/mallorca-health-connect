@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import type { Therapy } from "./types";
 import { filterTherapies, groupTherapiesByLetter } from "./therapy-utils";
+import { canvaTherapies } from "./therapy-guide-content";
 
 export function TherapiesPage() {
   const [query, setQuery] = useState("");
@@ -29,7 +30,11 @@ export function TherapiesPage() {
     },
   });
 
-  const visibleTherapies = useMemo(() => filterTherapies(therapies, query), [therapies, query]);
+  const guideTherapies = therapies.length > 0 ? therapies : canvaTherapies;
+  const visibleTherapies = useMemo(
+    () => filterTherapies(guideTherapies, query),
+    [guideTherapies, query],
+  );
   const groups = useMemo(() => groupTherapiesByLetter(visibleTherapies), [visibleTherapies]);
   const letters = groups.map((group) => group.letter);
 
@@ -54,9 +59,9 @@ export function TherapiesPage() {
           </label>
         </div>
 
-        {isLoading ? (
+        {isLoading && guideTherapies.length === 0 ? (
           <TherapiesSkeleton />
-        ) : isError ? (
+        ) : isError && guideTherapies.length === 0 ? (
           <div className="rounded-3xl border border-border bg-card p-8 text-center">
             <p className="font-display text-xl text-foreground/85">
               No pudimos cargar la guía de terapias.
@@ -68,15 +73,6 @@ export function TherapiesPage() {
             >
               Reintentar
             </button>
-          </div>
-        ) : therapies.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">
-            <p className="font-display text-xl text-foreground/80">
-              Estamos preparando la guía de terapias.
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Pronto podrás explorar aquí las terapias disponibles en Mallorca Holística.
-            </p>
           </div>
         ) : groups.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">

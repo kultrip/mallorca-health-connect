@@ -20,20 +20,20 @@ const points = [
 
 export function TrustBlock() {
   return (
-    <section className="bg-secondary/40">
-      <div className="mx-auto max-w-[1180px] px-6 py-20 md:px-10 md:py-28">
-        <div className="max-w-2xl">
+    <section className="bg-[#f7efe5]/55">
+      <div className="mx-auto max-w-[1040px] px-6 py-16 md:px-10 md:py-24">
+        <div className="max-w-[620px]">
           <h2>Profesionales en los que puedes confiar</h2>
-          <p className="mt-5 text-base leading-relaxed text-muted-foreground">
+          <p className="mt-5 text-[15px] leading-8 text-muted-foreground">
             En Mallorca Holística, cada profesional pasa por un proceso de verificación
             antes de formar parte de la plataforma. Revisamos su identidad y su
             trayectoria para que puedas elegir con tranquilidad y confianza.
           </p>
         </div>
-        <div className="mt-12 grid gap-10 md:grid-cols-3">
+        <div className="mt-12 grid gap-9 md:grid-cols-3">
           {points.map(({ icon: Icon, title, text }) => (
-            <div key={title}>
-              <Icon className="h-6 w-6 text-primary" strokeWidth={1.5} />
+            <div key={title} className="border-t border-[#dfceb8] pt-6">
+              <Icon className="h-5 w-5 text-primary" strokeWidth={1.45} />
               <h3 className="mt-4 font-display text-xl">{title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p>
             </div>
