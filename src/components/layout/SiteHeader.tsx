@@ -1,75 +1,95 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
+import { Leaf, Menu, UserCircle, X } from "lucide-react";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 
-const navLinks = [
+const NAV_LINKS = [
+  { to: "/", label: "Inicio" },
   { to: "/professionals", label: "Profesionales" },
   { to: "/activities", label: "Actividades" },
   { to: "/therapies", label: "Terapias" },
-  { to: "/for-professionals", label: "Soy profesional" },
+  { to: "/trust", label: "Sobre nosotros" },
 ] as const;
 
-export function SiteHeader({ transparent = false }: { transparent?: boolean }) {
+export function SiteHeader({ transparent: _unused }: { transparent?: boolean } = {}) {
   const [open, setOpen] = useState(false);
 
   return (
-    <header
-      className={cn(
-        "absolute top-0 left-0 right-0 z-30",
-        !transparent && "relative border-b border-border bg-background",
-      )}
-    >
-      <div className="mx-auto flex max-w-[1180px] items-center justify-between px-6 py-5 md:px-10">
-        <Link to="/" className="flex items-baseline gap-2">
-          <span className="font-display text-xl tracking-tight text-foreground">
-            Mallorca Holística
+    <header className="relative z-40 border-b border-[#eadfce]/70 bg-[#fffaf2]/92 backdrop-blur">
+      <div className="mx-auto flex h-[78px] max-w-[1320px] items-center justify-between gap-6 px-5 md:h-[82px] md:px-10">
+        <Link
+          to="/"
+          aria-label="Mallorca Holística — inicio"
+          className="flex items-center gap-3 text-foreground no-underline"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d9c5aa] text-[#8d6d43] md:h-11 md:w-11">
+            <Leaf className="h-5 w-5" strokeWidth={1.35} />
+          </span>
+          <span className="flex flex-col font-display leading-none tracking-tight">
+            <span className="text-[22px] text-[#1f3326] md:text-[25px]">Mallorca</span>
+            <span className="text-[13px] uppercase tracking-[0.14em] text-[#1f3326] md:text-[14px]">
+              Holística
+            </span>
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
-          {navLinks.map((l) => (
+        <nav className="hidden items-center gap-7 md:flex">
+          {NAV_LINKS.map((link) => (
             <Link
-              key={l.to}
-              to={l.to}
-              className="text-sm text-foreground/80 transition-colors hover:text-foreground"
-              activeProps={{ className: "text-foreground font-medium" }}
+              key={link.to}
+              to={link.to}
+              className="text-[13px] font-medium text-[#2f2a24] transition-colors hover:text-[#8b6a42]"
+              activeProps={{ className: "text-[13px] font-medium text-[#8b6a42]" }}
             >
-              {l.label}
+              {link.label}
             </Link>
           ))}
-          <Link
-            to="/login"
-            className="text-sm text-foreground/70 transition-colors hover:text-foreground"
-          >
-            Acceder
-          </Link>
         </nav>
 
-        <button aria-label="Menú" className="md:hidden" onClick={() => setOpen((v) => !v)}>
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        <div className="hidden items-center gap-4 md:flex">
+          <Link
+            to="/for-professionals"
+            className="rounded-full border border-[#526046] bg-[#526046] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-white transition-colors hover:bg-[#435039]"
+          >
+            Soy profesional
+          </Link>
+          <Link
+            to="/login"
+            aria-label="Acceder"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d9c5aa] text-[#6e5738] transition-colors hover:bg-[#f5eadb]"
+          >
+            <UserCircle className="h-5 w-5" strokeWidth={1.4} />
+          </Link>
+        </div>
+
+        <button
+          aria-label="Menú"
+          className="text-[#5b4b36] md:hidden"
+          onClick={() => setOpen((value) => !value)}
+          type="button"
+        >
+          {open ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
       {open && (
-        <div className="border-t border-border bg-background md:hidden">
-          <nav className="mx-auto flex max-w-[1180px] flex-col gap-1 px-6 py-4">
-            {navLinks.map((l) => (
+        <div className="border-t border-[#eadfce] bg-[#fffaf2]">
+          <nav className="mx-auto flex max-w-[1180px] flex-col gap-1 px-5 py-4">
+            {NAV_LINKS.map((link) => (
               <Link
-                key={l.to}
-                to={l.to}
+                key={link.to}
+                to={link.to}
                 onClick={() => setOpen(false)}
-                className="rounded-md px-2 py-2 text-sm text-foreground/80 hover:bg-muted"
+                className="rounded-md px-3 py-3 text-sm font-medium text-[#1f1c18]"
               >
-                {l.label}
+                {link.label}
               </Link>
             ))}
             <Link
-              to="/login"
+              to="/for-professionals"
               onClick={() => setOpen(false)}
-              className="rounded-md px-2 py-2 text-sm text-foreground/70 hover:bg-muted"
+              className="mt-2 rounded-full bg-[#526046] px-5 py-3 text-center text-xs font-bold uppercase text-white"
             >
-              Acceder
+              Soy profesional
             </Link>
           </nav>
         </div>

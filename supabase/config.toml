@@ -1,4 +1,4 @@
-project_id = "oawynfdtkvkgozcmrpqa"
+project_id = "osqicmdiacxcmvsjuksk"
 
 [functions.symptom-search]
 verify_jwt = false

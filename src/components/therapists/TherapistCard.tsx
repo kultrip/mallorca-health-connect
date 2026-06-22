@@ -11,10 +11,21 @@ export type TherapistCardData = {
   especialidad?: string | null;
   modalities?: string[] | null;
   verified?: boolean | null;
-  municipalities?: { name: string; slug: string } | null;
+  city?: string | null;
+  address?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  municipalities?: {
+    name: string;
+    slug: string;
+    lat?: number | null;
+    lng?: number | null;
+  } | null;
 };
 
 export function TherapistCard({ t }: { t: TherapistCardData }) {
+  const locationLabel = t.city || t.municipalities?.name || t.address;
+
   return (
     <Link
       to="/professionals/$slug"
@@ -50,9 +61,9 @@ export function TherapistCard({ t }: { t: TherapistCardData }) {
           <p className="mt-2 line-clamp-2 text-sm italic text-foreground/70">"{t.frase_clave}"</p>
         )}
         <div className="mt-auto flex items-center gap-3 pt-4 text-xs text-muted-foreground">
-          {t.municipalities?.name && (
+          {locationLabel && (
             <span className="inline-flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" /> {t.municipalities.name}
+              <MapPin className="h-3.5 w-3.5" /> {locationLabel}
             </span>
           )}
           {t.modalities && t.modalities.length > 0 && (

@@ -4,13 +4,16 @@ import { useEffect, useState } from "react";
 import { Sparkles, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/layout/PageShell";
-import { TherapistCard, type TherapistCardData } from "@/components/therapists/TherapistCard";
+import { ProfessionalResultsWithMap } from "@/components/therapists/ProfessionalResultsWithMap";
+import type { TherapistCardData } from "@/components/therapists/TherapistCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getVisitorId } from "@/lib/analytics";
 
 type SearchResult = {
   intro: string;
   matched_help_areas: string[];
   suggested_therapies: string[];
+  search_query_id?: string | null;
   therapists: TherapistCardData[];
 };
 
@@ -24,7 +27,7 @@ export function ConversationalSearchPage({ q }: { q?: string }) {
     enabled: !!q,
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("symptom-search", {
-        body: { query: q },
+        body: { query: q, visitorId: getVisitorId() },
       });
       if (error) throw error;
       return data as SearchResult;
@@ -104,11 +107,10 @@ export function ConversationalSearchPage({ q }: { q?: string }) {
         ) : data && data.therapists.length > 0 ? (
           <>
             <h2 className="font-display mb-6 text-2xl">Profesionales que pueden acompañarte</h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {data.therapists.map((t) => (
-                <TherapistCard key={t.id} t={t} />
-              ))}
-            </div>
+            <ProfessionalResultsWithMap
+              professionals={data.therapists}
+              mapTitle="Recomendaciones en Mallorca"
+            />
           </>
         ) : data ? (
           <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">

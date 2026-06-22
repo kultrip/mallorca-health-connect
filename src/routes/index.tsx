@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Hero } from "@/components/home/Hero";
 import { SymptomPrompt } from "@/components/search/SymptomPrompt";
+import { HomeTrustStrip } from "@/components/home/HomeTrustStrip";
 import { StartHere } from "@/components/home/StartHere";
 import { TrustBlock } from "@/components/home/TrustBlock";
 import { Testimonials } from "@/components/home/Testimonials";
@@ -19,8 +20,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Mallorca Holística" },
       {
         property: "og:description",
-        content:
-          "Profesionales verificados en terapias naturales y complementarias en Mallorca.",
+        content: "Profesionales verificados en terapias naturales y complementarias en Mallorca.",
       },
     ],
   }),
@@ -29,13 +29,14 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <SiteHeader transparent />
+    <div className="flex min-h-screen flex-col bg-[#fffaf3]">
+      <SiteHeader />
       <main className="flex-1">
         <Hero />
-        <section className="mx-auto max-w-[1180px] px-6 pb-16 pt-4 md:px-10 md:pt-2">
+        <section className="px-6 pb-10 pt-10 md:px-10 md:pb-14 md:pt-14">
           <SymptomPrompt />
         </section>
+        <HomeTrustStrip />
         <StartHere />
         <TrustBlock />
         <Testimonials />

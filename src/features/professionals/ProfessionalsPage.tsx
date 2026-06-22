@@ -1,11 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell, PageHeader } from "@/components/layout/PageShell";
-import { TherapistCard, type TherapistCardData } from "@/components/therapists/TherapistCard";
+import { ProfessionalResultsWithMap } from "@/components/therapists/ProfessionalResultsWithMap";
+import type { TherapistCardData } from "@/components/therapists/TherapistCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useMemo } from "react";
 import { Filter } from "lucide-react";
 import type { ProfessionalsSearch } from "@/lib/route-schemas";
+import { sortProfessionalsByPriority } from "@/lib/professional-ranking";
+
+type RankedTherapistCardData = TherapistCardData & {
+  subscription_status?: string | null;
+  plans?: { slug?: string | null } | null;
+};
 
 export function ProfessionalsPage({ search }: { search: ProfessionalsSearch }) {
   const [modalidad, setModalidad] = useState<string>(search.modalidad ?? "");
@@ -18,17 +25,16 @@ export function ProfessionalsPage({ search }: { search: ProfessionalsSearch }) {
     },
   });
 
-  const { data: therapists, isLoading } = useQuery<TherapistCardData[]>({
+  const { data: therapists, isLoading } = useQuery<RankedTherapistCardData[]>({
     queryKey: ["therapists", search.q, search.municipio, modalidad],
     queryFn: async () => {
       let query = supabase
         .from("therapists")
         .select(
-          "id, slug, full_name, headline, frase_clave, photo_url, especialidad, modalities, verified, municipalities(name,slug)",
+          "id, slug, full_name, headline, frase_clave, photo_url, especialidad, modalities, verified, city, address, lat, lng, subscription_status, municipalities(name,slug,lat,lng), plans!therapists_plan_id_fkey(slug)",
         )
         .eq("status", "published")
-        .order("verified", { ascending: false })
-        .limit(60);
+        .limit(200);
 
       if (search.municipio) {
         const { data: m } = await supabase
@@ -53,10 +59,13 @@ export function ProfessionalsPage({ search }: { search: ProfessionalsSearch }) {
           (t) =>
             t.full_name?.toLowerCase().includes(q) ||
             t.especialidad?.toLowerCase().includes(q) ||
-            t.headline?.toLowerCase().includes(q),
+            t.headline?.toLowerCase().includes(q) ||
+            t.city?.toLowerCase().includes(q) ||
+            t.address?.toLowerCase().includes(q) ||
+            t.municipalities?.name?.toLowerCase().includes(q),
         );
       }
-      return list as TherapistCardData[];
+      return sortProfessionalsByPriority(list);
     },
   });
 
@@ -126,11 +135,10 @@ export function ProfessionalsPage({ search }: { search: ProfessionalsSearch }) {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {therapists!.map((t) => (
-              <TherapistCard key={t.id} t={t} />
-            ))}
-          </div>
+          <ProfessionalResultsWithMap
+            professionals={therapists as TherapistCardData[]}
+            mapTitle="Profesionales en Mallorca"
+          />
         )}
       </section>
     </PageShell>

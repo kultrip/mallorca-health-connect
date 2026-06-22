@@ -20,17 +20,26 @@ import { Route as ProfessionalsRouteImport } from './routes/professionals'
 import { Route as ProfesionalesRouteImport } from './routes/profesionales'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PlanesRouteImport } from './routes/planes'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ConfianzaRouteImport } from './routes/confianza'
 import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as ActivitiesRouteImport } from './routes/activities'
 import { Route as ActividadesRouteImport } from './routes/actividades'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as TherapiesSlugRouteImport } from './routes/therapies_.$slug'
 import { Route as TerapiasSlugRouteImport } from './routes/terapias_.$slug'
 import { Route as ProfessionalsSlugRouteImport } from './routes/professionals_.$slug'
 import { Route as ProfesionalesSlugRouteImport } from './routes/profesionales_.$slug'
+import { Route as DashboardBillingRouteImport } from './routes/dashboard/billing'
+import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard/analytics'
+import { Route as DashboardAdminRouteImport } from './routes/dashboard/admin'
+import { Route as ActivitiesNewRouteImport } from './routes/activities_.new'
+import { Route as ActivitiesSlugRouteImport } from './routes/activities_.$slug'
+import { Route as DashboardAdminAnalyticsRouteImport } from './routes/dashboard/admin/analytics'
 
 const TrustRoute = TrustRouteImport.update({
   id: '/trust',
@@ -87,6 +96,11 @@ const PlanesRoute = PlanesRouteImport.update({
   path: '/planes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -95,6 +109,11 @@ const LoginRoute = LoginRouteImport.update({
 const ForProfessionalsRoute = ForProfessionalsRouteImport.update({
   id: '/for-professionals',
   path: '/for-professionals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConfianzaRoute = ConfianzaRouteImport.update({
@@ -122,6 +141,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const TherapiesSlugRoute = TherapiesSlugRouteImport.update({
   id: '/therapies_/$slug',
   path: '/therapies/$slug',
@@ -142,6 +166,36 @@ const ProfesionalesSlugRoute = ProfesionalesSlugRouteImport.update({
   path: '/profesionales/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardBillingRoute = DashboardBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminRoute = DashboardAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const ActivitiesNewRoute = ActivitiesNewRouteImport.update({
+  id: '/activities_/new',
+  path: '/activities/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActivitiesSlugRoute = ActivitiesSlugRouteImport.update({
+  id: '/activities_/$slug',
+  path: '/activities/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardAdminAnalyticsRoute = DashboardAdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => DashboardAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -149,8 +203,10 @@ export interface FileRoutesByFullPath {
   '/activities': typeof ActivitiesRoute
   '/buscar': typeof BuscarRoute
   '/confianza': typeof ConfianzaRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/planes': typeof PlanesRoute
   '/plans': typeof PlansRoute
   '/profesionales': typeof ProfesionalesRoute
@@ -162,10 +218,17 @@ export interface FileRoutesByFullPath {
   '/terapias': typeof TerapiasRoute
   '/therapies': typeof TherapiesRoute
   '/trust': typeof TrustRoute
+  '/activities/$slug': typeof ActivitiesSlugRoute
+  '/activities/new': typeof ActivitiesNewRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
   '/profesionales/$slug': typeof ProfesionalesSlugRoute
   '/professionals/$slug': typeof ProfessionalsSlugRoute
   '/terapias/$slug': typeof TerapiasSlugRoute
   '/therapies/$slug': typeof TherapiesSlugRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -175,6 +238,7 @@ export interface FileRoutesByTo {
   '/confianza': typeof ConfianzaRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/planes': typeof PlanesRoute
   '/plans': typeof PlansRoute
   '/profesionales': typeof ProfesionalesRoute
@@ -186,10 +250,17 @@ export interface FileRoutesByTo {
   '/terapias': typeof TerapiasRoute
   '/therapies': typeof TherapiesRoute
   '/trust': typeof TrustRoute
+  '/activities/$slug': typeof ActivitiesSlugRoute
+  '/activities/new': typeof ActivitiesNewRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
   '/profesionales/$slug': typeof ProfesionalesSlugRoute
   '/professionals/$slug': typeof ProfessionalsSlugRoute
   '/terapias/$slug': typeof TerapiasSlugRoute
   '/therapies/$slug': typeof TherapiesSlugRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -198,8 +269,10 @@ export interface FileRoutesById {
   '/activities': typeof ActivitiesRoute
   '/buscar': typeof BuscarRoute
   '/confianza': typeof ConfianzaRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/planes': typeof PlanesRoute
   '/plans': typeof PlansRoute
   '/profesionales': typeof ProfesionalesRoute
@@ -211,10 +284,17 @@ export interface FileRoutesById {
   '/terapias': typeof TerapiasRoute
   '/therapies': typeof TherapiesRoute
   '/trust': typeof TrustRoute
+  '/activities_/$slug': typeof ActivitiesSlugRoute
+  '/activities_/new': typeof ActivitiesNewRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
   '/profesionales_/$slug': typeof ProfesionalesSlugRoute
   '/professionals_/$slug': typeof ProfessionalsSlugRoute
   '/terapias_/$slug': typeof TerapiasSlugRoute
   '/therapies_/$slug': typeof TherapiesSlugRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -224,8 +304,10 @@ export interface FileRouteTypes {
     | '/activities'
     | '/buscar'
     | '/confianza'
+    | '/dashboard'
     | '/for-professionals'
     | '/login'
+    | '/onboarding'
     | '/planes'
     | '/plans'
     | '/profesionales'
@@ -237,10 +319,17 @@ export interface FileRouteTypes {
     | '/terapias'
     | '/therapies'
     | '/trust'
+    | '/activities/$slug'
+    | '/activities/new'
+    | '/dashboard/admin'
+    | '/dashboard/analytics'
+    | '/dashboard/billing'
     | '/profesionales/$slug'
     | '/professionals/$slug'
     | '/terapias/$slug'
     | '/therapies/$slug'
+    | '/dashboard/'
+    | '/dashboard/admin/analytics'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -250,6 +339,7 @@ export interface FileRouteTypes {
     | '/confianza'
     | '/for-professionals'
     | '/login'
+    | '/onboarding'
     | '/planes'
     | '/plans'
     | '/profesionales'
@@ -261,10 +351,17 @@ export interface FileRouteTypes {
     | '/terapias'
     | '/therapies'
     | '/trust'
+    | '/activities/$slug'
+    | '/activities/new'
+    | '/dashboard/admin'
+    | '/dashboard/analytics'
+    | '/dashboard/billing'
     | '/profesionales/$slug'
     | '/professionals/$slug'
     | '/terapias/$slug'
     | '/therapies/$slug'
+    | '/dashboard'
+    | '/dashboard/admin/analytics'
   id:
     | '__root__'
     | '/'
@@ -272,8 +369,10 @@ export interface FileRouteTypes {
     | '/activities'
     | '/buscar'
     | '/confianza'
+    | '/dashboard'
     | '/for-professionals'
     | '/login'
+    | '/onboarding'
     | '/planes'
     | '/plans'
     | '/profesionales'
@@ -285,10 +384,17 @@ export interface FileRouteTypes {
     | '/terapias'
     | '/therapies'
     | '/trust'
+    | '/activities_/$slug'
+    | '/activities_/new'
+    | '/dashboard/admin'
+    | '/dashboard/analytics'
+    | '/dashboard/billing'
     | '/profesionales_/$slug'
     | '/professionals_/$slug'
     | '/terapias_/$slug'
     | '/therapies_/$slug'
+    | '/dashboard/'
+    | '/dashboard/admin/analytics'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -297,8 +403,10 @@ export interface RootRouteChildren {
   ActivitiesRoute: typeof ActivitiesRoute
   BuscarRoute: typeof BuscarRoute
   ConfianzaRoute: typeof ConfianzaRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
   PlanesRoute: typeof PlanesRoute
   PlansRoute: typeof PlansRoute
   ProfesionalesRoute: typeof ProfesionalesRoute
@@ -310,6 +418,8 @@ export interface RootRouteChildren {
   TerapiasRoute: typeof TerapiasRoute
   TherapiesRoute: typeof TherapiesRoute
   TrustRoute: typeof TrustRoute
+  ActivitiesSlugRoute: typeof ActivitiesSlugRoute
+  ActivitiesNewRoute: typeof ActivitiesNewRoute
   ProfesionalesSlugRoute: typeof ProfesionalesSlugRoute
   ProfessionalsSlugRoute: typeof ProfessionalsSlugRoute
   TerapiasSlugRoute: typeof TerapiasSlugRoute
@@ -395,6 +505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -407,6 +524,13 @@ declare module '@tanstack/react-router' {
       path: '/for-professionals'
       fullPath: '/for-professionals'
       preLoaderRoute: typeof ForProfessionalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/confianza': {
@@ -444,6 +568,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/therapies_/$slug': {
       id: '/therapies_/$slug'
       path: '/therapies/$slug'
@@ -472,8 +603,80 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfesionalesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/billing': {
+      id: '/dashboard/billing'
+      path: '/billing'
+      fullPath: '/dashboard/billing'
+      preLoaderRoute: typeof DashboardBillingRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/analytics': {
+      id: '/dashboard/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/analytics'
+      preLoaderRoute: typeof DashboardAnalyticsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin': {
+      id: '/dashboard/admin'
+      path: '/admin'
+      fullPath: '/dashboard/admin'
+      preLoaderRoute: typeof DashboardAdminRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/activities_/new': {
+      id: '/activities_/new'
+      path: '/activities/new'
+      fullPath: '/activities/new'
+      preLoaderRoute: typeof ActivitiesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/activities_/$slug': {
+      id: '/activities_/$slug'
+      path: '/activities/$slug'
+      fullPath: '/activities/$slug'
+      preLoaderRoute: typeof ActivitiesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/admin/analytics': {
+      id: '/dashboard/admin/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/admin/analytics'
+      preLoaderRoute: typeof DashboardAdminAnalyticsRouteImport
+      parentRoute: typeof DashboardAdminRoute
+    }
   }
 }
+
+interface DashboardAdminRouteChildren {
+  DashboardAdminAnalyticsRoute: typeof DashboardAdminAnalyticsRoute
+}
+
+const DashboardAdminRouteChildren: DashboardAdminRouteChildren = {
+  DashboardAdminAnalyticsRoute: DashboardAdminAnalyticsRoute,
+}
+
+const DashboardAdminRouteWithChildren = DashboardAdminRoute._addFileChildren(
+  DashboardAdminRouteChildren,
+)
+
+interface DashboardRouteChildren {
+  DashboardAdminRoute: typeof DashboardAdminRouteWithChildren
+  DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute
+  DashboardBillingRoute: typeof DashboardBillingRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAdminRoute: DashboardAdminRouteWithChildren,
+  DashboardAnalyticsRoute: DashboardAnalyticsRoute,
+  DashboardBillingRoute: DashboardBillingRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -481,8 +684,10 @@ const rootRouteChildren: RootRouteChildren = {
   ActivitiesRoute: ActivitiesRoute,
   BuscarRoute: BuscarRoute,
   ConfianzaRoute: ConfianzaRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   ForProfessionalsRoute: ForProfessionalsRoute,
   LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
   PlanesRoute: PlanesRoute,
   PlansRoute: PlansRoute,
   ProfesionalesRoute: ProfesionalesRoute,
@@ -494,6 +699,8 @@ const rootRouteChildren: RootRouteChildren = {
   TerapiasRoute: TerapiasRoute,
   TherapiesRoute: TherapiesRoute,
   TrustRoute: TrustRoute,
+  ActivitiesSlugRoute: ActivitiesSlugRoute,
+  ActivitiesNewRoute: ActivitiesNewRoute,
   ProfesionalesSlugRoute: ProfesionalesSlugRoute,
   ProfessionalsSlugRoute: ProfessionalsSlugRoute,
   TerapiasSlugRoute: TerapiasSlugRoute,

@@ -1,8 +1,18 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Eye, EyeOff } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { REMEMBER_SESSION_STORAGE_KEY, getRememberSessionPreference } from "@/lib/session-timeout";
+import { loginSearchSchema } from "@/lib/route-schemas";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: loginSearchSchema,
   head: () => ({
     meta: [{ title: "Acceder — Mallorca Holística" }],
   }),
@@ -10,19 +20,120 @@ export const Route = createFileRoute("/login")({
 });
 
 function Page() {
+  const navigate = useNavigate();
+  const search = Route.useSearch();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberSession, setRememberSession] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return getRememberSessionPreference(window.localStorage.getItem(REMEMBER_SESSION_STORAGE_KEY));
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return toast.error("Por favor, rellena todos los campos");
+
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    setLoading(false);
+
+    if (error) {
+      toast.error(getLoginErrorMessage(error.message));
+    } else {
+      window.localStorage.setItem(REMEMBER_SESSION_STORAGE_KEY, rememberSession ? "true" : "false");
+      toast.success("Has accedido correctamente");
+      navigate({ to: "/dashboard" });
+    }
+  };
+
   return (
     <PageShell>
       <PageHeader eyebrow="Cuenta" title="Acceder" />
       <div className="mx-auto max-w-md px-6 pb-24">
-        <div className="rounded-3xl border border-border bg-card p-8 text-sm text-muted-foreground">
-          <p>El acceso para profesionales llega en la siguiente fase, junto con el panel.</p>
-          <div className="mt-6">
-            <Button asChild variant="outline">
-              <Link to="/">Volver al inicio</Link>
+        <form onSubmit={handleSubmit} className="rounded-3xl border border-border bg-card p-8">
+          <div className="flex flex-col gap-5">
+            {search.reason === "inactive" && (
+              <div className="rounded-2xl border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground">
+                Tu sesión se ha cerrado por inactividad.
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Correo electrónico</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="hola@ejemplo.com"
+                autoComplete="email"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                  className="pr-11"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition-colors hover:text-foreground"
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <label className="flex items-start gap-3 rounded-2xl border border-border bg-secondary/20 px-4 py-3 text-sm text-muted-foreground">
+              <Checkbox
+                checked={rememberSession}
+                onCheckedChange={(checked) => setRememberSession(checked === true)}
+              />
+              <span>
+                Mantener la sesión iniciada en este dispositivo.
+                <span className="mt-1 block text-xs text-muted-foreground/80">
+                  Si no lo marcas, la sesión se cerrará al salir del navegador o tras un periodo de
+                  inactividad.
+                </span>
+              </span>
+            </label>
+            <Button type="submit" disabled={loading} className="w-full font-medium">
+              {loading ? "Accediendo..." : "Acceder"}
             </Button>
           </div>
-        </div>
+
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            ¿No tienes cuenta?{" "}
+            <Link to="/register" className="text-primary hover:underline">
+              Crea tu perfil
+            </Link>
+          </div>
+        </form>
       </div>
     </PageShell>
   );
+}
+
+function getLoginErrorMessage(message: string) {
+  if (message.toLowerCase().includes("email not confirmed")) {
+    return "Confirma tu email antes de acceder. Revisa tu bandeja de entrada.";
+  }
+
+  if (message.toLowerCase().includes("invalid login credentials")) {
+    return "Email o contraseña incorrectos.";
+  }
+
+  return message;
 }

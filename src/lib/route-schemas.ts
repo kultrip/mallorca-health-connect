@@ -9,3 +9,11 @@ export const professionalsSearchSchema = z.object({
 export type ProfessionalsSearch = z.infer<typeof professionalsSearchSchema>;
 
 export const conversationalSearchSchema = z.object({ q: z.string().optional() });
+
+export const onboardingSearchSchema = z.object({
+  plan: z.enum(["presencia", "profesional", "centros-organizadores"]).optional(),
+});
+
+export const loginSearchSchema = z.object({
+  reason: z.enum(["inactive"]).optional(),
+});

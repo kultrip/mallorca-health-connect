@@ -104,7 +104,19 @@ function Page() {
               </ul>
               <div className="mt-8">
                 <Button asChild variant={p.highlight ? "default" : "outline"} className="w-full">
-                  <Link to={p.to}>{p.cta}</Link>
+                  <Link
+                    to={p.to}
+                    search={{
+                      plan:
+                        p.name === "Presencia"
+                          ? "presencia"
+                          : p.name === "Profesional"
+                            ? "profesional"
+                            : "centros-organizadores",
+                    }}
+                  >
+                    {p.cta}
+                  </Link>
                 </Button>
               </div>
             </div>

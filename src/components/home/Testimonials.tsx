@@ -30,15 +30,15 @@ function initials(name: string) {
 
 export function Testimonials() {
   return (
-    <section className="mx-auto max-w-[1180px] px-6 py-20 md:px-10 md:py-28">
-      <div className="mb-12 max-w-2xl">
+    <section className="mx-auto max-w-[1040px] px-6 py-16 md:px-10 md:py-24">
+      <div className="mb-12 max-w-xl">
         <h2>Testimonios</h2>
         <p className="mt-3 text-muted-foreground">Lo que dicen quienes ya han pasado por aquí.</p>
       </div>
-      <div className="grid gap-8 md:grid-cols-3">
+      <div className="grid gap-7 md:grid-cols-3">
         {testimonials.map((t) => (
-          <figure key={t.name + t.place} className="rounded-3xl border border-border bg-card p-8">
-            <blockquote className="text-sm leading-relaxed text-foreground/80">
+          <figure key={t.name + t.place} className="border-l border-[#dfceb8] pl-6">
+            <blockquote className="text-sm leading-7 text-foreground/80">
               {t.quote}
             </blockquote>
             <figcaption className="mt-6 flex items-center gap-3">

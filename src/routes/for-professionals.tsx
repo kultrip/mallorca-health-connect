@@ -52,7 +52,9 @@ function Page() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild>
-                <Link to="/register">Crear perfil gratuito</Link>
+                <Link to="/register" search={{ plan: "presencia" }}>
+                  Crear perfil gratuito
+                </Link>
               </Button>
               <Button asChild variant="outline">
                 <Link to="/plans">Ver planes</Link>
