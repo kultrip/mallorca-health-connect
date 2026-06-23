@@ -43,7 +43,17 @@ function Page() {
     setLoading(false);
 
     if (error) {
-      toast.error(getLoginErrorMessage(error.message));
+      if (error.message.toLowerCase().includes("invalid login credentials")) {
+        toast.error("Email o contraseña incorrectos. Si aún no tienes una cuenta, puedes crear tu perfil.", {
+          action: {
+            label: "Crear cuenta",
+            onClick: () => navigate({ to: "/register" })
+          },
+          duration: 7000
+        });
+      } else {
+        toast.error(getLoginErrorMessage(error.message));
+      }
     } else {
       window.localStorage.setItem(REMEMBER_SESSION_STORAGE_KEY, rememberSession ? "true" : "false");
       toast.success("Has accedido correctamente");

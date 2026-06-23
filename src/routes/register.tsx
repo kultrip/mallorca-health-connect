@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { sendRegistrationConfirmationEmail } from "@/lib/registration-emails";
 import { onboardingSearchSchema } from "@/lib/route-schemas";
 
+import { MailOpen } from "lucide-react";
+
 export const Route = createFileRoute("/register")({
   validateSearch: onboardingSearchSchema,
   head: () => ({
@@ -27,6 +29,7 @@ function Page() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
   const selectedPlan = search.plan ?? "presencia";
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,14 +65,42 @@ function Page() {
     });
 
     if (!data.session) {
-      toast.success("Cuenta creada. Revisa tu email para confirmar la cuenta antes de acceder.");
-      navigate({ to: "/login" });
+      setRegisteredEmail(email);
       return;
     }
 
     toast.success("Cuenta creada. ¡Bienvenido!");
     navigate({ to: "/onboarding", search: { plan: selectedPlan } });
   };
+
+  if (registeredEmail) {
+    return (
+      <PageShell>
+        <PageHeader eyebrow="Registro" title="¡Casi listo!" />
+        <div className="mx-auto max-w-md px-6 pb-24">
+          <div className="rounded-3xl border border-border bg-card p-8 text-center flex flex-col items-center gap-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <MailOpen className="h-8 w-8 animate-bounce-subtle" />
+            </div>
+            <h2 className="text-xl font-semibold">Revisa tu correo electrónico</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Hemos enviado un enlace de confirmación a <span className="font-semibold text-foreground">{registeredEmail}</span>.
+            </p>
+            <div className="rounded-2xl border border-border bg-secondary/30 px-5 py-4 text-xs text-muted-foreground text-left space-y-3 leading-relaxed w-full">
+              <p className="font-semibold text-foreground text-sm">¿Qué debes hacer ahora?</p>
+              <p>1. Abre tu bandeja de entrada y busca el email de <strong>Mallorca Holística</strong>.</p>
+              <p>2. Haz clic en el enlace <strong>"Confirmar correo"</strong>.</p>
+              <p>3. Serás redirigido automáticamente a la plataforma para rellenar los datos de tu perfil.</p>
+            </div>
+            <Button variant="outline" onClick={() => navigate({ to: "/login" })} className="mt-2 w-full">
+              Ir a Iniciar Sesión
+            </Button>
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
+
 
   return (
     <PageShell>
