@@ -82,19 +82,33 @@ function Page() {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
               <MailOpen className="h-8 w-8 animate-bounce-subtle" />
             </div>
-            <h2 className="text-xl font-semibold">Revisa tu correo electrónico</h2>
+            <h2 className="text-xl font-bold tracking-tight text-foreground">Revisa tu correo electrónico</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Hemos enviado un enlace de confirmación a <span className="font-semibold text-foreground">{registeredEmail}</span>.
+              Hemos enviado un enlace de confirmación a <span className="font-semibold text-primary">{registeredEmail}</span>.
             </p>
-            <div className="rounded-2xl border border-border bg-secondary/30 px-5 py-4 text-xs text-muted-foreground text-left space-y-3 leading-relaxed w-full">
-              <p className="font-semibold text-foreground text-sm">¿Qué debes hacer ahora?</p>
-              <p>1. Abre tu bandeja de entrada y busca el email de <strong>Mallorca Holística</strong>.</p>
-              <p>2. Haz clic en el enlace <strong>"Confirmar correo"</strong>.</p>
-              <p>3. Serás redirigido automáticamente a la plataforma para rellenar los datos de tu perfil.</p>
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4 text-xs text-muted-foreground text-left space-y-3 leading-relaxed w-full">
+              <p className="font-semibold text-primary text-sm">¿Qué debes hacer ahora?</p>
+              <p className="flex gap-2">
+                <span className="font-bold text-primary">1.</span>
+                <span>Abre tu bandeja de entrada y busca el email de <strong>Mallorca Holística</strong>.</span>
+              </p>
+              <p className="flex gap-2">
+                <span className="font-bold text-primary">2.</span>
+                <span>Haz clic en el botón de <strong>"Confirmar correo"</strong>.</span>
+              </p>
+              <p className="flex gap-2">
+                <span className="font-bold text-primary">3.</span>
+                <span><strong>¡Eso es todo!</strong> Serás redirigido automáticamente al formulario paso a paso para completar los datos de tu perfil.</span>
+              </p>
             </div>
-            <Button variant="outline" onClick={() => navigate({ to: "/login" })} className="mt-2 w-full">
-              Ir a Iniciar Sesión
-            </Button>
+            <div className="flex flex-col gap-3 w-full mt-2">
+              <p className="text-xs text-muted-foreground">
+                ¿No recibiste el email? Comprueba tu carpeta de correo no deseado o spam.
+              </p>
+              <Button variant="outline" onClick={() => navigate({ to: "/login" })} className="w-full">
+                Ir a Iniciar Sesión
+              </Button>
+            </div>
           </div>
         </div>
       </PageShell>
