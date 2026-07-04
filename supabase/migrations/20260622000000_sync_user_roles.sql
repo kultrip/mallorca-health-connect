@@ -5,6 +5,11 @@ DECLARE
   v_plan_slug TEXT;
   v_target_role public.app_role;
 BEGIN
+  -- Return immediately if there's no user_id (e.g. demo therapists/seeding)
+  IF NEW.user_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
   -- Determine the plan slug from NEW.plan_id or NEW.pending_plan_slug
   IF NEW.plan_id IS NOT NULL THEN
     SELECT slug INTO v_plan_slug FROM public.plans WHERE id = NEW.plan_id;

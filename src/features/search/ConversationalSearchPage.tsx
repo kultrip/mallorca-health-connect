@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Sparkles, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/layout/PageShell";
-import { ProfessionalResultsWithMap } from "@/components/therapists/ProfessionalResultsWithMap";
+import { ProfessionalResultsWithMap, ProfessionalResultsSkeleton } from "@/components/therapists/ProfessionalResultsWithMap";
 import type { TherapistCardData } from "@/components/therapists/TherapistCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getVisitorId } from "@/lib/analytics";
@@ -99,11 +99,7 @@ export function ConversationalSearchPage({ q }: { q?: string }) {
       {/* Results */}
       <section className="mx-auto max-w-[1180px] px-6 pb-24 pt-16 md:px-10">
         {isLoading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-[4/5] w-full rounded-3xl" />
-            ))}
-          </div>
+          <ProfessionalResultsSkeleton />
         ) : data && data.therapists.length > 0 ? (
           <>
             <h2 className="font-display mb-6 text-2xl">Profesionales que pueden acompañarte</h2>

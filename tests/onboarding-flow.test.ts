@@ -7,8 +7,8 @@ import {
   resolveOnboardingPlanSlug,
 } from "../src/lib/onboarding-flow.ts";
 
-test("resolveOnboardingPlan defaults to presencia", () => {
-  assert.equal(resolveOnboardingPlan({}), "presencia");
+test("resolveOnboardingPlan defaults to profesional", () => {
+  assert.equal(resolveOnboardingPlan({}), "profesional");
 });
 
 test("resolveOnboardingPlan prefers the selected plan from search", () => {

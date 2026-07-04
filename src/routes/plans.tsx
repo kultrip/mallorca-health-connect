@@ -130,19 +130,19 @@ function Page() {
           <h2 className="mt-3">Una invitación al nacimiento del ecosistema</h2>
           <p className="mt-4 max-w-2xl text-muted-foreground">
             Reservado para los primeros perfiles seleccionados. Seis meses gratuitos desde el
-            lanzamiento, luego una tarifa especial mantenida durante 24 meses.
+            lanzamiento, luego una tarifa especial mantenida para siempre.
           </p>
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             <div className="rounded-2xl border border-border bg-background p-6">
               <h3 className="font-display text-xl">Profesional</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Primeros 40 perfiles. 6 meses gratis, después 15€/mes durante 24 meses.
+                Primeros 40 perfiles. 6 meses gratis, después 15€/mes para siempre.
               </p>
             </div>
             <div className="rounded-2xl border border-border bg-background p-6">
               <h3 className="font-display text-xl">Centros & Organizadores</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Primeros 10 perfiles. 6 meses gratis, después 35€/mes durante 24 meses.
+                Primeros 10 perfiles. 6 meses gratis, después 35€/mes para siempre.
               </p>
             </div>
           </div>

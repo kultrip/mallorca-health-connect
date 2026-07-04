@@ -110,10 +110,43 @@ export const rejectProfessionalRequest = createServerFn({ method: "POST" })
         verification_reviewed_by: context.userId,
       })
       .eq("id", data.therapistId)
-      .select("id, full_name")
+      .select("id, full_name, stripe_customer_id, stripe_subscription_id")
       .single();
 
     if (error) throw error;
+
+    if (therapist.stripe_subscription_id) {
+      try {
+        const { default: Stripe } = await import("stripe");
+        const stripe = new Stripe(getStripeSecretKey(), { apiVersion: "2026-04-22.dahlia" });
+
+        // Cancel the Stripe subscription immediately
+        await stripe.subscriptions.cancel(therapist.stripe_subscription_id);
+
+        // Refund any successful payments for this customer
+        if (therapist.stripe_customer_id) {
+          const charges = await stripe.charges.list({
+            customer: therapist.stripe_customer_id,
+            limit: 20,
+          });
+
+          for (const charge of charges.data) {
+            if (charge.status === "succeeded" && !charge.refunded) {
+              await stripe.refunds.create({
+                charge: charge.id,
+              });
+            }
+          }
+        }
+      } catch (stripeError) {
+        console.error("Stripe cancellation/refund error during rejection:", stripeError);
+        throw new Error(
+          `Perfil rechazado, pero falló la cancelación/devolución en Stripe: ${
+            stripeError instanceof Error ? stripeError.message : "Error desconocido"
+          }`
+        );
+      }
+    }
 
     await sendProfessionalRejectedEmail({
       professionalName: therapist.full_name,
@@ -134,7 +167,7 @@ async function activatePendingSubscription(therapistId: string) {
   const { data: therapist, error } = await supabaseAdmin
     .from("therapists")
     .select(
-      "id, user_id, stripe_customer_id, stripe_payment_method_id, pending_plan_id, pending_plan_slug",
+      "id, user_id, stripe_customer_id, stripe_payment_method_id, pending_plan_id, pending_plan_slug, is_founder",
     )
     .eq("id", therapistId)
     .single();
@@ -154,12 +187,16 @@ async function activatePendingSubscription(therapistId: string) {
 
   const { data: plan, error: planError } = await supabaseAdmin
     .from("plans")
-    .select("id, slug, stripe_price_id, billing_enabled")
+    .select("id, slug, stripe_price_id, founder_stripe_price_id, billing_enabled")
     .eq("id", therapist.pending_plan_id)
     .single();
 
   if (planError) throw planError;
-  if (!plan.billing_enabled || !plan.stripe_price_id) {
+
+  const useFounderPrice = therapist.is_founder === true && !!plan.founder_stripe_price_id;
+  const priceId = useFounderPrice ? plan.founder_stripe_price_id : plan.stripe_price_id;
+
+  if (!plan.billing_enabled || !priceId) {
     const message = "El plan pendiente no esta configurado para Stripe.";
     await supabaseAdmin
       .from("therapists")
@@ -171,15 +208,17 @@ async function activatePendingSubscription(therapistId: string) {
   try {
     await stripe.subscriptions.create({
       customer: therapist.stripe_customer_id,
-      items: [{ price: plan.stripe_price_id }],
+      items: [{ price: priceId }],
       default_payment_method: therapist.stripe_payment_method_id,
       collection_method: "charge_automatically",
       payment_behavior: "error_if_incomplete",
+      trial_period_days: useFounderPrice ? 180 : undefined,
       metadata: {
         user_id: therapist.user_id ?? "",
         therapist_id: therapist.id,
         plan_id: plan.id,
         plan_slug: plan.slug,
+        is_founder: useFounderPrice ? "true" : "false",
       },
       payment_settings: {
         save_default_payment_method: "on_subscription",

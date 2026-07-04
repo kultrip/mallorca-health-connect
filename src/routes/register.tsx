@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { sendRegistrationConfirmationEmail } from "@/lib/registration-emails";
+import { signUpUser } from "@/lib/registration-emails";
 import { onboardingSearchSchema } from "@/lib/route-schemas";
 
 import { MailOpen } from "lucide-react";
@@ -37,40 +37,25 @@ function Page() {
     if (!email || !password || !name) return toast.error("Por favor, rellena todos los campos");
 
     setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
+    try {
+      await signUpUser({
         data: {
-          display_name: name,
-          selected_plan: selectedPlan,
+          name,
+          email,
+          password,
+          selectedPlan,
+          origin: window.location.origin,
         },
-        emailRedirectTo: `${window.location.origin}/onboarding?plan=${encodeURIComponent(selectedPlan)}`,
-      },
-    });
-    setLoading(false);
+      });
 
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
-    void sendRegistrationConfirmationEmail({
-      email,
-      name,
-      planLabel: getPlanLabel(selectedPlan),
-    }).catch((emailError) => {
-      console.error(emailError);
-      toast.warning("La cuenta se creó, pero no pudimos enviar el email de confirmación.");
-    });
-
-    if (!data.session) {
+      setLoading(false);
       setRegisteredEmail(email);
-      return;
+      toast.success("Cuenta creada. ¡Te hemos enviado el email de confirmación!");
+    } catch (err) {
+      setLoading(false);
+      const message = err instanceof Error ? err.message : "Error al registrar la cuenta";
+      toast.error(message);
     }
-
-    toast.success("Cuenta creada. ¡Bienvenido!");
-    navigate({ to: "/onboarding", search: { plan: selectedPlan } });
   };
 
   if (registeredEmail) {

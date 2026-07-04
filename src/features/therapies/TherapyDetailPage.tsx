@@ -3,17 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { PageShell } from "@/components/layout/PageShell";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProfessionalResultsWithMap } from "@/components/therapists/ProfessionalResultsWithMap";
-import type { TherapistCardData } from "@/components/therapists/TherapistCard";
 import { supabase } from "@/integrations/supabase/client";
-import { sortProfessionalsByPriority } from "@/lib/professional-ranking";
-import type { RelatedTherapistRow, Therapy, TherapyDetailSection } from "./types";
+import type { Therapy, TherapyDetailSection } from "./types";
 import { fallbackTherapiesBySlug } from "./therapy-guide-content";
 
-type RankedTherapistCardData = TherapistCardData & {
-  subscription_status?: string | null;
-  plans?: { slug?: string | null } | null;
-};
 
 export function TherapyDetailPage({ slug }: { slug: string }) {
   const {
@@ -40,30 +33,20 @@ export function TherapyDetailPage({ slug }: { slug: string }) {
 
   const therapyId = therapy?.id;
   const {
-    data: relatedTherapists = [],
-    isLoading: areTherapistsLoading,
-    isError: areTherapistsError,
-  } = useQuery<RankedTherapistCardData[]>({
-    queryKey: ["therapy-related-therapists", therapyId],
+    data: therapistsCount = 0,
+    isLoading: isCountLoading,
+  } = useQuery<number>({
+    queryKey: ["therapy-related-therapists-count", therapyId],
     enabled: !!therapyId && !therapyId.startsWith("local-"),
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { count, error } = await supabase
         .from("therapist_therapies")
-        .select(
-          "therapists(id, slug, full_name, headline, frase_clave, photo_url, especialidad, modalities, verified, city, address, lat, lng, subscription_status, municipalities(name,slug,lat,lng), plans!therapists_plan_id_fkey(slug))",
-        )
+        .select("therapist_id, therapists!inner(status)", { count: "exact", head: true })
         .eq("therapy_id", therapyId!)
-        .eq("therapists.status", "published")
-        .limit(100);
+        .eq("therapists.status", "published");
 
       if (error) throw error;
-
-      return sortProfessionalsByPriority(
-        (data as RelatedTherapistRow[])
-          .map((row) => firstRelation(row.therapists))
-          .filter((therapist): therapist is RankedTherapistCardData => Boolean(therapist))
-          .slice(0, 12),
-      );
+      return count ?? 0;
     },
   });
 
@@ -204,24 +187,26 @@ export function TherapyDetailPage({ slug }: { slug: string }) {
         )}
       </article>
 
-      <section className="mx-auto max-w-[1180px] px-6 pb-24 md:px-10">
+      <section className="mx-auto max-w-[900px] px-6 pb-24 md:px-10">
         <h2 className="font-display text-3xl">Profesionales relacionados</h2>
-        {areTherapistsLoading ? (
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <Skeleton key={index} className="aspect-[4/5] rounded-3xl" />
-            ))}
+        {isCountLoading ? (
+          <Skeleton className="mt-6 h-32 w-full rounded-3xl" />
+        ) : therapistsCount > 0 ? (
+          <div className="mt-6 rounded-3xl border border-[#eadfce]/60 bg-gradient-to-br from-[#fcf9f5] to-white p-8 text-center shadow-[0_4px_20px_rgba(96,68,31,0.02)]">
+            <p className="font-display text-2xl text-[#1f3326]">
+              Tenemos {therapistsCount} profesional{therapistsCount === 1 ? "" : "es"} de {therapy.name.toLowerCase()} disponible{therapistsCount === 1 ? "" : "s"} en Mallorca.
+            </p>
+            <p className="mt-2 text-sm text-[#5d5144]/80">
+              Encuentra a la persona adecuada para acompañarte en tu proceso.
+            </p>
+            <Link
+              to="/therapies_/$slug/professionals"
+              params={{ slug: therapy.slug }}
+              className="mt-6 inline-flex rounded-full bg-[#8a6550] text-white px-6 py-2.5 text-sm font-medium hover:bg-[#8a6550]/90 transition-all shadow-sm"
+            >
+              Ver profesionales de {therapy.name.toLowerCase()}
+            </Link>
           </div>
-        ) : areTherapistsError ? (
-          <div className="mt-6 rounded-3xl border border-border bg-card p-6 text-sm text-muted-foreground">
-            No pudimos cargar los profesionales relacionados en este momento.
-          </div>
-        ) : relatedTherapists.length > 0 ? (
-          <ProfessionalResultsWithMap
-            professionals={relatedTherapists as TherapistCardData[]}
-            className="mt-6"
-            mapTitle={`Profesionales de ${therapy.name}`}
-          />
         ) : (
           <div className="mt-6 rounded-3xl border border-dashed border-border bg-card/50 p-8 text-center">
             <p className="font-display text-xl text-foreground/80">

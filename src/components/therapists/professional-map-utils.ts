@@ -1,4 +1,5 @@
 import type { TherapistCardData } from "./TherapistCard";
+import { MUNICIPALITY_COORDINATES } from "@/lib/municipality-coordinates";
 
 export type ProfessionalMapPin = {
   id: string;
@@ -56,6 +57,17 @@ function getCoordinates(professional: TherapistCardData) {
       lng: professional.municipalities.lng,
       source: "municipality" as const,
     };
+  }
+
+  if (professional.municipalities?.slug) {
+    const fallback = MUNICIPALITY_COORDINATES[professional.municipalities.slug.toLowerCase()];
+    if (fallback) {
+      return {
+        lat: fallback.lat,
+        lng: fallback.lng,
+        source: "municipality" as const,
+      };
+    }
   }
 
   return null;

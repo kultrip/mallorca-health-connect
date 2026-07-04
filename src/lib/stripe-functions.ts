@@ -45,7 +45,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     const { data: therapist, error: therapistError } = await supabaseAdmin
       .from("therapists")
       .select(
-        "id, user_id, full_name, email, verified, status, stripe_customer_id, pending_plan_id, pending_plan_slug, stripe_payment_method_id",
+        "id, user_id, full_name, email, verified, status, stripe_customer_id, pending_plan_id, pending_plan_slug, stripe_payment_method_id, is_founder",
       )
       .eq("user_id", context.userId)
       .single();
@@ -57,13 +57,17 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
     const { data: plan, error: planError } = await supabaseAdmin
       .from("plans")
-      .select("id, slug, name, stripe_price_id, billing_enabled")
+      .select("id, slug, name, stripe_price_id, founder_stripe_price_id, billing_enabled")
       .eq("slug", data.planSlug)
       .eq("billing_enabled", true)
       .single();
 
     if (planError) throw planError;
-    if (!plan?.stripe_price_id) {
+
+    const useFounderPrice = therapist.is_founder === true && !!plan?.founder_stripe_price_id;
+    const priceId = useFounderPrice ? plan.founder_stripe_price_id : plan?.stripe_price_id;
+
+    if (!priceId) {
       throw new Response("Plan is not configured for Stripe checkout", { status: 500 });
     }
 
@@ -94,57 +98,30 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       customerId,
     });
 
-    const isVerifiedPublished = therapist.verified === true && therapist.status === "published";
-
-    if (isVerifiedPublished) {
-      const session = await stripe.checkout.sessions.create({
-        customer: customerId,
-        mode: "subscription",
-        client_reference_id: therapist.id,
-        line_items: [{ price: plan.stripe_price_id, quantity: 1 }],
-        success_url: `${origin}/dashboard/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/dashboard/billing?checkout=cancelled`,
-        subscription_data: {
-          metadata: {
-            user_id: context.userId,
-            therapist_id: therapist.id,
-            plan_id: plan.id,
-            plan_slug: plan.slug,
-          },
-        },
-        metadata: {
-          checkout_kind: "subscription",
-          user_id: context.userId,
-          therapist_id: therapist.id,
-          plan_id: plan.id,
-          plan_slug: plan.slug,
-        },
-      });
-
-      return { url: session.url, mode: "subscription" };
-    }
-
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      mode: "setup",
+      mode: "subscription",
       client_reference_id: therapist.id,
-      payment_method_types: ["card"],
-      success_url: `${origin}/dashboard/billing?checkout=setup_success&session_id={CHECKOUT_SESSION_ID}`,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${origin}/dashboard/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/dashboard/billing?checkout=cancelled`,
-      setup_intent_data: {
+      subscription_data: {
+        trial_period_days: useFounderPrice ? 180 : undefined,
         metadata: {
           user_id: context.userId,
           therapist_id: therapist.id,
           plan_id: plan.id,
           plan_slug: plan.slug,
+          is_founder: useFounderPrice ? "true" : "false",
         },
       },
       metadata: {
-        checkout_kind: "preapproval_setup",
+        checkout_kind: "subscription",
         user_id: context.userId,
         therapist_id: therapist.id,
         plan_id: plan.id,
         plan_slug: plan.slug,
+        is_founder: useFounderPrice ? "true" : "false",
       },
     });
 
@@ -160,7 +137,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
     if (pendingError) throw pendingError;
 
-    return { url: session.url, mode: "setup" };
+    return { url: session.url, mode: "subscription" };
   });
 
 export const createCustomerPortalSession = createServerFn({ method: "POST" })

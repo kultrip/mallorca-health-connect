@@ -36,8 +36,18 @@ export function AdminPlansPanel({
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-muted-foreground">
                 <p>Slug: {plan.slug}</p>
-                <p>Precio: {formatEuros(plan.price_monthly_cents)}</p>
+                <p>Precio Estándar: {formatEuros(plan.price_monthly_cents)}</p>
                 <p>Stripe price: {plan.stripe_price_id || "Sin configurar"}</p>
+                {plan.founder_price_monthly_cents !== null && (
+                  <p className="text-amber-600 dark:text-amber-400 font-medium">
+                    Precio Fundador: {formatEuros(plan.founder_price_monthly_cents)}
+                  </p>
+                )}
+                {plan.founder_stripe_price_id && (
+                  <p className="text-amber-600 dark:text-amber-400">
+                    Stripe Founder price: {plan.founder_stripe_price_id}
+                  </p>
+                )}
                 <p>Profesionales en plan: {onPlan.length}</p>
                 <p>Suscripciones activas: {active.length}</p>
                 <p>Planes pendientes: {pending.length}</p>

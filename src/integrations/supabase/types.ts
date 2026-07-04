@@ -432,6 +432,8 @@ export type Database = {
           created_at: string;
           description: string | null;
           features: Json;
+          founder_price_monthly_cents: number | null;
+          founder_stripe_price_id: string | null;
           id: string;
           name: string;
           price_monthly_cents: number;
@@ -446,6 +448,8 @@ export type Database = {
           created_at?: string;
           description?: string | null;
           features?: Json;
+          founder_price_monthly_cents?: number | null;
+          founder_stripe_price_id?: string | null;
           id?: string;
           name: string;
           price_monthly_cents?: number;
@@ -460,6 +464,8 @@ export type Database = {
           created_at?: string;
           description?: string | null;
           features?: Json;
+          founder_price_monthly_cents?: number | null;
+          founder_stripe_price_id?: string | null;
           id?: string;
           name?: string;
           price_monthly_cents?: number;
@@ -674,6 +680,7 @@ export type Database = {
           has_liability_insurance: boolean | null;
           headline: string | null;
           id: string;
+          is_founder: boolean;
           instagram_url: string | null;
           languages: string[];
           linkedin_url: string | null;
@@ -764,6 +771,7 @@ export type Database = {
           has_liability_insurance?: boolean | null;
           headline?: string | null;
           id?: string;
+          is_founder?: boolean;
           instagram_url?: string | null;
           languages?: string[];
           linkedin_url?: string | null;
@@ -854,6 +862,7 @@ export type Database = {
           has_liability_insurance?: boolean | null;
           headline?: string | null;
           id?: string;
+          is_founder?: boolean;
           instagram_url?: string | null;
           languages?: string[];
           linkedin_url?: string | null;

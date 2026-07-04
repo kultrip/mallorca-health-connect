@@ -1,4 +1,4 @@
-import { type FormEvent, type ReactNode, useMemo, useState } from "react";
+import { type FormEvent, type ReactNode, useMemo, useState, useEffect } from "react";
 import {
   ArrowRight,
   Building2,
@@ -16,6 +16,7 @@ import {
   Upload,
   User,
   X,
+  Leaf,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -294,6 +295,41 @@ export function DashboardProfileEditor({
   );
   const [teamMembers, setTeamMembers] = useState<TeamMemberDraft[]>(
     buildTeamMembers(therapist.team_members),
+  );
+
+  const [localPhotoPreview, setLocalPhotoPreview] = useState<string | null>(null);
+  const [localLogoPreview, setLocalLogoPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!photoFile) {
+      setLocalPhotoPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(photoFile);
+    setLocalPhotoPreview(url);
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [photoFile]);
+
+  useEffect(() => {
+    if (!logoFile) {
+      setLocalLogoPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(logoFile);
+    setLocalLogoPreview(url);
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [logoFile]);
+
+  const displayPhotoUrl = localPhotoPreview || draft.photoUrl || null;
+  const displayLogoUrl = localLogoPreview || draft.logoUrl || null;
+
+  const selectedMunicipality = useMemo(
+    () => sortedMunicipalities.find((m) => m.id === draft.municipalityId),
+    [sortedMunicipalities, draft.municipalityId],
   );
 
   function updateDraft<Key extends keyof ProfileDraft>(key: Key, value: ProfileDraft[Key]) {
@@ -663,15 +699,19 @@ export function DashboardProfileEditor({
                 onChange={(e) => updateDraft("email", e.target.value)}
               />
             </Field>
-            <Field label="Teléfono *">
+            <Field label="Teléfono">
               <Input value={draft.phone} onChange={(e) => updateDraft("phone", e.target.value)} />
             </Field>
-            <Field label="WhatsApp">
+            <Field label="WhatsApp *">
               <Input
                 value={draft.whatsapp}
                 onChange={(e) => updateDraft("whatsapp", e.target.value)}
+                required
               />
             </Field>
+          </div>
+
+          <div className="mt-6 grid gap-5 md:grid-cols-2">
             <Field label="Foto principal">
               <UploadBox
                 file={photoFile}
@@ -680,9 +720,7 @@ export function DashboardProfileEditor({
                 onChange={setPhotoFile}
               />
             </Field>
-          </div>
 
-          <div className="mt-6 grid gap-5 md:grid-cols-2">
             <UpgradeLock
               title="Logo profesional"
               description="El logo da más presencia a tu ficha. Disponible para planes superiores."
@@ -698,9 +736,66 @@ export function DashboardProfileEditor({
                 />
               </Field>
             </UpgradeLock>
-            <div className="rounded-2xl border border-dashed border-[#eadfce] bg-white px-4 py-5 text-sm text-[#5d5144]">
-              <p className="font-medium text-[#342b22]">Imagen principal</p>
-              <p className="mt-1">Ya puedes reemplazarla desde el campo de foto principal.</p>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3">
+            <p className="font-display font-medium text-[#342b22]">Vista previa de tu cabecera (ficha pública)</p>
+            <div className="relative overflow-hidden rounded-2xl border border-[#eadfce] bg-[#f4eadb] p-6 md:p-8 shadow-sm">
+              <img
+                src={heroImg}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover opacity-45 pointer-events-none"
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,#f4eadb_0%,rgba(244,234,219,0.95)_42%,rgba(244,234,219,0.55)_100%)] pointer-events-none" />
+
+              <div className="relative flex flex-col sm:flex-row items-center gap-6 sm:gap-8 text-center sm:text-left">
+                <div className="relative h-28 w-28 md:h-32 md:w-32 flex-shrink-0">
+                  <div className="h-full w-full overflow-hidden rounded-full border-4 border-white/80 bg-[#eadfce] shadow-[0_15px_45px_rgba(80,54,24,0.14)]">
+                    {displayPhotoUrl ? (
+                      <img
+                        src={displayPhotoUrl}
+                        alt={draft.fullName}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center font-display text-4xl text-[#9a866a]">
+                        {draft.fullName?.[0] || "?"}
+                      </div>
+                    )}
+                  </div>
+                  {displayLogoUrl && (
+                    <div className="absolute -left-1 top-1 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/80 bg-white shadow-md">
+                      <img src={displayLogoUrl} alt="" className="h-full w-full object-cover" />
+                    </div>
+                  )}
+                  <div className="absolute -bottom-1 right-1 flex h-10 w-10 items-center justify-center rounded-full border border-[#eadfce] bg-[#f8efe4] text-[#9a7041] shadow-md">
+                    <Leaf className="h-5 w-5" strokeWidth={1.3} />
+                  </div>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display text-2xl md:text-3xl font-semibold leading-none tracking-[-0.02em] text-[#1f3326] truncate">
+                    {draft.fullName || "Tu nombre completo"}
+                  </h3>
+                  {draft.professionalName && (
+                    <p className="mt-2 text-sm md:text-base text-[#5d5144] font-medium truncate">
+                      {draft.professionalName}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs md:text-sm text-[#6d5b43] italic line-clamp-1">
+                    {draft.tagline || "Tu frase de presentación aparecerá aquí."}
+                  </p>
+                  
+                  <div className="mt-4 flex flex-wrap justify-center sm:justify-start items-center gap-4 text-xs text-[#5d5144]">
+                    <span className="inline-flex items-center gap-1.5 bg-white/50 backdrop-blur-[2px] px-3 py-1 rounded-full border border-[#eadfce]">
+                      <MapPin className="h-3.5 w-3.5" /> {selectedMunicipality?.name || "Municipio"}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 bg-white/50 backdrop-blur-[2px] px-3 py-1 rounded-full border border-[#eadfce]">
+                      <Monitor className="h-3.5 w-3.5" /> Presencial y Online
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -927,7 +1022,7 @@ export function DashboardProfileEditor({
               if (index > 0 && !config.extraLocationEnabled && !config.isOrganisation) {
                 return (
                   <UpgradeLock
-                    key={location.id ?? `${index}-${location.centerName}`}
+                    key={location.id ?? index}
                     title="Ubicaciones adicionales"
                     description="El plan Free solo incluye una ubicación. Actualiza para mostrar varias consultas."
                     requiredPlan="Profesional"
@@ -938,7 +1033,7 @@ export function DashboardProfileEditor({
                 );
               }
 
-              return <div key={location.id ?? `${index}-${location.centerName}`}>{card}</div>;
+              return <div key={location.id ?? index}>{card}</div>;
             })}
           </div>
 
@@ -1851,15 +1946,17 @@ function CharacterLimitedInput({
   maxLength: number;
   onChange: (value: string) => void;
 }) {
+  const safeValue = value || "";
+  const limit = maxLength || 120;
   return (
     <div className="space-y-2">
       <Input
-        value={value}
-        maxLength={maxLength}
-        onChange={(event) => onChange(event.target.value.slice(0, maxLength))}
+        value={safeValue}
+        maxLength={limit}
+        onChange={(event) => onChange(event.target.value.slice(0, limit))}
       />
       <div className="text-right text-xs text-[#6d5b43]">
-        {value.length}/{maxLength}
+        {safeValue.length}/{limit}
       </div>
     </div>
   );
@@ -1876,16 +1973,18 @@ function CharacterLimitedTextarea({
   onChange: (value: string) => void;
   minHeight: string;
 }) {
+  const safeValue = value || "";
+  const limit = maxLength || 3000;
   return (
     <div className="space-y-2">
       <Textarea
-        value={value}
-        maxLength={maxLength}
-        onChange={(event) => onChange(event.target.value.slice(0, maxLength))}
+        value={safeValue}
+        maxLength={limit}
+        onChange={(event) => onChange(event.target.value.slice(0, limit))}
         className={minHeight}
       />
       <div className="text-right text-xs text-[#6d5b43]">
-        {value.length}/{maxLength}
+        {safeValue.length}/{limit}
       </div>
     </div>
   );
@@ -1944,7 +2043,7 @@ function TeamEditor({
       <div className="space-y-4">
         {members.map((member, index) => (
           <div
-            key={`${index}-${member.name}`}
+            key={index}
             className="rounded-2xl border border-[#eadfce] bg-white p-4"
           >
             <div className="mb-4 flex items-center justify-between">
@@ -2151,7 +2250,7 @@ function validateForm(
   if (!draft.fullName.trim()) return "Completa el nombre.";
   if (!draft.municipalityId) return "Selecciona un municipio.";
   if (!draft.email.trim()) return "Añade el correo electrónico.";
-  if (!draft.phone.trim()) return "Añade el teléfono.";
+  if (!draft.whatsapp.trim()) return "Añade el WhatsApp.";
   if (therapyIds.length === 0) return "Selecciona al menos una terapia.";
   if (helpAreaIds.length === 0) return "Selecciona al menos un área de ayuda.";
   if (locations.length === 0) return "Añade al menos una ubicación.";

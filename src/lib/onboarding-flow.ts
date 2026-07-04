@@ -35,15 +35,14 @@ export function resolveOnboardingPlan(source: OnboardingPlanSource): OnboardingP
   const candidate =
     source.searchPlan ?? source.metadataPlan ?? source.profilePlanSlug ?? source.pendingPlanSlug;
   if (candidate && organisationPlanSlugs.has(candidate)) return "centro";
-  if (candidate && professionalPlanSlugs.has(candidate)) return "profesional";
-  return "presencia";
+  return "profesional";
 }
 
 export function resolveOnboardingPlanSlug(source: OnboardingPlanSource): string {
   const candidate =
     source.searchPlan ?? source.metadataPlan ?? source.profilePlanSlug ?? source.pendingPlanSlug;
-  if (candidate === "profesional" || candidate === "centros-organizadores") return candidate;
-  return "presencia";
+  if (candidate && organisationPlanSlugs.has(candidate)) return "centros-organizadores";
+  return "profesional";
 }
 
 export function getOnboardingPlanConfig(plan: OnboardingPlan): OnboardingPlanConfig {
@@ -102,9 +101,9 @@ export function getOnboardingPlanConfig(plan: OnboardingPlan): OnboardingPlanCon
     therapyCap: 3,
     helpAreaCap: 5,
     locationLimit: 1,
-    presentationMaxLength: 500,
-    approachMaxLength: 500,
-    differentiatorMaxLength: 0,
+    presentationMaxLength: 3000,
+    approachMaxLength: 2000,
+    differentiatorMaxLength: 1000,
     formationMaxItems: 0,
     logoEnabled: false,
     logoRequired: false,

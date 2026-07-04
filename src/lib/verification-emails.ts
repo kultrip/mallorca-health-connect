@@ -17,10 +17,8 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
-function getAdminEmail() {
-  const adminEmail = process.env.ADMIN_EMAIL;
-  if (!adminEmail) throw new Error("Missing ADMIN_EMAIL");
-  return adminEmail;
+export function getAdminEmail() {
+  return process.env.ADMIN_EMAIL || "mallorcaholistica11@gmail.com";
 }
 
 export async function sendAdminVerificationRequestEmail(payload: ProfessionalEmailPayload) {

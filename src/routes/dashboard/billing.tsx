@@ -46,6 +46,8 @@ type BillingPlan = Pick<
   | "name"
   | "description"
   | "price_monthly_cents"
+  | "founder_price_monthly_cents"
+  | "founder_stripe_price_id"
   | "features"
   | "rank"
   | "billing_enabled"
@@ -99,7 +101,7 @@ function BillingPage() {
         .maybeSingle(),
       supabase
         .from("plans")
-        .select("id, slug, name, description, price_monthly_cents, features, rank, billing_enabled")
+        .select("id, slug, name, description, price_monthly_cents, founder_price_monthly_cents, founder_stripe_price_id, features, rank, billing_enabled")
         .eq("billing_enabled", true)
         .order("rank", { ascending: true }),
       supabase.from("billing_profiles").select("*").eq("user_id", user.id).maybeSingle(),
@@ -245,6 +247,27 @@ function BillingPage() {
           Gestiona tu plan para desbloquear mas funciones en Mallorca Holistica.
         </p>
       </div>
+
+      {profile?.is_founder && (
+        <div className="relative overflow-hidden rounded-2xl border border-amber-200/50 bg-gradient-to-r from-amber-50 to-orange-50/50 p-6 dark:from-amber-950/20 dark:to-orange-950/10 shadow-sm">
+          <div className="absolute right-0 top-0 -mr-6 -mt-6 h-24 w-24 rounded-full bg-amber-200/10 blur-xl"></div>
+          <div className="flex items-start gap-4">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-xl shadow-inner">
+              👑
+            </span>
+            <div>
+              <h2 className="font-display text-lg font-bold text-amber-900 dark:text-amber-400">
+                Miembro Fundador de la Comunidad
+              </h2>
+              <p className="mt-1 text-sm text-amber-800/80 dark:text-amber-300/80 leading-relaxed">
+                ¡Gracias por ser parte del nacimiento de Mallorca Holística! Tienes reservada una plaza exclusiva con 
+                <span className="font-semibold text-amber-950 dark:text-amber-200"> 6 meses gratis </span> 
+                y una <span className="font-semibold text-amber-950 dark:text-amber-200">tarifa promocional de por vida</span>.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -437,10 +460,32 @@ function BillingPage() {
                   </div>
                   {plan.slug === "centros-organizadores" && <Badge>Centros</Badge>}
                 </div>
-                <p className="pt-4 text-3xl font-bold">
-                  {formatMonthlyPrice(plan.price_monthly_cents)}
-                  <span className="text-sm font-normal text-muted-foreground">/mes</span>
-                </p>
+                <div className="pt-4 space-y-1">
+                  {profile?.is_founder && plan.founder_price_monthly_cents !== null ? (
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded">
+                          Tarifa Fundador
+                        </span>
+                        <span className="text-xs line-through text-muted-foreground">
+                          {formatMonthlyPrice(plan.price_monthly_cents)}/mes
+                        </span>
+                      </div>
+                      <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                        {formatMonthlyPrice(plan.founder_price_monthly_cents)}
+                        <span className="text-sm font-normal text-muted-foreground">/mes</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        🔒 Precio especial fundador garantizado para siempre
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-3xl font-bold">
+                      {formatMonthlyPrice(plan.price_monthly_cents)}
+                      <span className="text-sm font-normal text-muted-foreground">/mes</span>
+                    </p>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
@@ -460,9 +505,13 @@ function BillingPage() {
                 >
                   {pendingPlanSlug === plan.slug
                     ? "Abriendo Stripe..."
-                    : isVerified
-                      ? `Seleccionar ${plan.name}`
-                      : `Elegir ${plan.name}`}
+                    : profile?.is_founder && plan.founder_price_monthly_cents !== null
+                      ? isVerified
+                        ? `Reservar con Tarifa Fundador`
+                        : `Elegir Tarifa Fundador`
+                      : isVerified
+                        ? `Seleccionar ${plan.name}`
+                        : `Elegir ${plan.name}`}
                 </Button>
               </CardFooter>
             </Card>

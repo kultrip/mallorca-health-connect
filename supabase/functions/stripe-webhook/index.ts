@@ -74,7 +74,7 @@ async function applySubscriptionState(supabase: SupabaseAdmin, subscription: Str
   const { data: plan, error: planError } = await supabase
     .from("plans")
     .select("id")
-    .eq("stripe_price_id", priceId)
+    .or(`stripe_price_id.eq.${priceId},founder_stripe_price_id.eq.${priceId}`)
     .maybeSingle();
 
   if (planError) throw planError;

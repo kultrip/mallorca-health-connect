@@ -253,8 +253,12 @@ function OnboardingPage() {
   const [helpAreas, setHelpAreas] = useState<HelpAreaRow[]>([]);
   const [plans, setPlans] = useState<PlanRow[]>([]);
   const [currentTherapistSlug, setCurrentTherapistSlug] = useState<string | null>(null);
-  const [selectedPlanSlug, setSelectedPlanSlug] = useState<PlanChoice>("presencia");
-  const [wizardPlan, setWizardPlan] = useState<OnboardingPlan>("presencia");
+  const [selectedPlanSlug, setSelectedPlanSlug] = useState<PlanChoice>("profesional");
+  const [wizardPlan, setWizardPlan] = useState<OnboardingPlan>("profesional");
+  const [loadedPhotoUrl, setLoadedPhotoUrl] = useState<string | null>(null);
+  const [loadedLogoUrl, setLoadedLogoUrl] = useState<string | null>(null);
+  const [loadedCenterId, setLoadedCenterId] = useState<string | null>(null);
+  const [loadedStatus, setLoadedStatus] = useState<string>("draft");
   const [draft, setDraft] = useState<WizardDraft>(createInitialDraft());
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -340,12 +344,16 @@ function OnboardingPage() {
         therapist_therapies?: Array<{ therapy_id: string }> | null;
         therapist_help_areas?: Array<{ help_area_id: string }> | null;
         plans?: { slug: string | null } | null;
+        photo_url?: string | null;
+        logo_url?: string | null;
+        center_id?: string | null;
+        status?: string | null;
       } | null = null;
 
       const { data: therapist } = await supabase
         .from("therapists")
         .select(
-          "id, slug, pending_plan_slug, plan_id, full_name, professional_name, email, phone, whatsapp, municipality_id, center_name, address, headline, frase_clave, sobre_mi, approach_text, differentiator_text, mission_text, organisation_type, website, instagram_url, facebook_url, linkedin_url, youtube_url, calendly_url, fresha_url, whatsapp_business_url, other_booking_url, show_whatsapp_public, show_email_public, has_liability_insurance, accepted_deontological_code, accepted_truthfulness, accepted_privacy_policy, accepted_terms_of_use, accepted_publication, declares_legal_authority, target_audience, accompaniment_modalities, session_modalities, home_visit_radius, languages, facilities, gallery_urls, team_members, responsible_first_name, responsible_last_name, responsible_role, responsible_email, responsible_phone, legal_entity_name, legal_entity_tax_id, organization_signature_name, therapist_therapies(therapy_id), therapist_help_areas(help_area_id), plans!therapists_plan_id_fkey(slug)",
+          "id, slug, pending_plan_slug, plan_id, full_name, professional_name, email, phone, whatsapp, municipality_id, center_name, address, headline, frase_clave, sobre_mi, approach_text, differentiator_text, mission_text, organisation_type, website, instagram_url, facebook_url, linkedin_url, youtube_url, calendly_url, fresha_url, whatsapp_business_url, other_booking_url, show_whatsapp_public, show_email_public, has_liability_insurance, accepted_deontological_code, accepted_truthfulness, accepted_privacy_policy, accepted_terms_of_use, accepted_publication, declares_legal_authority, target_audience, accompaniment_modalities, session_modalities, home_visit_radius, languages, facilities, gallery_urls, team_members, responsible_first_name, responsible_last_name, responsible_role, responsible_email, responsible_phone, legal_entity_name, legal_entity_tax_id, organization_signature_name, status, photo_url, logo_url, center_id, therapist_therapies(therapy_id), therapist_help_areas(help_area_id), plans!therapists_plan_id_fkey(slug)",
         )
         .eq("user_id", currentUser.id)
         .maybeSingle();
@@ -356,6 +364,12 @@ function OnboardingPage() {
         currentTherapistLookup = therapist as NonNullable<typeof currentTherapistLookup>;
 
         setCurrentTherapistSlug(currentTherapistLookup.slug);
+        setLoadedPhotoUrl(currentTherapistLookup.photo_url ?? null);
+        setLoadedLogoUrl(currentTherapistLookup.logo_url ?? null);
+        setLoadedStatus(currentTherapistLookup.status ?? "draft");
+        if (currentTherapistLookup.center_id) {
+          setLoadedCenterId(currentTherapistLookup.center_id);
+        }
         setDraft((current) => ({
           ...current,
           firstName: currentTherapistLookup.full_name.split(" ")[0] ?? current.firstName,
@@ -464,6 +478,37 @@ function OnboardingPage() {
       }
 
       await loadCatalogs();
+
+      // Load user centers to prepopulate locations
+      const { data: userCenters } = await supabase
+        .from("centers")
+        .select("*")
+        .eq("owner_user_id", currentUser.id);
+
+      if (!active) return;
+
+      if (userCenters && userCenters.length > 0) {
+        const mappedLocations = userCenters.map((c) => ({
+          centerName: c.name || "",
+          address: c.address || "",
+          municipalityId: c.municipality_id || "",
+        }));
+        setDraft((current) => ({
+          ...current,
+          locations: mappedLocations,
+        }));
+        if (therapist?.center_id) {
+          setLoadedCenterId(therapist.center_id);
+        } else {
+          setLoadedCenterId(userCenters[0].id);
+        }
+      }
+
+      // Restore furthest onboarding step from metadata
+      const cachedStep = currentUser.user_metadata?.furthest_onboarding_step;
+      if (cachedStep && cachedStep >= 1 && cachedStep <= 5) {
+        setStep(cachedStep as WizardStep);
+      }
 
       const source = {
         searchPlan: normalizePlanChoice(search.plan),
@@ -632,22 +677,22 @@ function OnboardingPage() {
                         required
                       />
                     </Field>
-                    <Field label="Teléfono *">
+                    <Field label="Teléfono">
                       <Input
                         value={draft.phone}
                         onChange={(event) => updateDraft(setDraft, { phone: event.target.value })}
                         autoComplete="tel"
-                        required
                       />
                     </Field>
-                    <Field label="WhatsApp">
+                    <Field label="WhatsApp *">
                       <Input
                         value={draft.whatsapp}
                         onChange={(event) =>
                           updateDraft(setDraft, { whatsapp: event.target.value })
                         }
                         autoComplete="tel"
-                        placeholder="Puede ser el mismo número"
+                        placeholder="Número de WhatsApp para contacto"
+                        required
                       />
                     </Field>
                     <Field label="Logo *">
@@ -656,6 +701,8 @@ function OnboardingPage() {
                         label="Subir logo"
                         accept="image/*"
                         onChange={setLogoFile}
+                        showCircularPreview={true}
+                        initialPreviewUrl={loadedLogoUrl || undefined}
                       />
                     </Field>
                     <Field label="Imagen principal">
@@ -664,6 +711,8 @@ function OnboardingPage() {
                         label="Subir imagen principal"
                         accept="image/*"
                         onChange={setPhotoFile}
+                        showCircularPreview={true}
+                        initialPreviewUrl={loadedPhotoUrl || undefined}
                       />
                     </Field>
                   </div>
@@ -717,22 +766,22 @@ function OnboardingPage() {
                         required
                       />
                     </Field>
-                    <Field label="Teléfono *">
+                    <Field label="Teléfono">
                       <Input
                         value={draft.phone}
                         onChange={(event) => updateDraft(setDraft, { phone: event.target.value })}
                         autoComplete="tel"
-                        required
                       />
                     </Field>
-                    <Field label="WhatsApp">
+                    <Field label="WhatsApp *">
                       <Input
                         value={draft.whatsapp}
                         onChange={(event) =>
                           updateDraft(setDraft, { whatsapp: event.target.value })
                         }
                         autoComplete="tel"
-                        placeholder="Puede ser el mismo número"
+                        placeholder="Número de WhatsApp para contacto"
+                        required
                       />
                     </Field>
                     <Field label="Foto principal">
@@ -741,6 +790,8 @@ function OnboardingPage() {
                         label="Subir foto"
                         accept="image/*"
                         onChange={setPhotoFile}
+                        showCircularPreview={true}
+                        initialPreviewUrl={loadedPhotoUrl || undefined}
                       />
                     </Field>
                     {config.logoEnabled && (
@@ -750,6 +801,8 @@ function OnboardingPage() {
                           label="Subir logo"
                           accept="image/*"
                           onChange={setLogoFile}
+                          showCircularPreview={true}
+                          initialPreviewUrl={loadedLogoUrl || undefined}
                         />
                       </Field>
                     )}
@@ -987,7 +1040,7 @@ function OnboardingPage() {
 
                   {draft.locations.map((location, index) => (
                     <div
-                      key={`${index}-${location.centerName}`}
+                      key={index}
                       className="rounded-3xl border border-[#eadfce] bg-[#fffaf4] p-5"
                     >
                       <div className="mb-4 flex items-center justify-between">
@@ -1018,7 +1071,7 @@ function OnboardingPage() {
                         )}
                       </div>
                       <div className="grid gap-5 md:grid-cols-2">
-                        <Field label="Nombre del centro *">
+                        <Field label={config.slug === "presencia" && index === 0 ? "Nombre del centro (opcional)" : (index === 0 ? "Nombre del centro *" : "Nombre del centro")}>
                           <Input
                             value={location.centerName}
                             onChange={(event) =>
@@ -1027,17 +1080,17 @@ function OnboardingPage() {
                               })
                             }
                             placeholder="Ej: Espacio Mallorca"
-                            required={index === 0}
+                            required={index === 0 && config.slug !== "presencia"}
                           />
                         </Field>
-                        <Field label="Dirección *">
+                        <Field label={config.slug === "presencia" && index === 0 ? "Dirección (opcional)" : (index === 0 ? "Dirección *" : "Dirección")}>
                           <Input
                             value={location.address}
                             onChange={(event) =>
                               updateLocation(setDraft, index, { address: event.target.value })
                             }
                             placeholder="Calle, número, referencia..."
-                            required={index === 0}
+                            required={index === 0 && config.slug !== "presencia"}
                           />
                         </Field>
                         <Field label="Municipio *">
@@ -1108,10 +1161,10 @@ function OnboardingPage() {
                     <Textarea
                       value={draft.presentationText}
                       onChange={(event) => {
-                        const next = event.target.value.slice(0, config.presentationMaxLength);
+                        const next = event.target.value.slice(0, config.presentationMaxLength || 3000);
                         updateDraft(setDraft, { presentationText: next });
                       }}
-                      maxLength={config.presentationMaxLength}
+                      maxLength={config.presentationMaxLength || 3000}
                       className="min-h-44"
                       placeholder={
                         config.isOrganisation
@@ -1131,7 +1184,7 @@ function OnboardingPage() {
                             : "Mantén un tono claro, amable y breve."}
                       </span>
                       <span>
-                        {draft.presentationText.length}/{config.presentationMaxLength}
+                        {(draft.presentationText || "").length}/{config.presentationMaxLength || 3000}
                       </span>
                     </div>
                   </div>
@@ -1229,18 +1282,18 @@ function OnboardingPage() {
                         <Textarea
                           value={draft.approachText}
                           onChange={(event) => {
-                            const next = event.target.value.slice(0, config.approachMaxLength);
+                            const next = event.target.value.slice(0, config.approachMaxLength || 2000);
                             updateDraft(setDraft, { approachText: next });
                           }}
-                          maxLength={config.approachMaxLength}
+                          maxLength={config.approachMaxLength || 2000}
                           className="min-h-40"
                           placeholder="Describe tu enfoque, metodología y el tipo de acompañamiento que ofreces."
                           required
                         />
                         <div className="flex items-center justify-between text-xs text-[#6d5b43]">
-                          <span>Máximo {config.approachMaxLength} caracteres.</span>
+                          <span>Máximo {config.approachMaxLength || 2000} caracteres.</span>
                           <span>
-                            {draft.approachText.length}/{config.approachMaxLength}
+                            {(draft.approachText || "").length}/{config.approachMaxLength || 2000}
                           </span>
                         </div>
                       </div>
@@ -1253,18 +1306,18 @@ function OnboardingPage() {
                           onChange={(event) => {
                             const next = event.target.value.slice(
                               0,
-                              config.differentiatorMaxLength,
+                              config.differentiatorMaxLength || 1000,
                             );
                             updateDraft(setDraft, { differentiatorText: next });
                           }}
-                          maxLength={config.differentiatorMaxLength}
+                          maxLength={config.differentiatorMaxLength || 1000}
                           className="min-h-32"
                           placeholder="Comparte aquello que te hace especialmente reconocible."
                         />
                         <div className="flex items-center justify-between text-xs text-[#6d5b43]">
-                          <span>Máximo {config.differentiatorMaxLength} caracteres.</span>
+                          <span>Máximo {config.differentiatorMaxLength || 1000} caracteres.</span>
                           <span>
-                            {draft.differentiatorText.length}/{config.differentiatorMaxLength}
+                            {(draft.differentiatorText || "").length}/{config.differentiatorMaxLength || 1000}
                           </span>
                         </div>
                       </div>
@@ -1698,14 +1751,14 @@ function OnboardingPage() {
               </Button>
               <span className="text-xs text-[#6d5b43]">
                 <Lock className="mr-1 inline h-3.5 w-3.5" />
-                Guardamos tu perfil cuando finalices el paso 5.
+                Guardamos tu progreso automáticamente en cada paso.
               </span>
               <Button
                 type="submit"
                 disabled={saving}
                 className="rounded-full bg-[#526046] px-8 text-white hover:bg-[#435039]"
               >
-                {step === 5 ? (saving ? "Finalizando..." : "Finalizar Perfil") : "Siguiente"}
+                {step === 5 ? (saving ? "Finalizando..." : "Finalizar Perfil") : "Guardar y continuar"}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
@@ -1784,7 +1837,17 @@ function OnboardingPage() {
     }
 
     if (step < 5) {
-      setStep((current) => Math.min(5, (current + 1) as WizardStep) as WizardStep);
+      setSaving(true);
+      try {
+        await saveDraftProgress((step + 1) as WizardStep);
+        setStep((current) => Math.min(5, (current + 1) as WizardStep) as WizardStep);
+      } catch (saveError) {
+        console.error("Auto-save error:", saveError);
+        toast.error("No se pudo autoguardar tu progreso, pero puedes continuar.");
+        setStep((current) => Math.min(5, (current + 1) as WizardStep) as WizardStep);
+      } finally {
+        setSaving(false);
+      }
       return;
     }
 
@@ -1891,7 +1954,7 @@ function OnboardingPage() {
         city: mainMunicipality?.name ?? null,
         lat: null,
         lng: null,
-        whatsapp: draft.whatsapp.trim() || draft.phone.trim() || null,
+        whatsapp: draft.whatsapp.trim() || null,
         phone: draft.phone.trim() || null,
         email: draft.email.trim() || user.email,
         link_reserva: buildBookingLink(draft),
@@ -2007,6 +2070,152 @@ function OnboardingPage() {
     }
   }
 
+  async function saveDraftProgress(targetStep: number) {
+    if (!user) return;
+    const planId = getPlanId(plans, selectedPlanSlug);
+    if (!planId) return;
+
+    const isOrganisation = config.isOrganisation;
+    const publicFullName = isOrganisation
+      ? draft.organizationName.trim()
+      : [draft.firstName.trim(), draft.lastName.trim()].filter(Boolean).join(" ");
+    const slugBase = slugify(
+      draft.professionalName.trim() ||
+        (isOrganisation ? draft.organizationName.trim() : publicFullName),
+    );
+    const therapistSlug =
+      currentTherapistSlug || `${slugBase}-${Math.floor(Math.random() * 1000)}`;
+    if (!currentTherapistSlug) {
+      setCurrentTherapistSlug(therapistSlug);
+    }
+
+    // 1. Upload files if present
+    let photoUrl = loadedPhotoUrl;
+    if (photoFile) {
+      photoUrl = await uploadPublicFile(photoFile, "therapist-photos", user.id);
+      setLoadedPhotoUrl(photoUrl);
+    }
+
+    let logoUrl = loadedLogoUrl;
+    if (config.logoEnabled && logoFile) {
+      logoUrl = await uploadPublicFile(logoFile, "therapist-photos", user.id);
+      setLoadedLogoUrl(logoUrl);
+    }
+
+    // 2. Upsert main center
+    let mainCenterId = loadedCenterId;
+    if (draft.locations.length > 0) {
+      const firstLocation = draft.locations[0];
+      const mainCenter = await upsertCenter(user.id, planId, firstLocation, therapistSlug);
+      mainCenterId = mainCenter.id;
+      setLoadedCenterId(mainCenterId);
+
+      // Upsert extra centers if any
+      if (config.extraLocationEnabled && draft.locations.length > 1) {
+        await Promise.all(
+          draft.locations
+            .slice(1)
+            .map((location, index) =>
+              upsertCenter(user.id, planId, location, `${therapistSlug}-${index + 2}`),
+            ),
+        );
+      }
+    }
+
+    const firstLocation = draft.locations[0];
+    const mainMunicipality = sortedMunicipalities.find(
+      (municipality) => municipality.id === (firstLocation?.municipalityId || null),
+    );
+
+    const draftPayload = {
+      user_id: user.id,
+      slug: therapistSlug,
+      full_name: publicFullName || "Draft Professional",
+      professional_name: draft.professionalName.trim() || null,
+      headline: draft.tagline.trim() || null,
+      frase_clave: draft.tagline.trim() || null,
+      sobre_mi: draft.presentationText.trim() || null,
+      approach_text: config.isProfessional ? draft.approachText.trim() || null : null,
+      differentiator_text: config.isOrganisation
+        ? draft.differentiatorText.trim() || null
+        : config.isProfessional
+          ? draft.differentiatorText.trim() || null
+          : null,
+      formacion: config.isProfessional ? formatFormations(draft.formations) : null,
+      experiencia: null,
+      photo_url: photoUrl,
+      logo_url: logoUrl,
+      especialidad: selectedTherapies[0]?.name ?? null,
+      subespecialidades: selectedTherapies.map((item) => item.name),
+      modalities: deriveModalities(draft.sessionModalities),
+      municipality_id: firstLocation?.municipalityId || null,
+      center_id: mainCenterId,
+      center_name: firstLocation?.centerName.trim() || null,
+      address: firstLocation?.address.trim() || null,
+      city: mainMunicipality?.name ?? null,
+      lat: null,
+      lng: null,
+      whatsapp: draft.whatsapp.trim() || null,
+      phone: draft.phone.trim() || null,
+      email: draft.email.trim() || user.email,
+      link_reserva: buildBookingLink(draft),
+      website: draft.website.trim() || null,
+      instagram_url: draft.instagramUrl.trim() || null,
+      facebook_url: draft.facebookUrl.trim() || null,
+      linkedin_url: draft.linkedinUrl.trim() || null,
+      youtube_url: draft.youtubeUrl.trim() || null,
+      calendly_url: draft.calendlyUrl.trim() || null,
+      fresha_url: draft.freshaUrl.trim() || null,
+      whatsapp_business_url: draft.whatsappBusinessUrl.trim() || null,
+      other_booking_url: draft.otherBookingUrl.trim() || null,
+      show_whatsapp_public: draft.showWhatsappPublic,
+      show_email_public: draft.showEmailPublic,
+      languages: config.isOrganisation
+        ? draft.languages
+        : config.isProfessional
+          ? draft.languages
+          : ["Español"],
+      target_audience: isOrganisation ? draft.organizationPublicAudience : draft.targetAudience,
+      accompaniment_modalities: isOrganisation
+        ? draft.organizationActivities
+        : draft.accompanimentModalities,
+      session_modalities: draft.sessionModalities,
+      home_visit_radius: draft.sessionModalities.includes("Presencial a domicilio")
+        ? draft.homeVisitRadius || null
+        : null,
+      tagline: draft.tagline.trim() || null,
+      mission_text: isOrganisation ? draft.missionText.trim() || null : null,
+      accepted_deontological_code: draft.acceptedDeontologicalCode,
+      accepted_truthfulness: draft.acceptedTruthfulness,
+      accepted_privacy_policy: draft.acceptedPrivacyPolicy,
+      accepted_terms_of_use: draft.acceptedTermsOfUse,
+      accepted_publication: draft.acceptedPublication,
+      has_liability_insurance: config.isProfessional ? draft.hasLiabilityInsurance : false,
+      organisation_type: isOrganisation ? draft.organizationType.trim() || null : null,
+      facilities: isOrganisation ? draft.facilities : null,
+      status: loadedStatus || "draft",
+      plan_id: planId,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: savedTherapist, error: upsertError } = await supabase
+      .from("therapists")
+      .upsert(draftPayload, { onConflict: "user_id" })
+      .select("id")
+      .single();
+
+    if (upsertError) throw upsertError;
+
+    if (savedTherapist?.id) {
+      await replaceTherapistRelations(savedTherapist.id, draft.therapyIds, draft.helpAreaIds);
+    }
+
+    // Update furthest onboarding step in user metadata
+    await supabase.auth.updateUser({
+      data: { furthest_onboarding_step: targetStep },
+    });
+  }
+
   async function replaceTherapistRelations(
     therapistId: string,
     therapyIds: string[],
@@ -2063,11 +2272,12 @@ function OnboardingPage() {
     slugSeed: string,
   ) {
     const municipality = sortedMunicipalities.find((item) => item.id === location.municipalityId);
+    const centerNameClean = location.centerName.trim() || "Consulta";
     const centerPayload = {
       owner_user_id: ownerUserId,
       plan_id: planId,
-      slug: slugify(`${location.centerName}-${slugSeed}`),
-      name: location.centerName.trim(),
+      slug: slugify(`${centerNameClean}-${slugSeed}`),
+      name: centerNameClean,
       address: location.address.trim() || null,
       municipality_id: location.municipalityId || null,
       lat: municipality?.lat ?? null,
@@ -2081,7 +2291,7 @@ function OnboardingPage() {
 
     const { data, error } = await supabase
       .from("centers")
-      .insert(centerPayload)
+      .upsert(centerPayload, { onConflict: "slug" })
       .select("id")
       .single();
 
@@ -2248,29 +2458,58 @@ function UploadBox({
   label,
   accept,
   onChange,
+  showCircularPreview,
+  initialPreviewUrl,
 }: {
   file: File | null;
   label: string;
   accept: string;
   onChange: (file: File | null) => void;
+  showCircularPreview?: boolean;
+  initialPreviewUrl?: string;
 }) {
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setLocalPreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setLocalPreview(null);
+    }
+  }, [file]);
+
+  const previewSrc = localPreview || initialPreviewUrl;
+
   return (
     <div className="rounded-2xl border border-dashed border-[#d8c6b0] bg-white p-4">
-      <label className="flex cursor-pointer flex-col gap-3">
-        <span className="inline-flex items-center gap-2 text-sm font-medium text-[#342b22]">
-          <Upload className="h-4 w-4" />
-          {label}
-        </span>
-        <Input
-          type="file"
-          accept={accept}
-          onChange={(event) => onChange(event.target.files?.[0] ?? null)}
-          className="hidden"
-        />
-        <span className="text-xs text-[#6d5b43]">
-          {file ? file.name : "Selecciona un archivo desde tu equipo"}
-        </span>
-      </label>
+      <div className="flex flex-col items-center gap-4 sm:flex-row">
+        {showCircularPreview && previewSrc && (
+          <div className="relative h-20 w-24 flex-shrink-0 overflow-hidden rounded-full border-2 border-[#d8c6b0]">
+            <img
+              src={previewSrc}
+              alt="Vista previa"
+              className="h-full w-full object-cover"
+            />
+          </div>
+        )}
+        <label className="flex flex-1 cursor-pointer flex-col gap-3">
+          <span className="inline-flex items-center gap-2 text-sm font-medium text-[#342b22]">
+            <Upload className="h-4 w-4" />
+            {label}
+          </span>
+          <Input
+            type="file"
+            accept={accept}
+            onChange={(event) => onChange(event.target.files?.[0] ?? null)}
+            className="hidden"
+          />
+          <span className="text-xs text-[#6d5b43]">
+            {file ? file.name : "Selecciona un archivo desde tu equipo"}
+          </span>
+        </label>
+      </div>
     </div>
   );
 }
@@ -2657,7 +2896,7 @@ function FormationEditor({
       <div className="space-y-4">
         {formations.map((formation, index) => (
           <div
-            key={`${index}-${formation.formation}`}
+            key={index}
             className="rounded-2xl border border-[#eadfce] bg-white p-4"
           >
             <div className="mb-4 flex items-center justify-between">
@@ -2739,7 +2978,7 @@ function TeamEditor({
       <div className="space-y-4">
         {members.map((member, index) => (
           <div
-            key={`${index}-${member.name}`}
+            key={index}
             className="rounded-2xl border border-[#eadfce] bg-white p-4"
           >
             <div className="mb-4 flex items-center justify-between">
@@ -2818,13 +3057,13 @@ function validateStep(
       if (!draft.organizationType.trim()) return "Selecciona el tipo de organización.";
       if (!draft.municipalityId) return "Elige el municipio principal.";
       if (!draft.email.trim()) return "Añade el correo electrónico.";
-      if (!draft.phone.trim()) return "Añade el teléfono.";
+      if (!draft.whatsapp.trim()) return "Añade el WhatsApp.";
       if (!hasLogoFile) return "Añade el logo de la organización.";
     } else if (!draft.firstName.trim() || !draft.lastName.trim())
       return "Completa tu nombre y apellidos.";
     if (!draft.municipalityId) return "Elige tu municipio principal.";
     if (!draft.email.trim()) return "Añade tu correo electrónico.";
-    if (!draft.phone.trim()) return "Añade tu teléfono.";
+    if (!draft.whatsapp.trim()) return "Añade tu WhatsApp.";
     return null;
   }
 
@@ -2842,8 +3081,11 @@ function validateStep(
         return "Indica el radio de desplazamiento.";
       }
     }
-    if (!draft.locations[0]?.centerName.trim()) return "Añade el nombre de la ubicación principal.";
-    if (!draft.locations[0]?.address.trim()) return "Añade la dirección de la ubicación principal.";
+    const isFreePlan = config.slug === "presencia";
+    if (!isFreePlan) {
+      if (!draft.locations[0]?.centerName.trim()) return "Añade el nombre de la ubicación principal.";
+      if (!draft.locations[0]?.address.trim()) return "Añade la dirección de la ubicación principal.";
+    }
     if (!draft.locations[0]?.municipalityId)
       return "Selecciona el municipio de la ubicación principal.";
     return null;

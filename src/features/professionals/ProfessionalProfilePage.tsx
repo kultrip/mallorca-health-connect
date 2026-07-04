@@ -35,6 +35,8 @@ import {
   therapistCanShowVerificationBadge,
 } from "@/lib/plan-access";
 import { ProfessionalReviewsSection } from "./ProfessionalReviewsSection";
+import { SingleProfessionalMap } from "@/components/therapists/SingleProfessionalMap";
+import { MUNICIPALITY_COORDINATES } from "@/lib/municipality-coordinates";
 
 type NamedSlug = {
   slug: string;
@@ -192,7 +194,7 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
   const locationLabel = data.city || municipality?.name || data.address;
   const canShowDirectContact = therapistCanShowDirectContact(data, firstRelation(extra.plans));
   const hasContactActions = Boolean(
-    canShowDirectContact && (data.whatsapp || data.link_reserva || data.website),
+    canShowDirectContact && (data.whatsapp || data.phone || data.link_reserva || data.website),
   );
   const mapCoordinates = getProfileCoordinates(data.lat, data.lng, municipality);
   const hasMap = Boolean(mapCoordinates);
@@ -561,11 +563,16 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
               </SideCard>
             )}
 
-            {hasMap && (
+            {hasMap && mapCoordinates && (
               <SideCard icon={MapPin} title="Ubicación">
                 <p className="text-sm text-[#342b22]">{locationLabel ?? "Mallorca"}</p>
-                <div className="mt-4 min-h-40 rounded-2xl border border-[#eadfce] bg-[linear-gradient(135deg,#dfe9d5,#f5eadb)] p-4 text-sm text-[#5d5144]">
-                  Ubicación aproximada en Mallorca
+                <div className="mt-4">
+                  <SingleProfessionalMap
+                    lat={mapCoordinates.lat}
+                    lng={mapCoordinates.lng}
+                    name={name}
+                    isApproximate={!data.address || !data.lat || !data.lng}
+                  />
                 </div>
                 {hasMultipleLocations && isPremiumPlan && (
                   <div className="mt-4 space-y-3">
@@ -595,7 +602,7 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
               </SideCard>
             )}
 
-            {premiumProfileReady && (
+            {premiumProfileReady ? (
               <SideCard icon={MessageCircle} title="Contacto directo">
                 <div className="space-y-3">
                   {data.phone && (
@@ -605,11 +612,11 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
                       description={data.phone}
                     />
                   )}
-                  {data.show_whatsapp_public && data.whatsapp && (
+                  {(data.show_whatsapp_public || premiumProfileReady) && (data.whatsapp || data.phone) && (
                     <ContactLink
-                      href={whatsappHref(data.whatsapp, contactName)}
+                      href={whatsappHref(data.whatsapp || data.phone || "", contactName)}
                       label="WhatsApp"
-                      description={data.whatsapp}
+                      description={data.whatsapp || data.phone || ""}
                     />
                   )}
                   {data.show_email_public && data.email && (
@@ -652,6 +659,27 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
                   )}
                 </div>
               </SideCard>
+            ) : (
+              (data.phone || (data.show_whatsapp_public && (data.whatsapp || data.phone))) && (
+                <SideCard icon={MessageCircle} title="Contacto directo">
+                  <div className="space-y-3">
+                    {data.phone && (
+                      <ContactLink
+                        href={`tel:${sanitizePhoneHref(data.phone)}`}
+                        label="Llamar"
+                        description={data.phone}
+                      />
+                    )}
+                    {data.show_whatsapp_public && (data.whatsapp || data.phone) && (
+                      <ContactLink
+                        href={whatsappHref(data.whatsapp || data.phone || "", contactName)}
+                        label="WhatsApp"
+                        description={data.whatsapp || data.phone || ""}
+                      />
+                    )}
+                  </div>
+                </SideCard>
+              )
             )}
           </aside>
         </section>
@@ -714,6 +742,7 @@ function ContactActions({
   data: {
     id: string;
     whatsapp?: string | null;
+    phone?: string | null;
     link_reserva?: string | null;
     website?: string | null;
   };
@@ -751,14 +780,14 @@ function ContactActions({
           </a>
         </Button>
       )}
-      {data.whatsapp && (
+      {(data.whatsapp || data.phone) && (
         <Button
           asChild
           variant="outline"
           className="rounded-full border-[#9d8d76] bg-white/45 px-7 text-[#342b22] hover:bg-white"
         >
           <a
-            href={whatsappHref(data.whatsapp, contactName)}
+            href={whatsappHref(data.whatsapp || data.phone || "", contactName)}
             target="_blank"
             rel="noopener"
             onClick={() =>
@@ -905,6 +934,10 @@ function getProfileCoordinates(
   if (isFiniteNumber(lat) && isFiniteNumber(lng)) return { lat, lng };
   if (isFiniteNumber(municipality?.lat) && isFiniteNumber(municipality?.lng)) {
     return { lat: municipality.lat, lng: municipality.lng };
+  }
+  if (municipality?.slug) {
+    const fallback = MUNICIPALITY_COORDINATES[municipality.slug.toLowerCase()];
+    if (fallback) return fallback;
   }
   return null;
 }

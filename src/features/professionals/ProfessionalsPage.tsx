@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell, PageHeader } from "@/components/layout/PageShell";
-import { ProfessionalResultsWithMap } from "@/components/therapists/ProfessionalResultsWithMap";
+import { ProfessionalResultsWithMap, ProfessionalResultsSkeleton } from "@/components/therapists/ProfessionalResultsWithMap";
 import type { TherapistCardData } from "@/components/therapists/TherapistCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useMemo } from "react";
@@ -120,11 +120,7 @@ export function ProfessionalsPage({ search }: { search: ProfessionalsSearch }) {
         </div>
 
         {isLoading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-[4/5] w-full rounded-3xl" />
-            ))}
-          </div>
+          <ProfessionalResultsSkeleton />
         ) : count === 0 ? (
           <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">
             <p className="font-display text-xl text-foreground/80">

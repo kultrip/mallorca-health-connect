@@ -11,3 +11,7 @@ export function redirectProfileSlug(slug: string) {
 export function redirectTherapySlug(slug: string) {
   throw redirect({ to: "/therapies/$slug", params: { slug }, search: true });
 }
+
+export function redirectTherapyProfessionalsSlug(slug: string) {
+  throw redirect({ to: "/therapies/$slug/professionals", params: { slug }, search: true });
+}
