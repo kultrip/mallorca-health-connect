@@ -1,4 +1,4 @@
-import { type FormEvent, type ReactNode, useMemo, useState, useEffect } from "react";
+import { type FormEvent, type ReactNode, useMemo, useState, useEffect, useRef } from "react";
 import {
   ArrowRight,
   Building2,
@@ -1693,9 +1693,24 @@ function CatalogPicker({
   draggedIndex: number | null;
   onDragIndexChange: (value: number | null) => void;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const filtered = items.filter((item) =>
     item.name.toLowerCase().includes(search.trim().toLowerCase()),
   );
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   function toggle(id: string) {
     const exists = selectedIds.includes(id);
@@ -1722,15 +1737,53 @@ function CatalogPicker({
         <h4 className="font-display text-lg text-[#11100e]">{title}</h4>
         <p className="mt-1 text-sm text-[#6d5b43]">{description}</p>
       </div>
-      <div className="relative">
+
+      <div className="relative" ref={containerRef}>
         <Input
           value={search}
-          onChange={(event) => onSearchChange(event.target.value)}
+          onChange={(event) => {
+            onSearchChange(event.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
           className="pr-10"
         />
         <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8c7a66]" />
+
+        {isOpen && (
+          <div className="absolute left-0 right-0 top-full z-50 mt-1 grid max-h-60 gap-2 overflow-auto rounded-2xl border border-[#eadfce] bg-white p-3 shadow-lg">
+            {filtered.map((item) => {
+              const selected = selectedIds.includes(item.id);
+              const disabled = !selected && maxSelection !== null && selectedIds.length >= maxSelection;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => toggle(item.id)}
+                  disabled={disabled}
+                  className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition-colors ${
+                    selected
+                      ? "border-[#526046] bg-[#f4ede6] text-[#1f1c18]"
+                      : "border-[#eadfce] bg-white text-[#342b22] hover:bg-[#fffaf4]"
+                  } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+                >
+                  <span>{item.name}</span>
+                  {selected ? (
+                    <Check className="h-4 w-4 text-[#526046]" />
+                  ) : (
+                    <Plus className="h-4 w-4 text-[#8c7a66]" />
+                  )}
+                </button>
+              );
+            })}
+            {filtered.length === 0 && (
+              <p className="px-3 py-2 text-sm text-[#8c7a66] text-center">No encontramos resultados.</p>
+            )}
+          </div>
+        )}
       </div>
+
       {selectedIds.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {selectedIds.map((id, index) => {
@@ -1763,35 +1816,7 @@ function CatalogPicker({
           })}
         </div>
       )}
-      <div className="grid max-h-60 gap-2 overflow-auto rounded-2xl border border-[#eadfce] bg-white p-3">
-        {filtered.map((item) => {
-          const selected = selectedIds.includes(item.id);
-          const disabled = !selected && maxSelection !== null && selectedIds.length >= maxSelection;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => toggle(item.id)}
-              disabled={disabled}
-              className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition-colors ${
-                selected
-                  ? "border-[#526046] bg-[#f4ede6] text-[#1f1c18]"
-                  : "border-[#eadfce] bg-white text-[#342b22] hover:bg-[#fffaf4]"
-              } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
-            >
-              <span>{item.name}</span>
-              {selected ? (
-                <Check className="h-4 w-4 text-[#526046]" />
-              ) : (
-                <Plus className="h-4 w-4 text-[#8c7a66]" />
-              )}
-            </button>
-          );
-        })}
-        {filtered.length === 0 && (
-          <p className="px-3 py-2 text-sm text-[#8c7a66]">No encontramos resultados.</p>
-        )}
-      </div>
+
       <p className="text-xs text-[#6d5b43]">{helperText}</p>
     </div>
   );
