@@ -2006,6 +2006,7 @@ function OnboardingPage() {
         status: "pending",
         verified: false,
         plan_id: planId,
+        is_founder: user?.user_metadata?.is_founder === true,
         verification_submitted_at: config.isProfessional ? new Date().toISOString() : null,
         verification_document_path: diplomaUpload?.path ?? null,
         verification_document_name: diplomaUpload?.name ?? null,
@@ -2195,6 +2196,7 @@ function OnboardingPage() {
       facilities: isOrganisation ? draft.facilities : null,
       status: loadedStatus || "draft",
       plan_id: planId,
+      is_founder: user?.user_metadata?.is_founder === true,
       updated_at: new Date().toISOString(),
     };
 

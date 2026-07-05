@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { Leaf, Menu, UserCircle, X } from "lucide-react";
 import { useState } from "react";
 
@@ -10,8 +10,24 @@ const NAV_LINKS = [
   { to: "/trust", label: "Sobre nosotros" },
 ] as const;
 
+const SUB_NAV_LINKS = [
+  { to: "/for-professionals", label: "Soy profesional" },
+  { to: "/plan-presencia", label: "Plan Presencia" },
+  { to: "/profesional-fundador", label: "Profesional Verificado" },
+  { to: "/comunidad-fundadora-organizaciones", label: "Centros & Org" },
+  { to: "/comunidad-fundadora-acceso", label: "Invitación" },
+] as const;
+
 export function SiteHeader({ transparent: _unused }: { transparent?: boolean } = {}) {
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const pathname = location.pathname;
+
+  const showSubNav =
+    pathname.startsWith("/for-professionals") ||
+    pathname.startsWith("/plan-presencia") ||
+    pathname.startsWith("/profesional-fundador") ||
+    pathname.startsWith("/comunidad-fundadora-");
 
   return (
     <header className="relative z-40 border-b border-[#eadfce]/70 bg-[#fffaf2]/92 backdrop-blur">
@@ -70,6 +86,24 @@ export function SiteHeader({ transparent: _unused }: { transparent?: boolean } =
           {open ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
+
+      {/* Conditional Secondary Sub-navigation */}
+      {showSubNav && (
+        <div className="border-t border-[#eadfce]/50 bg-[#fff9f0]/95 py-2.5">
+          <div className="mx-auto flex max-w-[1320px] items-center gap-1.5 overflow-x-auto px-5 scrollbar-none md:gap-3 md:px-10">
+            {SUB_NAV_LINKS.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="shrink-0 rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-[#524a3e] hover:bg-[#ebdcc9]/40 hover:text-[#526046] transition-all"
+                activeProps={{ className: "bg-[#526046]/10 text-[#526046] font-semibold" }}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {open && (
         <div className="border-t border-[#eadfce] bg-[#fffaf2]">

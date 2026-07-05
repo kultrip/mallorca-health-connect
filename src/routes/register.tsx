@@ -30,7 +30,35 @@ function Page() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
-  const selectedPlan = search.plan ?? "presencia";
+  const [confirmationLink, setConfirmationLink] = useState("");
+  const track = search.track;
+  const isFounderQuery = search.founder === "true" || search.founder === "true";
+
+  let selectedPlan: "presencia" | "profesional" | "centros-organizadores" = "presencia";
+  let isFounder = isFounderQuery;
+
+  if (search.plan) {
+    selectedPlan = search.plan;
+  }
+
+  if (track) {
+    if (track === "presencia") {
+      selectedPlan = "presencia";
+      isFounder = false;
+    } else if (track === "verificado") {
+      selectedPlan = "profesional";
+      isFounder = false;
+    } else if (track === "organizacion") {
+      selectedPlan = "centros-organizadores";
+      isFounder = false;
+    } else if (track === "verificadoFundador") {
+      selectedPlan = "profesional";
+      isFounder = true;
+    } else if (track === "organizacionFundadora") {
+      selectedPlan = "centros-organizadores";
+      isFounder = true;
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,19 +66,27 @@ function Page() {
 
     setLoading(true);
     try {
-      await signUpUser({
+      const res = await signUpUser({
         data: {
           name,
           email,
           password,
           selectedPlan,
+          isFounder,
           origin: window.location.origin,
         },
       });
 
       setLoading(false);
       setRegisteredEmail(email);
-      toast.success("Cuenta creada. ¡Te hemos enviado el email de confirmación!");
+      if (res.actionLink) {
+        setConfirmationLink(res.actionLink);
+      }
+      if (res.emailSent) {
+        toast.success("Cuenta creada. ¡Te hemos enviado el email de confirmación!");
+      } else {
+        toast.warning("Cuenta creada. No pudimos enviar el email de confirmación, pero puedes continuar abajo.");
+      }
     } catch (err) {
       setLoading(false);
       const message = err instanceof Error ? err.message : "Error al registrar la cuenta";
@@ -86,6 +122,22 @@ function Page() {
                 <span><strong>¡Eso es todo!</strong> Serás redirigido automáticamente al formulario paso a paso para completar los datos de tu perfil.</span>
               </p>
             </div>
+
+            {confirmationLink && (
+              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-5 py-4 text-xs text-amber-800 dark:text-amber-300 text-left space-y-2 w-full mt-2">
+                <p className="font-bold text-amber-600 dark:text-amber-400">🔧 Entorno de desarrollo local / Simulación:</p>
+                <p>El correo no se envió (o estamos en modo desarrollo). Puedes activar tu cuenta directamente haciendo clic abajo:</p>
+                <div className="pt-2 text-center">
+                  <a
+                    href={confirmationLink}
+                    className="inline-block bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-colors"
+                  >
+                    Activar cuenta localmente
+                  </a>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col gap-3 w-full mt-2">
               <p className="text-xs text-muted-foreground">
                 ¿No recibiste el email? Comprueba tu carpeta de correo no deseado o spam.

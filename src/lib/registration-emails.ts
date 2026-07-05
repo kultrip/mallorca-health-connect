@@ -15,6 +15,7 @@ const signUpSchema = z.object({
   email: z.string().trim().email(),
   password: z.string().min(8),
   selectedPlan: z.string().trim().min(1),
+  isFounder: z.boolean().optional(),
   origin: z.string().trim().min(1),
 });
 
@@ -50,6 +51,7 @@ export const signUpUser = createServerFn({ method: "POST" })
         data: {
           display_name: data.name,
           selected_plan: data.selectedPlan,
+          is_founder: data.isFounder ?? false,
         },
         redirectTo: redirectToUrl,
       },
@@ -133,11 +135,40 @@ export const signUpUser = createServerFn({ method: "POST" })
       console.error("Error al enviar email de notificación de registro al admin:", err);
     });
 
-    await Promise.all([userEmailPromise, adminEmailPromise]);
+    let emailSent = false;
+    let emailError: string | undefined = undefined;
+
+    try {
+      await userEmailPromise;
+      emailSent = true;
+    } catch (err) {
+      console.error("Error al enviar email de confirmación al usuario:", err);
+      emailError = err instanceof Error ? err.message : String(err);
+      
+      // Log the activation link to the console for easy local development
+      console.log("\n===========================================================");
+      console.log("⚠️ ERROR AL ENVIAR EMAIL DE CONFIRMACIÓN DE REGISTRO:");
+      console.log(`Usuario: ${data.name} (${data.email})`);
+      console.log(`Enlace de activación: ${actionLink}`);
+      console.log("===========================================================\n");
+    }
+
+    try {
+      if (adminEmailPromise) {
+        await adminEmailPromise;
+      }
+    } catch (err) {
+      // already logged in the catch block inside the promise, but just in case
+    }
+
+    const isDev = process.env.NODE_ENV === "development" || !process.env.RESEND_API_KEY;
 
     return {
       success: true,
       userId: linkData.user.id,
+      emailSent,
+      emailError,
+      actionLink: isDev ? actionLink : undefined,
     };
   });
 

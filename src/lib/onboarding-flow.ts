@@ -28,6 +28,7 @@ export type OnboardingPlanSource = {
   pendingPlanSlug?: string | null;
 };
 
+const presenciaPlanSlugs = new Set<string>(["presencia"]);
 const professionalPlanSlugs = new Set<string>(["profesional"]);
 const organisationPlanSlugs = new Set<string>(["centros-organizadores"]);
 
@@ -35,6 +36,7 @@ export function resolveOnboardingPlan(source: OnboardingPlanSource): OnboardingP
   const candidate =
     source.searchPlan ?? source.metadataPlan ?? source.profilePlanSlug ?? source.pendingPlanSlug;
   if (candidate && organisationPlanSlugs.has(candidate)) return "centro";
+  if (candidate && presenciaPlanSlugs.has(candidate)) return "presencia";
   return "profesional";
 }
 
@@ -42,6 +44,7 @@ export function resolveOnboardingPlanSlug(source: OnboardingPlanSource): string 
   const candidate =
     source.searchPlan ?? source.metadataPlan ?? source.profilePlanSlug ?? source.pendingPlanSlug;
   if (candidate && organisationPlanSlugs.has(candidate)) return "centros-organizadores";
+  if (candidate && presenciaPlanSlugs.has(candidate)) return "presencia";
   return "profesional";
 }
 

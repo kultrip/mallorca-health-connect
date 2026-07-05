@@ -18,13 +18,18 @@ import { Route as RegistroRouteImport } from './routes/registro'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfessionalsRouteImport } from './routes/professionals'
 import { Route as ProfesionalesRouteImport } from './routes/profesionales'
+import { Route as ProfesionalFundadorRouteImport } from './routes/profesional-fundador'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PlanesRouteImport } from './routes/planes'
+import { Route as PlanPresenciaRouteImport } from './routes/plan-presencia'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ConfianzaRouteImport } from './routes/confianza'
+import { Route as ComunidadFundadoraOrganizacionesRouteImport } from './routes/comunidad-fundadora-organizaciones'
+import { Route as ComunidadFundadoraBienvenidaRouteImport } from './routes/comunidad-fundadora-bienvenida'
+import { Route as ComunidadFundadoraAccesoRouteImport } from './routes/comunidad-fundadora-acceso'
 import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as ActivitiesRouteImport } from './routes/activities'
 import { Route as ActividadesRouteImport } from './routes/actividades'
@@ -88,6 +93,11 @@ const ProfesionalesRoute = ProfesionalesRouteImport.update({
   path: '/profesionales',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfesionalFundadorRoute = ProfesionalFundadorRouteImport.update({
+  id: '/profesional-fundador',
+  path: '/profesional-fundador',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlansRoute = PlansRouteImport.update({
   id: '/plans',
   path: '/plans',
@@ -96,6 +106,11 @@ const PlansRoute = PlansRouteImport.update({
 const PlanesRoute = PlanesRouteImport.update({
   id: '/planes',
   path: '/planes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanPresenciaRoute = PlanPresenciaRouteImport.update({
+  id: '/plan-presencia',
+  path: '/plan-presencia',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -123,6 +138,24 @@ const ConfianzaRoute = ConfianzaRouteImport.update({
   path: '/confianza',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComunidadFundadoraOrganizacionesRoute =
+  ComunidadFundadoraOrganizacionesRouteImport.update({
+    id: '/comunidad-fundadora-organizaciones',
+    path: '/comunidad-fundadora-organizaciones',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ComunidadFundadoraBienvenidaRoute =
+  ComunidadFundadoraBienvenidaRouteImport.update({
+    id: '/comunidad-fundadora-bienvenida',
+    path: '/comunidad-fundadora-bienvenida',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ComunidadFundadoraAccesoRoute =
+  ComunidadFundadoraAccesoRouteImport.update({
+    id: '/comunidad-fundadora-acceso',
+    path: '/comunidad-fundadora-acceso',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BuscarRoute = BuscarRouteImport.update({
   id: '/buscar',
   path: '/buscar',
@@ -216,13 +249,18 @@ export interface FileRoutesByFullPath {
   '/actividades': typeof ActividadesRoute
   '/activities': typeof ActivitiesRoute
   '/buscar': typeof BuscarRoute
+  '/comunidad-fundadora-acceso': typeof ComunidadFundadoraAccesoRoute
+  '/comunidad-fundadora-bienvenida': typeof ComunidadFundadoraBienvenidaRoute
+  '/comunidad-fundadora-organizaciones': typeof ComunidadFundadoraOrganizacionesRoute
   '/confianza': typeof ConfianzaRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/plan-presencia': typeof PlanPresenciaRoute
   '/planes': typeof PlanesRoute
   '/plans': typeof PlansRoute
+  '/profesional-fundador': typeof ProfesionalFundadorRoute
   '/profesionales': typeof ProfesionalesRoute
   '/professionals': typeof ProfessionalsRoute
   '/register': typeof RegisterRoute
@@ -251,12 +289,17 @@ export interface FileRoutesByTo {
   '/actividades': typeof ActividadesRoute
   '/activities': typeof ActivitiesRoute
   '/buscar': typeof BuscarRoute
+  '/comunidad-fundadora-acceso': typeof ComunidadFundadoraAccesoRoute
+  '/comunidad-fundadora-bienvenida': typeof ComunidadFundadoraBienvenidaRoute
+  '/comunidad-fundadora-organizaciones': typeof ComunidadFundadoraOrganizacionesRoute
   '/confianza': typeof ConfianzaRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/plan-presencia': typeof PlanPresenciaRoute
   '/planes': typeof PlanesRoute
   '/plans': typeof PlansRoute
+  '/profesional-fundador': typeof ProfesionalFundadorRoute
   '/profesionales': typeof ProfesionalesRoute
   '/professionals': typeof ProfessionalsRoute
   '/register': typeof RegisterRoute
@@ -286,13 +329,18 @@ export interface FileRoutesById {
   '/actividades': typeof ActividadesRoute
   '/activities': typeof ActivitiesRoute
   '/buscar': typeof BuscarRoute
+  '/comunidad-fundadora-acceso': typeof ComunidadFundadoraAccesoRoute
+  '/comunidad-fundadora-bienvenida': typeof ComunidadFundadoraBienvenidaRoute
+  '/comunidad-fundadora-organizaciones': typeof ComunidadFundadoraOrganizacionesRoute
   '/confianza': typeof ConfianzaRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/plan-presencia': typeof PlanPresenciaRoute
   '/planes': typeof PlanesRoute
   '/plans': typeof PlansRoute
+  '/profesional-fundador': typeof ProfesionalFundadorRoute
   '/profesionales': typeof ProfesionalesRoute
   '/professionals': typeof ProfessionalsRoute
   '/register': typeof RegisterRoute
@@ -323,13 +371,18 @@ export interface FileRouteTypes {
     | '/actividades'
     | '/activities'
     | '/buscar'
+    | '/comunidad-fundadora-acceso'
+    | '/comunidad-fundadora-bienvenida'
+    | '/comunidad-fundadora-organizaciones'
     | '/confianza'
     | '/dashboard'
     | '/for-professionals'
     | '/login'
     | '/onboarding'
+    | '/plan-presencia'
     | '/planes'
     | '/plans'
+    | '/profesional-fundador'
     | '/profesionales'
     | '/professionals'
     | '/register'
@@ -358,12 +411,17 @@ export interface FileRouteTypes {
     | '/actividades'
     | '/activities'
     | '/buscar'
+    | '/comunidad-fundadora-acceso'
+    | '/comunidad-fundadora-bienvenida'
+    | '/comunidad-fundadora-organizaciones'
     | '/confianza'
     | '/for-professionals'
     | '/login'
     | '/onboarding'
+    | '/plan-presencia'
     | '/planes'
     | '/plans'
+    | '/profesional-fundador'
     | '/profesionales'
     | '/professionals'
     | '/register'
@@ -392,13 +450,18 @@ export interface FileRouteTypes {
     | '/actividades'
     | '/activities'
     | '/buscar'
+    | '/comunidad-fundadora-acceso'
+    | '/comunidad-fundadora-bienvenida'
+    | '/comunidad-fundadora-organizaciones'
     | '/confianza'
     | '/dashboard'
     | '/for-professionals'
     | '/login'
     | '/onboarding'
+    | '/plan-presencia'
     | '/planes'
     | '/plans'
+    | '/profesional-fundador'
     | '/profesionales'
     | '/professionals'
     | '/register'
@@ -428,13 +491,18 @@ export interface RootRouteChildren {
   ActividadesRoute: typeof ActividadesRoute
   ActivitiesRoute: typeof ActivitiesRoute
   BuscarRoute: typeof BuscarRoute
+  ComunidadFundadoraAccesoRoute: typeof ComunidadFundadoraAccesoRoute
+  ComunidadFundadoraBienvenidaRoute: typeof ComunidadFundadoraBienvenidaRoute
+  ComunidadFundadoraOrganizacionesRoute: typeof ComunidadFundadoraOrganizacionesRoute
   ConfianzaRoute: typeof ConfianzaRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
+  PlanPresenciaRoute: typeof PlanPresenciaRoute
   PlanesRoute: typeof PlanesRoute
   PlansRoute: typeof PlansRoute
+  ProfesionalFundadorRoute: typeof ProfesionalFundadorRoute
   ProfesionalesRoute: typeof ProfesionalesRoute
   ProfessionalsRoute: typeof ProfessionalsRoute
   RegisterRoute: typeof RegisterRoute
@@ -517,6 +585,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfesionalesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profesional-fundador': {
+      id: '/profesional-fundador'
+      path: '/profesional-fundador'
+      fullPath: '/profesional-fundador'
+      preLoaderRoute: typeof ProfesionalFundadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/plans': {
       id: '/plans'
       path: '/plans'
@@ -529,6 +604,13 @@ declare module '@tanstack/react-router' {
       path: '/planes'
       fullPath: '/planes'
       preLoaderRoute: typeof PlanesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plan-presencia': {
+      id: '/plan-presencia'
+      path: '/plan-presencia'
+      fullPath: '/plan-presencia'
+      preLoaderRoute: typeof PlanPresenciaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -564,6 +646,27 @@ declare module '@tanstack/react-router' {
       path: '/confianza'
       fullPath: '/confianza'
       preLoaderRoute: typeof ConfianzaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comunidad-fundadora-organizaciones': {
+      id: '/comunidad-fundadora-organizaciones'
+      path: '/comunidad-fundadora-organizaciones'
+      fullPath: '/comunidad-fundadora-organizaciones'
+      preLoaderRoute: typeof ComunidadFundadoraOrganizacionesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comunidad-fundadora-bienvenida': {
+      id: '/comunidad-fundadora-bienvenida'
+      path: '/comunidad-fundadora-bienvenida'
+      fullPath: '/comunidad-fundadora-bienvenida'
+      preLoaderRoute: typeof ComunidadFundadoraBienvenidaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comunidad-fundadora-acceso': {
+      id: '/comunidad-fundadora-acceso'
+      path: '/comunidad-fundadora-acceso'
+      fullPath: '/comunidad-fundadora-acceso'
+      preLoaderRoute: typeof ComunidadFundadoraAccesoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/buscar': {
@@ -747,13 +850,18 @@ const rootRouteChildren: RootRouteChildren = {
   ActividadesRoute: ActividadesRoute,
   ActivitiesRoute: ActivitiesRoute,
   BuscarRoute: BuscarRoute,
+  ComunidadFundadoraAccesoRoute: ComunidadFundadoraAccesoRoute,
+  ComunidadFundadoraBienvenidaRoute: ComunidadFundadoraBienvenidaRoute,
+  ComunidadFundadoraOrganizacionesRoute: ComunidadFundadoraOrganizacionesRoute,
   ConfianzaRoute: ConfianzaRoute,
   DashboardRoute: DashboardRouteWithChildren,
   ForProfessionalsRoute: ForProfessionalsRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
+  PlanPresenciaRoute: PlanPresenciaRoute,
   PlanesRoute: PlanesRoute,
   PlansRoute: PlansRoute,
+  ProfesionalFundadorRoute: ProfesionalFundadorRoute,
   ProfesionalesRoute: ProfesionalesRoute,
   ProfessionalsRoute: ProfessionalsRoute,
   RegisterRoute: RegisterRoute,

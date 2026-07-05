@@ -12,6 +12,8 @@ export const conversationalSearchSchema = z.object({ q: z.string().optional() })
 
 export const onboardingSearchSchema = z.object({
   plan: z.enum(["presencia", "profesional", "centros-organizadores"]).optional(),
+  track: z.string().optional(),
+  founder: z.string().optional(),
 });
 
 export const loginSearchSchema = z.object({
