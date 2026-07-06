@@ -135,16 +135,13 @@ const islandName = "Mallorca";
 const freeTargetAudienceOptions = [
   "Mujeres",
   "Hombres",
-  "Adultos",
   "Adolescentes",
   "Niños",
   "Personas mayores",
   "Parejas",
   "Familias",
-  "Embarazo y maternidad",
-  "Personas neurodivergentes",
-  "Animales",
   "Empresas y equipos",
+  "Animales",
 ];
 
 const accompanimentOptions = [
@@ -881,22 +878,7 @@ function OnboardingPage() {
                       ? "Marca los públicos a los que se dirige la organización."
                       : "Marca todos los públicos que forman parte de tu práctica."
                   }
-                  items={
-                    config.isOrganisation
-                      ? [
-                          "Mujeres",
-                          "Hombres",
-                          "Adultos",
-                          "Adolescentes",
-                          "Niños",
-                          "Personas mayores",
-                          "Familias",
-                          "Parejas",
-                          "Empresas",
-                          "Personas neurodivergentes",
-                        ]
-                      : freeTargetAudienceOptions
-                  }
+                  items={freeTargetAudienceOptions}
                   values={
                     config.isOrganisation ? draft.organizationPublicAudience : draft.targetAudience
                   }
@@ -1147,50 +1129,19 @@ function OnboardingPage() {
 
             {step === 4 && (
               <StepShell
-                icon={MapPin}
-                title="4. Perfil"
-                intro={
-                  config.isOrganisation
-                    ? "Contamos quién sois y qué queréis transmitir."
-                    : "Cuenta brevemente cómo trabajas y qué te distingue."
-                }
+                icon={User}
+                title="4. Experiencia y Perfil"
+                intro="Cuéntanos quién eres, qué haces y cómo acompañas a las personas."
               >
-                <Field label={config.isOrganisation ? "Quiénes somos *" : "Presentación *"}>
+                <div className="space-y-6">
+                  {/* Field 1: Frase de presentación */}
                   <div className="space-y-2">
-                    <Textarea
-                      value={draft.presentationText}
-                      onChange={(event) => {
-                        const next = event.target.value.slice(0, config.presentationMaxLength || 3000);
-                        updateDraft(setDraft, { presentationText: next });
-                      }}
-                      maxLength={config.presentationMaxLength || 3000}
-                      className="min-h-44"
-                      placeholder={
-                        config.isOrganisation
-                          ? "Contad brevemente quiénes sois y qué proponéis."
-                          : config.isProfessional
-                            ? "Cuéntanos tu recorrido, tu manera de acompañar y cómo se vive una sesión contigo."
-                            : "Cuéntanos tu manera de acompañar y qué necesita saber alguien antes de conocerte."
-                      }
-                      required
-                    />
-                    <div className="flex items-center justify-between text-xs text-[#6d5b43]">
-                      <span>
-                        {config.isOrganisation
-                          ? "Un texto cálido y claro para presentar la organización."
-                          : config.isProfessional
-                            ? "Puedes ampliar mucho más tu historia profesional."
-                            : "Mantén un tono claro, amable y breve."}
-                      </span>
-                      <span>
-                        {(draft.presentationText || "").length}/{config.presentationMaxLength || 3000}
-                      </span>
-                    </div>
-                  </div>
-                </Field>
-
-                <Field label="Frase de presentación *">
-                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-[#342b22]">
+                      🌟 Frase de presentación
+                    </label>
+                    <p className="text-xs text-[#6d5b43]">
+                      Describe tu actividad en una frase. Máximo 120 caracteres.
+                    </p>
                     <Input
                       value={draft.tagline}
                       onChange={(event) => {
@@ -1198,145 +1149,55 @@ function OnboardingPage() {
                         updateDraft(setDraft, { tagline: next });
                       }}
                       maxLength={120}
-                      placeholder="Creamos espacios de bienestar con cercanía y criterio."
+                      placeholder="Frase de presentación"
                       required
                     />
                     <div className="flex items-center justify-between text-xs text-[#6d5b43]">
-                      <span>Ejemplos: “Escucha profunda y acompañamiento amable”.</span>
-                      <span>{draft.tagline.length}/120</span>
+                      <span className="text-[11px] text-[#8c7a66]">
+                        {draft.tagline.length} / 120 caracteres
+                      </span>
+                    </div>
+
+                    {/* Terracotta-styled Examples Box */}
+                    <div className="mt-4 rounded-2xl border border-[#eadfce] bg-[#fffcf7] p-4 text-xs text-[#5d5144] space-y-3 shadow-sm">
+                      <span className="font-semibold block text-[#342b22] text-sm">Ejemplos:</span>
+                      <ul className="list-disc pl-5 space-y-2 text-[#6d5b43] leading-relaxed">
+                        <li>Psicóloga integrativa especializada en ansiedad y trauma.</li>
+                        <li>Osteópata y terapeuta corporal con enfoque holístico.</li>
+                        <li>Profesora de yoga y acompañante en procesos de transformación personal.</li>
+                      </ul>
+                      <p className="pt-1 text-[11px] text-[#8c7a66] border-t border-[#eadfce]/60 leading-normal">
+                        Esta frase puede aparecer en búsquedas, tarjetas de resultados, perfil público y Google.
+                      </p>
                     </div>
                   </div>
-                </Field>
 
-                {config.isOrganisation ? (
-                  <>
-                    <Field label="Nuestra misión *">
-                      <div className="space-y-2">
-                        <Textarea
-                          value={draft.missionText}
-                          onChange={(event) =>
-                            updateDraft(setDraft, {
-                              missionText: event.target.value.slice(0, 2000),
-                            })
-                          }
-                          maxLength={2000}
-                          className="min-h-40"
-                          placeholder="Explica el propósito, la visión y el impacto que buscáis."
-                          required
-                        />
-                        <div className="flex items-center justify-between text-xs text-[#6d5b43]">
-                          <span>Máximo 2000 caracteres.</span>
-                          <span>{draft.missionText.length}/2000</span>
-                        </div>
-                      </div>
-                    </Field>
-
-                    <Field label="Qué nos diferencia (opcional)">
-                      <div className="space-y-2">
-                        <Textarea
-                          value={draft.differentiatorText}
-                          onChange={(event) =>
-                            updateDraft(setDraft, {
-                              differentiatorText: event.target.value.slice(0, 1000),
-                            })
-                          }
-                          maxLength={1000}
-                          className="min-h-32"
-                          placeholder="Comparte aquello que os hace especialmente reconocibles."
-                        />
-                        <div className="flex items-center justify-between text-xs text-[#6d5b43]">
-                          <span>Máximo 1000 caracteres.</span>
-                          <span>{draft.differentiatorText.length}/1000</span>
-                        </div>
-                      </div>
-                    </Field>
-
-                    <CheckboxGrid
-                      title="Idiomas disponibles"
-                      description="Selecciona los idiomas en los que la organización puede atender."
-                      items={[
-                        "Español",
-                        "Catalán",
-                        "Inglés",
-                        "Alemán",
-                        "Francés",
-                        "Italiano",
-                        "Holandés",
-                        "Otro",
-                      ]}
-                      values={draft.languages}
-                      onChange={(values) => updateDraft(setDraft, { languages: values })}
-                      columns="md:grid-cols-2 lg:grid-cols-3"
+                  {/* Field 2: Presentación profesional */}
+                  <div className="space-y-2 pt-4 border-t border-[#eadfce]/40">
+                    <label className="block text-sm font-semibold text-[#342b22]">
+                      ✨ Presentación profesional
+                    </label>
+                    <p className="text-xs text-[#6d5b43]">
+                      Cuéntanos quién eres, qué haces y cómo acompañas a las personas. Máximo 3000 caracteres.
+                    </p>
+                    <Textarea
+                      value={draft.presentationText}
+                      onChange={(event) => {
+                        const next = event.target.value.slice(0, 3000);
+                        updateDraft(setDraft, { presentationText: next });
+                      }}
+                      maxLength={3000}
+                      className="min-h-56"
+                      placeholder="Presentación profesional"
+                      required
                     />
-
-                    <TeamEditor
-                      members={draft.teamMembers}
-                      onChange={(teamMembers) => updateDraft(setDraft, { teamMembers })}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <Field label="Mi enfoque *">
-                      <div className="space-y-2">
-                        <Textarea
-                          value={draft.approachText}
-                          onChange={(event) => {
-                            const next = event.target.value.slice(0, config.approachMaxLength || 2000);
-                            updateDraft(setDraft, { approachText: next });
-                          }}
-                          maxLength={config.approachMaxLength || 2000}
-                          className="min-h-40"
-                          placeholder="Describe tu enfoque, metodología y el tipo de acompañamiento que ofreces."
-                          required
-                        />
-                        <div className="flex items-center justify-between text-xs text-[#6d5b43]">
-                          <span>Máximo {config.approachMaxLength || 2000} caracteres.</span>
-                          <span>
-                            {(draft.approachText || "").length}/{config.approachMaxLength || 2000}
-                          </span>
-                        </div>
-                      </div>
-                    </Field>
-
-                    <Field label="Qué me diferencia (opcional)">
-                      <div className="space-y-2">
-                        <Textarea
-                          value={draft.differentiatorText}
-                          onChange={(event) => {
-                            const next = event.target.value.slice(
-                              0,
-                              config.differentiatorMaxLength || 1000,
-                            );
-                            updateDraft(setDraft, { differentiatorText: next });
-                          }}
-                          maxLength={config.differentiatorMaxLength || 1000}
-                          className="min-h-32"
-                          placeholder="Comparte aquello que te hace especialmente reconocible."
-                        />
-                        <div className="flex items-center justify-between text-xs text-[#6d5b43]">
-                          <span>Máximo {config.differentiatorMaxLength || 1000} caracteres.</span>
-                          <span>
-                            {(draft.differentiatorText || "").length}/{config.differentiatorMaxLength || 1000}
-                          </span>
-                        </div>
-                      </div>
-                    </Field>
-
-                    <FormationEditor
-                      formations={draft.formations}
-                      onChange={(formations) => updateDraft(setDraft, { formations })}
-                    />
-
-                    <CheckboxGrid
-                      title="Idiomas"
-                      description="Selecciona los idiomas en los que puedes atender."
-                      items={professionalLanguages}
-                      values={draft.languages}
-                      onChange={(values) => updateDraft(setDraft, { languages: values })}
-                      columns="md:grid-cols-2 lg:grid-cols-3"
-                    />
-                  </>
-                )}
+                    <div className="flex items-center justify-end text-xs text-[#6d5b43]">
+                      <span className="text-[11px] text-[#8c7a66]">
+                        {draft.presentationText.length} / 3000 caracteres
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </StepShell>
             )}
 
@@ -2340,9 +2201,13 @@ function OnboardingPage() {
 }
 
 function WizardProgress({ step, isProfessional }: { step: WizardStep; isProfessional: boolean }) {
-  const labels = isProfessional
-    ? ["Información", "Actividad", "Consultas", "Perfil", "Redes"]
-    : ["Información", "Actividad", "Consultas", "Perfil", "Redes"];
+  const labels = [
+    "Información",
+    "Actividad",
+    "Consultas",
+    "Experiencia y Perfil",
+    "Redes",
+  ];
 
   return (
     <div className="mx-auto mt-10 grid max-w-[980px] grid-cols-5 items-start gap-2">
@@ -3114,13 +2979,8 @@ function validateStep(
   }
 
   if (step === 4) {
-    if (!draft.presentationText.trim()) return "Añade tu presentación.";
     if (!draft.tagline.trim()) return "Añade una frase de presentación.";
-    if (config.isOrganisation) {
-      if (!draft.missionText.trim()) return "Añade la misión de la organización.";
-    } else if (config.isProfessional && draft.formations.every((item) => !item.formation.trim())) {
-      return "Añade al menos una formación principal.";
-    }
+    if (!draft.presentationText.trim()) return "Añade tu presentación.";
     return null;
   }
 

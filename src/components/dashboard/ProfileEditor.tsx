@@ -143,30 +143,16 @@ type ProfileDraft = {
 const freeTargetAudienceOptions = [
   "Mujeres",
   "Hombres",
-  "Adultos",
   "Adolescentes",
   "Niños",
   "Personas mayores",
   "Parejas",
   "Familias",
-  "Embarazo y maternidad",
-  "Personas neurodivergentes",
-  "Animales",
   "Empresas y equipos",
+  "Animales",
 ];
 
-const organisationAudienceOptions = [
-  "Mujeres",
-  "Hombres",
-  "Adultos",
-  "Adolescentes",
-  "Niños",
-  "Personas mayores",
-  "Familias",
-  "Parejas",
-  "Empresas",
-  "Personas neurodivergentes",
-];
+const organisationAudienceOptions = freeTargetAudienceOptions;
 
 const accompanimentOptions = [
   "Sesiones Individuales",
