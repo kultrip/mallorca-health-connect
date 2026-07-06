@@ -164,8 +164,8 @@ function Page() {
               🌿 Comunidad Fundadora
             </span>
             
-            <h2 className="font-display mt-4 text-2xl md:text-3xl text-foreground font-bold">
-              ¿Has recibido una invitación?
+            <h2 className="font-display mt-4 text-2xl md:text-3xl text-foreground font-bold flex items-center justify-center gap-2">
+              <span>🌿</span> ¿Has recibido una invitación?
             </h2>
             
             <p className="mt-3.5 text-sm md:text-base leading-relaxed text-muted-foreground font-sans">
