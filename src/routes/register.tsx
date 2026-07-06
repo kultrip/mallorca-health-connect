@@ -31,6 +31,7 @@ function Page() {
   const [loading, setLoading] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [confirmationLink, setConfirmationLink] = useState("");
+  const [emailError, setEmailError] = useState("");
   const track = search.track;
   const isFounderQuery = search.founder === "true" || search.founder === "true";
 
@@ -82,10 +83,17 @@ function Page() {
       if (res.actionLink) {
         setConfirmationLink(res.actionLink);
       }
+      if (res.emailError) {
+        setEmailError(res.emailError);
+      }
       if (res.emailSent) {
         toast.success("Cuenta creada. ¡Te hemos enviado el email de confirmación!");
       } else {
-        toast.warning("Cuenta creada. No pudimos enviar el email de confirmación, pero puedes continuar abajo.");
+        const errorDetail = res.emailError ? `: ${res.emailError}` : "";
+        toast.warning(
+          `Cuenta creada. No pudimos enviar el email de confirmación inmediatamente${errorDetail ? " (" + errorDetail + ")" : ""}, pero puedes continuar abajo.`,
+          { duration: 6000 }
+        );
       }
     } catch (err) {
       setLoading(false);
@@ -124,17 +132,43 @@ function Page() {
             </div>
 
             {confirmationLink && (
-              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-5 py-4 text-xs text-amber-800 dark:text-amber-300 text-left space-y-2 w-full mt-2">
-                <p className="font-bold text-amber-600 dark:text-amber-400">🔧 Entorno de desarrollo local / Simulación:</p>
-                <p>El correo no se envió (o estamos en modo desarrollo). Puedes activar tu cuenta directamente haciendo clic abajo:</p>
-                <div className="pt-2 text-center">
-                  <a
-                    href={confirmationLink}
-                    className="inline-block bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-colors"
-                  >
-                    Activar cuenta localmente
-                  </a>
-                </div>
+              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-5 py-4 text-xs text-amber-800 dark:text-amber-300 text-left space-y-2.5 w-full mt-2">
+                {typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") ? (
+                  <>
+                    <p className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                      <span>🔧</span> Entorno de desarrollo local / Simulación:
+                    </p>
+                    <p>El correo no se envió (o estamos en modo desarrollo). Puedes activar tu cuenta directamente haciendo clic abajo:</p>
+                    <div className="pt-1.5 text-center">
+                      <a
+                        href={confirmationLink}
+                        className="inline-block bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition-colors shadow-sm"
+                      >
+                        Activar cuenta localmente
+                      </a>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                      <span>⚠️</span> Aviso de Entrega de Correo:
+                    </p>
+                    <p className="leading-relaxed text-muted-foreground">
+                      No se pudo entregar el correo de confirmación de forma inmediata{emailError ? ` (Detalle: ${emailError})` : ""}. Esto suele suceder si el dominio del remitente no está verificado en Resend o si hay demoras de red.
+                    </p>
+                    <p className="font-semibold text-foreground">
+                      Para garantizar que puedas comenzar sin esperas, activa tu cuenta y accede de inmediato haciendo clic aquí abajo:
+                    </p>
+                    <div className="pt-2 text-center">
+                      <a
+                        href={confirmationLink}
+                        className="inline-block bg-primary hover:bg-primary/95 text-primary-foreground font-semibold px-5 py-2.5 rounded-xl text-xs transition-all shadow-md hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        Activar mi cuenta y comenzar ahora
+                      </a>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 

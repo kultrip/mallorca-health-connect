@@ -100,13 +100,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Mallorca Holistica" },
       { property: "og:description", content: "Mallorca Holistica" },
       { name: "twitter:description", content: "Mallorca Holistica" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e92b4fa5-4f31-4919-b7db-1827a813ecb9/id-preview-616ca2e0--57ee4b30-ccb5-4abd-ba7f-9551ac4a5082.lovable.app-1778453137348.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e92b4fa5-4f31-4919-b7db-1827a813ecb9/id-preview-616ca2e0--57ee4b30-ccb5-4abd-ba7f-9551ac4a5082.lovable.app-1778453137348.png" },
+      { property: "og:image", content: "https://mallorcaholistica.com/hero-branch.jpg" },
+      { name: "twitter:image", content: "https://mallorcaholistica.com/hero-branch.jpg" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      {
+        rel: "icon",
+        type: "image/svg+xml",
+        href: "/favicon.svg",
+      },
+      {
+        rel: "apple-touch-icon",
+        href: "/favicon.png",
       },
     ],
   }),

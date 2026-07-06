@@ -90,7 +90,7 @@ export function getOnboardingPlanConfig(plan: OnboardingPlan): OnboardingPlanCon
       logoRequired: true,
       socialLinksEnabled: true,
       extraLocationEnabled: true,
-      verificationUploadsEnabled: false,
+      verificationUploadsEnabled: true,
       galleryMaxFiles: 15,
     };
   }

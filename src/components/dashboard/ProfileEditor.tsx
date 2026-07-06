@@ -4,7 +4,6 @@ import {
   Building2,
   Check,
   GripVertical,
-  Heart,
   Home,
   Lock,
   MapPin,
@@ -808,7 +807,7 @@ export function DashboardProfileEditor({
         className="rounded-[1.6rem] border border-[#eadfce] bg-white p-6 md:p-8"
       >
         <SectionHeading
-          icon={Heart}
+          icon={Leaf}
           title="Actividad Profesional"
           description="Terapias, áreas de ayuda y públicos con los que trabajas."
         />

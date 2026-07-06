@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles, Award, ShieldAlert, ArrowRight, Heart } from "lucide-react";
+import { Check, Sparkles, Award, ShieldAlert, ArrowRight, Users } from "lucide-react";
 
 export const Route = createFileRoute("/comunidad-fundadora-bienvenida")({
   head: () => ({
@@ -55,7 +55,7 @@ function ComunidadFundadoraBienvenidaPage() {
           </div>
           <div className="rounded-2xl border border-primary/10 bg-[#fdf5eb]/30 p-6 text-center">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#526046]/10 text-[#526046] mx-auto mb-4">
-              <Heart className="h-5 w-5" />
+              <Users className="h-5 w-5" />
             </span>
             <h3 className="font-display text-lg text-foreground font-semibold">Sello de Co-Creador</h3>
             <p className="mt-2 text-xs text-muted-foreground leading-relaxed">

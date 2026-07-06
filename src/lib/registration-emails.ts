@@ -168,8 +168,27 @@ export const signUpUser = createServerFn({ method: "POST" })
       userId: linkData.user.id,
       emailSent,
       emailError,
-      actionLink: isDev ? actionLink : undefined,
+      actionLink: (isDev || !emailSent) ? actionLink : undefined,
     };
+  });
+
+export const testResendConfig = createServerFn({ method: "POST" })
+  .inputValidator((email: unknown) => z.string().email().parse(email))
+  .handler(async ({ data: email }) => {
+    try {
+      const res = await sendEmail({
+        to: email,
+        subject: "Prueba de configuración de Resend - Mallorca Holística",
+        text: "Si recibes este correo, la configuración de Resend en el servidor funciona correctamente.",
+        html: "<p>Si recibes este correo, la configuración de Resend en el servidor funciona correctamente.</p>",
+      });
+      return { success: true, payload: res };
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
   });
 
 // Keep existing sendRegistrationConfirmationEmail function just in case other modules import it

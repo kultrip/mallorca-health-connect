@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, HeartHandshake } from "lucide-react";
+import { ArrowRight, Handshake } from "lucide-react";
 
 export function HomeTrustStrip() {
   return (
     <section className="mx-auto max-w-[1040px] px-6 pb-12 md:px-10 md:pb-16">
       <div className="grid gap-6 border-b border-[#e8d9c6] pb-12 md:grid-cols-[auto_1fr_auto] md:items-center md:pb-16">
         <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#eadfce] bg-[#fbf3e9] text-[#9a7041]">
-          <HeartHandshake className="h-8 w-8" strokeWidth={1.25} />
+          <Handshake className="h-8 w-8" strokeWidth={1.25} />
         </div>
         <div>
           <h2 className="font-display text-2xl text-[#1f3326] md:text-3xl">

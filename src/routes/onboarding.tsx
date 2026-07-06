@@ -8,7 +8,6 @@ import {
   ChevronDown,
   Building2,
   GripVertical,
-  Heart,
   Home,
   Leaf,
   Lock,
@@ -48,7 +47,7 @@ type TherapyRow = Database["public"]["Tables"]["therapies"]["Row"];
 type HelpAreaRow = Database["public"]["Tables"]["help_areas"]["Row"];
 type PlanRow = Database["public"]["Tables"]["plans"]["Row"];
 
-type WizardStep = 1 | 2 | 3 | 4 | 5;
+type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 type LocationDraft = {
   centerName: string;
@@ -813,7 +812,7 @@ function OnboardingPage() {
 
             {step === 2 && (
               <StepShell
-                icon={Heart}
+                icon={Leaf}
                 title="2. Actividad"
                 intro={
                   config.isOrganisation

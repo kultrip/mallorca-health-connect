@@ -8,7 +8,7 @@ import {
   Check,
   ChevronDown,
   Globe,
-  HeartHandshake,
+  Handshake,
   Info,
   Leaf,
   MapPin,
@@ -378,7 +378,7 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
               <ProfileSection eyebrow="Cómo trabajo">
                 <div className="grid gap-5 md:grid-cols-3">
                   <WorkStyle
-                    icon={HeartHandshake}
+                    icon={Handshake}
                     title="Escucha y presencia"
                     text="Creo un espacio seguro para que puedas expresarte y soltar lo que ya no necesitas."
                   />
