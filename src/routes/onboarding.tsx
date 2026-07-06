@@ -261,6 +261,11 @@ function OnboardingPage() {
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [diplomaFile, setDiplomaFile] = useState<File | null>(null);
   const [extraDocuments, setExtraDocuments] = useState<File[]>([]);
+  const [acceptedPaymentRegistration, setAcceptedPaymentRegistration] = useState(false);
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+  const [cardholderName, setCardholderName] = useState("");
   const [therapySearch, setTherapySearch] = useState("");
   const [helpAreaSearch, setHelpAreaSearch] = useState("");
   const [draggedTherapyIndex, setDraggedTherapyIndex] = useState<number | null>(null);
@@ -502,7 +507,7 @@ function OnboardingPage() {
 
       // Restore furthest onboarding step from metadata
       const cachedStep = currentUser.user_metadata?.furthest_onboarding_step;
-      if (cachedStep && cachedStep >= 1 && cachedStep <= 5) {
+      if (cachedStep && cachedStep >= 1 && cachedStep <= 7) {
         setStep(cachedStep as WizardStep);
       }
 
@@ -2207,10 +2212,12 @@ function WizardProgress({ step, isProfessional }: { step: WizardStep; isProfessi
     "Consultas",
     "Experiencia y Perfil",
     "Redes",
+    "Verificación",
+    "Suscripción",
   ];
 
   return (
-    <div className="mx-auto mt-10 grid max-w-[980px] grid-cols-5 items-start gap-2">
+    <div className="mx-auto mt-10 grid max-w-[980px] grid-cols-7 items-start gap-2">
       {labels.map((title, index) => {
         const number = (index + 1) as WizardStep;
         const active = step === number;

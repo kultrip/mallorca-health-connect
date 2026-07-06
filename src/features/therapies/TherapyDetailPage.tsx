@@ -200,7 +200,7 @@ export function TherapyDetailPage({ slug }: { slug: string }) {
               Encuentra a la persona adecuada para acompañarte en tu proceso.
             </p>
             <Link
-              to="/therapies_/$slug/professionals"
+              to="/therapies/$slug/professionals"
               params={{ slug: therapy.slug }}
               className="mt-6 inline-flex rounded-full bg-[#8a6550] text-white px-6 py-2.5 text-sm font-medium hover:bg-[#8a6550]/90 transition-all shadow-sm"
             >

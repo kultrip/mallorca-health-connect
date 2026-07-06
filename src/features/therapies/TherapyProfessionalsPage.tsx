@@ -71,7 +71,7 @@ export function TherapyProfessionalsPage({ slug }: { slug: string }) {
     <PageShell>
       <div className="mx-auto max-w-[1180px] px-6 pb-24 pt-12 md:px-10 md:pt-16">
         <Link
-          to="/therapies_/$slug"
+          to="/therapies/$slug"
           params={{ slug }}
           className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground mb-8"
         >

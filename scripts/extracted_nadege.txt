@@ -1,0 +1,26 @@
+Hola Charles!!!!!!!
+Te comparto el diseño completo de la ficha del terapeuta para el MVP
+de Mallorca Holística.
+Adjunto encontrarás:
+El documento de producto (estructura, lógica, datos y métricas)
+El visual de referencia en Canva
+Este bloque es prioritario y puede desarrollarse de forma
+independiente del resto de la plataforma.
+El objetivo no es solo mostrar información, sino crear una ficha
+clara, humana y orientada a la acción, que facilite el contacto entre
+el usuario y el terapeuta.
+Hay dos puntos importantes a tener en cuenta:
+No implementamos calendario interno ni sistema de reservas
+El contacto se basa en un sistema híbrido: WhatsApp + enlace externo
+(si el terapeuta lo tiene)
+El documento está estructurado en:
+Visión de producto (para entender el enfoque)
+Decisión clave del sistema de contacto
+Especificación técnica
+Métricas básicas a implementar
+Puedes empezar por esta parte sin esperar al resto de la plataforma.
+Cualquier duda que te surja o si ves alguna mejora desde el lado
+técnico, lo vemos juntos.
+Milliones de Gracias!!!!!!
+Abrazos.
+Nadège

@@ -88,11 +88,7 @@ function Page() {
           </div>
 
           {/* Plan Profesional Verificado */}
-          <div className="flex flex-col justify-between rounded-3xl border-2 border-primary bg-[#fffaf5] p-8 shadow-md hover:shadow-lg hover:scale-[1.01] transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 right-0 rounded-bl-2xl bg-primary px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-primary-foreground">
-              Recomendado
-            </div>
-            
+          <div className="flex flex-col justify-between rounded-3xl border border-border/80 bg-card p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all duration-300">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-lg">⭐</span>

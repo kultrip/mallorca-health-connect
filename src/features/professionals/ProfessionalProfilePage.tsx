@@ -374,27 +374,7 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
               </ProfileSection>
             )}
 
-            {isPremiumPlan && (
-              <ProfileSection eyebrow="Cómo trabajo">
-                <div className="grid gap-5 md:grid-cols-3">
-                  <WorkStyle
-                    icon={Handshake}
-                    title="Escucha y presencia"
-                    text="Creo un espacio seguro para que puedas expresarte y soltar lo que ya no necesitas."
-                  />
-                  <WorkStyle
-                    icon={Leaf}
-                    title="Acompañamiento integrativo"
-                    text="Integro terapias y recursos adaptados a tu momento vital y a tu proceso."
-                  />
-                  <WorkStyle
-                    icon={Sun}
-                    title="Equilibrio y conexión"
-                    text="Te acompaño a reconectar contigo y recuperar tu bienestar natural."
-                  />
-                </div>
-              </ProfileSection>
-            )}
+
 
             {visibleTherapies.length > 0 && (
               <ProfileSection eyebrow="Terapias">
