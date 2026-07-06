@@ -161,15 +161,15 @@ function Page() {
           
           <div className="relative z-10 max-w-2xl mx-auto">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <Award className="h-3.5 w-3.5" /> Comunidad Fundadora
+              🌿 Comunidad Fundadora
             </span>
             
             <h2 className="font-display mt-4 text-2xl md:text-3xl text-foreground font-bold">
-              ¿Tienes una invitación de Mallorca Holística?
+              ¿Has recibido una invitación?
             </h2>
             
             <p className="mt-3.5 text-sm md:text-base leading-relaxed text-muted-foreground font-sans">
-              Para celebrar el lanzamiento, seleccionamos a un grupo limitado de profesionales y centros fundadores. Accede a condiciones exclusivas: <strong className="text-foreground">tarifas reducidas de por vida (15 € o 35 €/mes)</strong> y <strong className="text-foreground">6 meses de prueba completamente gratis</strong>.
+              Si has recibido una invitación personal para formar parte de la Comunidad Fundadora de Mallorca Holística, puedes acceder aquí para activar tus condiciones especiales.
             </p>
 
             <div className="mt-8 flex justify-center">
