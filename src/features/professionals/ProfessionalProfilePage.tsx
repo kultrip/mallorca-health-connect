@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   ArrowRight,
@@ -7,6 +8,7 @@ import {
   Calendar,
   Check,
   ChevronDown,
+  Flag,
   Globe,
   Handshake,
   Info,
@@ -19,8 +21,9 @@ import {
   Star,
   Sun,
   User,
+  X,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import heroImg from "@/assets/hero-branch.jpg";
 import { PageShell } from "@/components/layout/PageShell";
@@ -34,8 +37,10 @@ import {
   therapistCanShowReviews,
   therapistCanShowVerificationBadge,
 } from "@/lib/plan-access";
+import { submitProfessionalReport } from "@/lib/professional-reports";
 import { ProfessionalReviewsSection } from "./ProfessionalReviewsSection";
 import { SingleProfessionalMap } from "@/components/therapists/SingleProfessionalMap";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MUNICIPALITY_COORDINATES } from "@/lib/municipality-coordinates";
 
 type NamedSlug = {
@@ -135,6 +140,13 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
     },
   });
 
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
+  const [reportEmail, setReportEmail] = useState("");
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
+
   useEffect(() => {
     if (data?.id) {
       supabase.rpc("track_profile_view", { _therapist_id: data.id }).then();
@@ -212,8 +224,27 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
   const showReviews = therapistCanShowReviews(data, plan);
   const shortBio = truncateText(data.sobre_mi ?? "", 500);
 
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": data.is_center ? "LocalBusiness" : "Person",
+    name: data.full_name,
+    image: data.photo_url || undefined,
+    description: data.sobre_mi || data.headline || undefined,
+    jobTitle: data.is_center ? undefined : data.especialidad || "Terapeuta",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: data.city || municipality?.name || "Mallorca",
+      addressRegion: "Islas Baleares",
+      addressCountry: "ES",
+    },
+  };
+
   return (
     <PageShell>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       <article className="bg-[#fff9f1]">
         <section className="relative overflow-hidden bg-[#f4eadb]">
           <img
@@ -291,11 +322,45 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
                 )}
 
                 {showVerificationBadge && (
-                  <p className="mt-5 inline-flex items-center gap-2 text-sm text-[#435039]">
-                    <ShieldCheck className="h-4 w-4" />
-                    Perfil verificado por Mallorca Holística
-                    <Info className="h-3.5 w-3.5" />
-                  </p>
+                  <TooltipProvider>
+                    <Tooltip delayDuration={100}>
+                      <TooltipTrigger asChild>
+                        <button className="mt-5 inline-flex items-center gap-2 text-sm text-[#435039] hover:text-[#2d3a27] bg-[#526046]/5 hover:bg-[#526046]/10 px-3 py-1.5 rounded-full transition-all duration-300 font-medium border border-[#526046]/10 cursor-pointer">
+                          <ShieldCheck className="h-4 w-4 text-[#526046] animate-pulse" />
+                          <span>Perfil verificado por Mallorca Holística</span>
+                          <Info className="h-3.5 w-3.5 text-[#526046]/70" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs p-4 bg-white border border-[#eadfce] text-[#31291f] rounded-2xl shadow-xl space-y-2.5">
+                        <div className="font-display font-bold text-sm text-[#1f3326] flex items-center gap-1.5">
+                          <ShieldCheck className="h-4 w-4 text-[#526046]" />
+                          Sello de Confianza Activo
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Este profesional ha completado el riguroso proceso de admisión de Mallorca
+                          Holística:
+                        </p>
+                        <div className="space-y-1.5 pt-1 text-xs">
+                          <div className="flex items-center gap-2 text-emerald-800 font-medium">
+                            <span className="text-[#526046] font-bold">✓</span>
+                            <span>Código Deontológico aceptado</span>
+                          </div>
+                          {data.verification_document_path && (
+                            <div className="flex items-center gap-2 text-emerald-800 font-medium">
+                              <span className="text-[#526046] font-bold">✓</span>
+                              <span>Titulación profesional verificada</span>
+                            </div>
+                          )}
+                          {data.has_liability_insurance && (
+                            <div className="flex items-center gap-2 text-emerald-800 font-medium">
+                              <span className="text-[#526046] font-bold">✓</span>
+                              <span>Seguro de Responsabilidad Civil</span>
+                            </div>
+                          )}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
             </div>
@@ -373,8 +438,6 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
                 </div>
               </ProfileSection>
             )}
-
-
 
             {visibleTherapies.length > 0 && (
               <ProfileSection eyebrow="Terapias">
@@ -502,26 +565,79 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
           <aside className="space-y-6">
             <SideCard
               icon={ShieldCheck}
-              title={showVerificationBadge ? "Sello Mallorca Holística" : "Perfil público"}
+              title={showVerificationBadge ? "Sello de Confianza" : "Perfil público"}
             >
-              <p className="text-sm text-[#5d5144]">
-                {data.years_experience
-                  ? `${data.years_experience} años de experiencia`
-                  : "Documentación revisada"}
-              </p>
-              <ul className="mt-5 space-y-3 text-sm text-[#342b22]">
-                {[
-                  "Formación y diplomas",
-                  "Experiencia profesional",
-                  "Seguro de responsabilidad civil",
-                  "Adhesión al código deontológico",
-                ].map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <Check className="h-4 w-4 text-[#526046]" /> {item}
-                  </li>
-                ))}
-              </ul>
+              <div className="space-y-4">
+                <p className="text-sm leading-relaxed text-[#5d5144]">
+                  {showVerificationBadge ? (
+                    <span>
+                      Este profesional ha superado el{" "}
+                      <strong>proceso de auditoría y verificación</strong> de Mallorca Holística,
+                      habiendo aportado documentación que acredita de forma fehaciente los
+                      siguientes criterios:
+                    </span>
+                  ) : (
+                    <span>
+                      Este perfil está registrado como miembro del ecosistema. Sus credenciales
+                      están sujetas a la verificación oficial de Mallorca Holística:
+                    </span>
+                  )}
+                </p>
+
+                <div className="mt-4 space-y-3">
+                  {[
+                    {
+                      label: "Identidad Verificada",
+                      desc: "Validación de DNI/NIE o documento de identidad oficial.",
+                    },
+                    {
+                      label: "Titulación y Formación",
+                      desc: "Diplomas, posgrados y certificaciones oficiales acreditados.",
+                    },
+                    {
+                      label: "Seguro de Responsabilidad Civil",
+                      desc: "Póliza de seguro vigente de RC profesional aportada.",
+                    },
+                    {
+                      label: "Código Deontológico",
+                      desc: "Adhesión formal y compromiso de cumplimiento ético.",
+                    },
+                  ].map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex gap-3 rounded-2xl border border-[#eadfce]/40 bg-[#fffdfa]/60 p-3"
+                    >
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#eef5eb] text-[#435039]">
+                        <Check className="h-3 w-3" strokeWidth={3} />
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold text-[#1f3326]">{item.label}</p>
+                        <p className="text-[11px] leading-relaxed text-[#6d5b43] mt-0.5">
+                          {item.desc}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </SideCard>
+
+            {/* Report Profile Button */}
+            <div className="pt-2">
+              <button
+                onClick={() => {
+                  setReportSubmitted(false);
+                  setReportReason("");
+                  setReportDetails("");
+                  setReportEmail("");
+                  setShowReportModal(true);
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-[#eadfce]/60 bg-white/40 py-3 text-xs font-semibold text-[#8c7a66] hover:bg-white hover:text-[#d32f2f] active:scale-95 transition-all cursor-pointer"
+              >
+                <Flag className="h-3.5 w-3.5" />
+                Reportar este perfil
+              </button>
+            </div>
 
             {isPremiumPlan && (data.formacion || data.experiencia) && (
               <SideCard icon={Leaf} title="Formación y experiencia">
@@ -592,13 +708,14 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
                       description={data.phone}
                     />
                   )}
-                  {(data.show_whatsapp_public || premiumProfileReady) && (data.whatsapp || data.phone) && (
-                    <ContactLink
-                      href={whatsappHref(data.whatsapp || data.phone || "", contactName)}
-                      label="WhatsApp"
-                      description={data.whatsapp || data.phone || ""}
-                    />
-                  )}
+                  {(data.show_whatsapp_public || premiumProfileReady) &&
+                    (data.whatsapp || data.phone) && (
+                      <ContactLink
+                        href={whatsappHref(data.whatsapp || data.phone || "", contactName)}
+                        label="WhatsApp"
+                        description={data.whatsapp || data.phone || ""}
+                      />
+                    )}
                   {data.show_email_public && data.email && (
                     <ContactLink
                       href={`mailto:${data.email}`}
@@ -709,6 +826,168 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
           </div>
         </section>
       </article>
+
+      {/* Report Profile Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="relative w-full max-w-lg rounded-[2.5rem] border border-[#eadfce] bg-[#fffaf4] p-6 shadow-2xl md:p-8 animate-in zoom-in-95 duration-300">
+            <button
+              onClick={() => setShowReportModal(false)}
+              className="absolute right-6 top-6 rounded-full p-2 text-[#8c7a66] hover:bg-[#f4eadb] hover:text-[#1f3326] transition-all cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {!reportSubmitted ? (
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!reportReason) return;
+                  setIsSubmittingReport(true);
+
+                  try {
+                    await submitProfessionalReport({
+                      data: {
+                        therapistId: data.id,
+                        professionalName: data.full_name ?? contactName,
+                        professionalSlug: slug,
+                        reason: reportReason,
+                        details: reportDetails || null,
+                        reporterEmail: reportEmail || null,
+                        origin: window.location.origin,
+                      },
+                    });
+
+                    trackAnalyticsEventSoon({
+                      eventType: "professional_profile_reported",
+                      therapistId: data.id,
+                      metadata: {
+                        reason: reportReason,
+                        hasDetails: Boolean(reportDetails.trim()),
+                        hasReporterEmail: Boolean(reportEmail.trim()),
+                      },
+                    });
+
+                    setReportSubmitted(true);
+                  } catch (error) {
+                    console.error("Profile report submission failed:", error);
+                    toast.error("No pudimos enviar el reporte. Inténtalo de nuevo.");
+                  } finally {
+                    setIsSubmittingReport(false);
+                  }
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <h3 className="font-display text-2xl text-[#1f3326]">
+                    Reportar perfil de {contactName}
+                  </h3>
+                  <p className="mt-1 text-xs text-[#6d5b43]">
+                    Ayúdanos a mantener la confianza del ecosistema. Revisamos con rigor cada
+                    reporte de forma manual.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#342b22] block">
+                    Motivo del reporte *
+                  </label>
+                  <div className="space-y-2">
+                    {[
+                      "Información incorrecta o desactualizada",
+                      "No responde a solicitudes de contacto",
+                      "Dudas sobre la titulación o veracidad del perfil",
+                      "Comportamiento inadecuado o no profesional",
+                      "Otro motivo",
+                    ].map((reason) => (
+                      <label
+                        key={reason}
+                        className="flex cursor-pointer items-start gap-2.5 rounded-2xl border border-[#eadfce]/60 bg-white/50 p-3 text-xs text-[#342b22] hover:bg-white transition-all"
+                      >
+                        <input
+                          type="radio"
+                          name="reportReason"
+                          value={reason}
+                          checked={reportReason === reason}
+                          onChange={(e) => setReportReason(e.target.value)}
+                          className="mt-0.5 accent-[#526046]"
+                          required
+                        />
+                        <span className="ml-2">{reason}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#342b22] block">
+                    Detalles o comentarios adicionales
+                  </label>
+                  <textarea
+                    value={reportDetails}
+                    onChange={(e) => setReportDetails(e.target.value)}
+                    placeholder="Describe detalladamente lo ocurrido o la información inexacta..."
+                    className="w-full min-h-[90px] rounded-2xl border border-[#eadfce] bg-white p-3 text-xs text-[#342b22] placeholder:text-[#dfcfbd] focus:border-[#526046] focus:outline-none focus:ring-1 focus:ring-[#526046]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-[0.08em] text-[#342b22] block">
+                    Tu dirección de email (opcional)
+                  </label>
+                  <input
+                    type="email"
+                    value={reportEmail}
+                    onChange={(e) => setReportEmail(e.target.value)}
+                    placeholder="Para contactarte en caso de requerir aclaraciones..."
+                    className="w-full rounded-2xl border border-[#eadfce] bg-white p-3 text-xs text-[#342b22] placeholder:text-[#dfcfbd] focus:border-[#526046] focus:outline-none focus:ring-1 focus:ring-[#526046]"
+                  />
+                </div>
+
+                <div className="pt-2 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowReportModal(false)}
+                    className="flex-1 rounded-2xl border border-[#eadfce] bg-white py-3 text-xs font-semibold text-[#8c7a66] hover:bg-[#fff9f1] active:scale-95 transition-all cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingReport || !reportReason}
+                    className="flex-1 rounded-2xl bg-[#526046] py-3 text-xs font-semibold text-white hover:bg-[#434f37] disabled:opacity-50 disabled:pointer-events-none active:scale-95 transition-all shadow-md shadow-[#526046]/10 cursor-pointer"
+                  >
+                    {isSubmittingReport ? "Enviando..." : "Enviar reporte"}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="py-6 text-center space-y-4">
+                <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-[#eef5eb] text-[#526046]">
+                  <Check className="h-8 w-8" strokeWidth={2.5} />
+                </span>
+                <div className="space-y-2">
+                  <h3 className="font-display text-2xl text-[#1f3326]">
+                    ¡Reporte recibido con éxito!
+                  </h3>
+                  <p className="text-sm text-[#5d5144] max-w-sm mx-auto leading-relaxed">
+                    Muchas gracias por colaborar. Revisaremos este perfil manualmente en un plazo
+                    máximo de 48 horas y tomaremos las acciones pertinentes.
+                  </p>
+                </div>
+                <div className="pt-4">
+                  <button
+                    onClick={() => setShowReportModal(false)}
+                    className="min-w-40 rounded-2xl bg-[#526046] py-3 px-6 text-xs font-semibold text-white hover:bg-[#434f37] active:scale-95 transition-all cursor-pointer"
+                  >
+                    Cerrar ventana
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </PageShell>
   );
 }
