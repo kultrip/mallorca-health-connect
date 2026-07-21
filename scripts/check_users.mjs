@@ -28,26 +28,31 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
-  }
+  },
 });
 
 async function checkUsers() {
   console.log(`Connecting to database: ${supabaseUrl}`);
-  
-  const { data: { users }, error } = await supabaseAdmin.auth.admin.listUsers();
-  
+
+  const {
+    data: { users },
+    error,
+  } = await supabaseAdmin.auth.admin.listUsers();
+
   if (error) {
     console.error("❌ Error fetching users:", error);
     process.exit(1);
   }
-  
+
   console.log(`\n✅ Connected successfully!`);
   console.log(`Total users in database: ${users.length}`);
-  
+
   if (users.length > 0) {
     console.log("\nRegistered Users:");
     users.forEach((user, index) => {
-      console.log(`${index + 1}. Email: ${user.email} | ID: ${user.id} | Created At: ${user.created_at}`);
+      console.log(
+        `${index + 1}. Email: ${user.email} | ID: ${user.id} | Created At: ${user.created_at}`,
+      );
     });
   } else {
     console.log("\nNo users found in this new database yet.");

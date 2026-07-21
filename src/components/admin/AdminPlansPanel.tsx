@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { isActivePaidSubscription } from "@/lib/plan-access";
 
 import type { AdminTherapist, PlanRow } from "./admin-types";
 
@@ -19,7 +20,9 @@ export function AdminPlansPanel({
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {plans.map((plan) => {
           const onPlan = therapists.filter((therapist) => therapist.plan_id === plan.id);
-          const active = onPlan.filter((therapist) => therapist.subscription_status === "active");
+          const active = onPlan.filter((therapist) =>
+            isActivePaidSubscription(therapist.subscription_status),
+          );
           const pending = therapists.filter(
             (therapist) => therapist.pending_plan_slug === plan.slug,
           );
@@ -37,15 +40,9 @@ export function AdminPlansPanel({
               <CardContent className="space-y-2 text-sm text-muted-foreground">
                 <p>Slug: {plan.slug}</p>
                 <p>Precio Estándar: {formatEuros(plan.price_monthly_cents)}</p>
-                <p>Stripe price: {plan.stripe_price_id || "Sin configurar"}</p>
                 {plan.founder_price_monthly_cents !== null && (
                   <p className="text-amber-600 dark:text-amber-400 font-medium">
                     Precio Fundador: {formatEuros(plan.founder_price_monthly_cents)}
-                  </p>
-                )}
-                {plan.founder_stripe_price_id && (
-                  <p className="text-amber-600 dark:text-amber-400">
-                    Stripe Founder price: {plan.founder_stripe_price_id}
                   </p>
                 )}
                 <p>Profesionales en plan: {onPlan.length}</p>

@@ -34,6 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { stampOrganisationSubmission } from "@/lib/organisation-onboarding";
 import { notifyAdminOfProfessionalRequest } from "@/lib/professional-verification";
+import { createCheckoutSession } from "@/lib/stripe-functions";
 import {
   getOnboardingPlanConfig,
   resolveOnboardingPlan,
@@ -41,6 +42,9 @@ import {
   type OnboardingPlan,
 } from "@/lib/onboarding-flow";
 import { onboardingSearchSchema } from "@/lib/route-schemas";
+import { DEONTOLOGICAL_CODE, PRIVACY_POLICY, TERMS_OF_USE } from "@/lib/legal-texts";
+import { CatalogPicker } from "@/components/therapists/forms/CatalogPicker";
+import { CheckboxGrid } from "@/components/therapists/forms/CheckboxGrid";
 
 type MunicipalityRow = Database["public"]["Tables"]["municipalities"]["Row"];
 type TherapyRow = Database["public"]["Tables"]["therapies"]["Row"];
@@ -262,14 +266,13 @@ function OnboardingPage() {
   const [diplomaFile, setDiplomaFile] = useState<File | null>(null);
   const [extraDocuments, setExtraDocuments] = useState<File[]>([]);
   const [acceptedPaymentRegistration, setAcceptedPaymentRegistration] = useState(false);
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
-  const [cardholderName, setCardholderName] = useState("");
   const [therapySearch, setTherapySearch] = useState("");
   const [helpAreaSearch, setHelpAreaSearch] = useState("");
   const [draggedTherapyIndex, setDraggedTherapyIndex] = useState<number | null>(null);
   const [draggedHelpAreaIndex, setDraggedHelpAreaIndex] = useState<number | null>(null);
+  const [activeDocumentModal, setActiveDocumentModal] = useState<
+    "deontological" | "privacy" | "terms" | null
+  >(null);
 
   useEffect(() => {
     let active = true;
@@ -350,6 +353,45 @@ function OnboardingPage() {
         center_id?: string | null;
         status?: string | null;
       } | null = null;
+
+      // If a claim token (therapist ID) is in the URL, try to link it to this user if not already linked
+      if (search.claim) {
+        // Double check if this user already has a therapist associated
+        const { data: existingOwnTherapist } = await supabase
+          .from("therapists")
+          .select("id")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (!existingOwnTherapist) {
+          // Look up the therapist to claim to ensure it's unclaimed/draft
+          const { data: targetTherapist } = await supabase
+            .from("therapists")
+            .select("id, user_id")
+            .eq("id", search.claim)
+            .maybeSingle();
+
+          if (targetTherapist && !targetTherapist.user_id) {
+            // Unclaimed therapist found! Let's link it securely to our logged-in user
+            const { error: claimError } = await supabase
+              .from("therapists")
+              .update({
+                user_id: currentUser.id,
+                owner_user_id: currentUser.id,
+                is_claimed: true,
+                crm_status: "CLAIMED",
+              })
+              .eq("id", search.claim);
+
+            if (claimError) {
+              console.error("Error claiming therapist profile:", claimError);
+              toast.error("Hubo un problema al asociar tu perfil. Por favor contacta soporte.");
+            } else {
+              toast.success("¡Perfil asociado con éxito! Revisa tus datos pre-completados a continuación.");
+            }
+          }
+        }
+      }
 
       const { data: therapist } = await supabase
         .from("therapists")
@@ -534,6 +576,8 @@ function OnboardingPage() {
   }, [step]);
 
   const config = useMemo(() => getOnboardingPlanConfig(wizardPlan), [wizardPlan]);
+  const isFreePlan = config.slug === "presencia";
+  const maxStep = isFreePlan ? 6 : 7;
   const selectedTherapies = useMemo(
     () =>
       draft.therapyIds
@@ -895,6 +939,7 @@ function OnboardingPage() {
                     }
                   }}
                   columns="md:grid-cols-2 lg:grid-cols-3"
+                  variant="button"
                 />
 
                 <CheckboxGrid
@@ -936,6 +981,7 @@ function OnboardingPage() {
                     }
                   }}
                   columns="md:grid-cols-2 lg:grid-cols-3"
+                  variant="button"
                 />
               </StepShell>
             )}
@@ -962,6 +1008,7 @@ function OnboardingPage() {
                       "A distancia":
                         "A distancia significa acompañamiento remoto, sin videollamada ni presencia física.",
                     }}
+                    variant="button"
                   />
                 )}
 
@@ -1057,7 +1104,15 @@ function OnboardingPage() {
                         )}
                       </div>
                       <div className="grid gap-5 md:grid-cols-2">
-                        <Field label={config.slug === "presencia" && index === 0 ? "Nombre del centro (opcional)" : (index === 0 ? "Nombre del centro *" : "Nombre del centro")}>
+                        <Field
+                          label={
+                            config.slug === "presencia" && index === 0
+                              ? "Nombre del centro (opcional)"
+                              : index === 0
+                                ? "Nombre del centro *"
+                                : "Nombre del centro"
+                          }
+                        >
                           <Input
                             value={location.centerName}
                             onChange={(event) =>
@@ -1069,7 +1124,15 @@ function OnboardingPage() {
                             required={index === 0 && config.slug !== "presencia"}
                           />
                         </Field>
-                        <Field label={config.slug === "presencia" && index === 0 ? "Dirección (opcional)" : (index === 0 ? "Dirección *" : "Dirección")}>
+                        <Field
+                          label={
+                            config.slug === "presencia" && index === 0
+                              ? "Dirección (opcional)"
+                              : index === 0
+                                ? "Dirección *"
+                                : "Dirección"
+                          }
+                        >
                           <Input
                             value={location.address}
                             onChange={(event) =>
@@ -1114,6 +1177,7 @@ function OnboardingPage() {
                       values={draft.facilities}
                       onChange={(values) => updateDraft(setDraft, { facilities: values })}
                       columns="md:grid-cols-2 lg:grid-cols-3"
+                      variant="button"
                     />
 
                     <Field label="Galería de imágenes">
@@ -1169,10 +1233,13 @@ function OnboardingPage() {
                       <ul className="list-disc pl-5 space-y-2 text-[#6d5b43] leading-relaxed">
                         <li>Psicóloga integrativa especializada en ansiedad y trauma.</li>
                         <li>Osteópata y terapeuta corporal con enfoque holístico.</li>
-                        <li>Profesora de yoga y acompañante en procesos de transformación personal.</li>
+                        <li>
+                          Profesora de yoga y acompañante en procesos de transformación personal.
+                        </li>
                       </ul>
                       <p className="pt-1 text-[11px] text-[#8c7a66] border-t border-[#eadfce]/60 leading-normal">
-                        Esta frase puede aparecer en búsquedas, tarjetas de resultados, perfil público y Google.
+                        Esta frase puede aparecer en búsquedas, tarjetas de resultados, perfil
+                        público y Google.
                       </p>
                     </div>
                   </div>
@@ -1183,7 +1250,8 @@ function OnboardingPage() {
                       ✨ Presentación profesional
                     </label>
                     <p className="text-xs text-[#6d5b43]">
-                      Cuéntanos quién eres, qué haces y cómo acompañas a las personas. Máximo 3000 caracteres.
+                      Cuéntanos quién eres, qué haces y cómo acompañas a las personas. Máximo 3000
+                      caracteres.
                     </p>
                     <Textarea
                       value={draft.presentationText}
@@ -1209,218 +1277,73 @@ function OnboardingPage() {
             {step === 5 && (
               <StepShell
                 icon={ShieldCheck}
-                title={
-                  config.isOrganisation
-                    ? "5. Redes, verificación y compromisos"
-                    : "5. Redes y compromisos"
-                }
-                intro={
-                  config.isOrganisation
-                    ? "Terminamos con los datos públicos, la verificación y la firma responsable."
-                    : "Revisamos tus datos públicos y las aceptaciones finales."
-                }
+                title="5. Redes y contacto"
+                intro="Configura los enlaces públicos de tu perfil y la visibilidad de tus datos de contacto."
               >
                 {config.isOrganisation ? (
-                  <>
-                    <div className="grid gap-5 md:grid-cols-2">
-                      <Field label="Página web">
-                        <Input
-                          value={draft.website}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { website: event.target.value })
-                          }
-                          placeholder="https://..."
-                        />
-                      </Field>
-                      <Field label="Instagram">
-                        <Input
-                          value={draft.instagramUrl}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { instagramUrl: event.target.value })
-                          }
-                          placeholder="https://instagram.com/..."
-                        />
-                      </Field>
-                      <Field label="Facebook">
-                        <Input
-                          value={draft.facebookUrl}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { facebookUrl: event.target.value })
-                          }
-                          placeholder="https://facebook.com/..."
-                        />
-                      </Field>
-                      <Field label="LinkedIn">
-                        <Input
-                          value={draft.linkedinUrl}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { linkedinUrl: event.target.value })
-                          }
-                          placeholder="https://linkedin.com/..."
-                        />
-                      </Field>
-                      <Field label="YouTube">
-                        <Input
-                          value={draft.youtubeUrl}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { youtubeUrl: event.target.value })
-                          }
-                          placeholder="https://youtube.com/..."
-                        />
-                      </Field>
-                      <Field label="Calendly">
-                        <Input
-                          value={draft.calendlyUrl}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { calendlyUrl: event.target.value })
-                          }
-                          placeholder="https://calendly.com/..."
-                        />
-                      </Field>
-                      <Field label="Otra plataforma">
-                        <Input
-                          value={draft.otherBookingUrl}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { otherBookingUrl: event.target.value })
-                          }
-                          placeholder="https://..."
-                        />
-                      </Field>
-                    </div>
-
-                    <div className="grid gap-5 md:grid-cols-2">
-                      <Field label="Responsable de la organización — Nombre *">
-                        <Input
-                          value={draft.responsibleFirstName}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { responsibleFirstName: event.target.value })
-                          }
-                          required
-                        />
-                      </Field>
-                      <Field label="Apellidos *">
-                        <Input
-                          value={draft.responsibleLastName}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { responsibleLastName: event.target.value })
-                          }
-                          required
-                        />
-                      </Field>
-                      <Field label="Cargo *">
-                        <Input
-                          value={draft.responsibleRole}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { responsibleRole: event.target.value })
-                          }
-                          required
-                        />
-                      </Field>
-                      <Field label="Email *">
-                        <Input
-                          type="email"
-                          value={draft.responsibleEmail}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { responsibleEmail: event.target.value })
-                          }
-                          required
-                        />
-                      </Field>
-                      <Field label="Teléfono *">
-                        <Input
-                          value={draft.responsiblePhone}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { responsiblePhone: event.target.value })
-                          }
-                          required
-                        />
-                      </Field>
-                      <Field label="Nombre legal *">
-                        <Input
-                          value={draft.legalEntityName}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { legalEntityName: event.target.value })
-                          }
-                          required
-                        />
-                      </Field>
-                      <Field label="CIF/NIF *">
-                        <Input
-                          value={draft.legalEntityTaxId}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { legalEntityTaxId: event.target.value })
-                          }
-                          required
-                        />
-                      </Field>
-                      <Field label="Nombre completo del firmante *">
-                        <Input
-                          value={draft.signatureName}
-                          onChange={(event) =>
-                            updateDraft(setDraft, { signatureName: event.target.value })
-                          }
-                          required
-                        />
-                      </Field>
-                    </div>
-
-                    <div className="space-y-4 rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
-                      <ConsentCheckbox
-                        checked={draft.declaresLegalAuthority}
-                        onChange={(value) =>
-                          updateDraft(setDraft, { declaresLegalAuthority: value })
+                  <div className="grid gap-5 md:grid-cols-2">
+                    <Field label="Página web">
+                      <Input
+                        value={draft.website}
+                        onChange={(event) => updateDraft(setDraft, { website: event.target.value })}
+                        placeholder="https://..."
+                      />
+                    </Field>
+                    <Field label="Instagram">
+                      <Input
+                        value={draft.instagramUrl}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { instagramUrl: event.target.value })
                         }
-                      >
-                        Declaro representar legalmente o contar con autorización para actuar en
-                        nombre de esta organización.
-                      </ConsentCheckbox>
-                      <ConsentCheckbox
-                        checked={draft.acceptedTruthfulness}
-                        onChange={(value) => updateDraft(setDraft, { acceptedTruthfulness: value })}
-                      >
-                        Declaro que la información aportada es veraz.
-                      </ConsentCheckbox>
-                      <ConsentCheckbox
-                        checked={draft.acceptedDeontologicalCode}
-                        onChange={(value) =>
-                          updateDraft(setDraft, { acceptedDeontologicalCode: value })
+                        placeholder="https://instagram.com/..."
+                      />
+                    </Field>
+                    <Field label="Facebook">
+                      <Input
+                        value={draft.facebookUrl}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { facebookUrl: event.target.value })
                         }
-                      >
-                        He leído y acepto el Código Deontológico de Mallorca Holística.
-                      </ConsentCheckbox>
-                    </div>
-
-                    <div className="space-y-4 rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
-                      <ConsentCheckbox
-                        checked={draft.acceptedPrivacyPolicy}
-                        onChange={(value) =>
-                          updateDraft(setDraft, { acceptedPrivacyPolicy: value })
+                        placeholder="https://facebook.com/..."
+                      />
+                    </Field>
+                    <Field label="LinkedIn">
+                      <Input
+                        value={draft.linkedinUrl}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { linkedinUrl: event.target.value })
                         }
-                      >
-                        Acepto la Política de Privacidad.
-                      </ConsentCheckbox>
-                      <ConsentCheckbox
-                        checked={draft.acceptedTermsOfUse}
-                        onChange={(value) => updateDraft(setDraft, { acceptedTermsOfUse: value })}
-                      >
-                        Acepto las Condiciones de Uso.
-                      </ConsentCheckbox>
-                      <ConsentCheckbox
-                        checked={draft.acceptedPublication}
-                        onChange={(value) => updateDraft(setDraft, { acceptedPublication: value })}
-                      >
-                        Autorizo la publicación de mi perfil en Mallorca Holística.
-                      </ConsentCheckbox>
-                    </div>
-
-                    <div className="rounded-2xl border border-[#eadfce] bg-[#f7efe7] p-5 text-sm leading-7 text-[#5d5144]">
-                      <p className="font-medium text-[#342b22]">Firma</p>
-                      <p>
-                        Nombre completo del firmante: <strong>{draft.signatureName || "—"}</strong>
-                      </p>
-                      <p>(Fecha, hora e IP registradas automáticamente)</p>
-                    </div>
-                  </>
+                        placeholder="https://linkedin.com/..."
+                      />
+                    </Field>
+                    <Field label="YouTube">
+                      <Input
+                        value={draft.youtubeUrl}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { youtubeUrl: event.target.value })
+                        }
+                        placeholder="https://youtube.com/..."
+                      />
+                    </Field>
+                    <Field label="Calendly">
+                      <Input
+                        value={draft.calendlyUrl}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { calendlyUrl: event.target.value })
+                        }
+                        placeholder="https://calendly.com/..."
+                      />
+                    </Field>
+                    <Field label="Otra plataforma">
+                      <Input
+                        value={draft.otherBookingUrl}
+                        onChange={(event) =>
+                          updateDraft(setDraft, { otherBookingUrl: event.target.value })
+                        }
+                        placeholder="https://..."
+                      />
+                    </Field>
+                  </div>
                 ) : (
                   <>
                     <div className="grid gap-5 md:grid-cols-2">
@@ -1525,7 +1448,194 @@ function OnboardingPage() {
                         />
                       </Field>
                     </div>
+                  </>
+                )}
+              </StepShell>
+            )}
 
+            {step === 6 && (
+              <StepShell
+                icon={Award}
+                title="6. Verificación y Compromisos"
+                intro={
+                  config.isOrganisation
+                    ? "Completa los datos de representación legal de tu centro y firma responsable."
+                    : "Sube tu titulación acreditativa para la verificación y acepta los compromisos éticos."
+                }
+              >
+                {config.isOrganisation ? (
+                  <>
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <Field label="Responsable de la organización — Nombre *">
+                        <Input
+                          value={draft.responsibleFirstName}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { responsibleFirstName: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="Apellidos *">
+                        <Input
+                          value={draft.responsibleLastName}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { responsibleLastName: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="Cargo *">
+                        <Input
+                          value={draft.responsibleRole}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { responsibleRole: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="Email *">
+                        <Input
+                          type="email"
+                          value={draft.responsibleEmail}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { responsibleEmail: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="Teléfono *">
+                        <Input
+                          value={draft.responsiblePhone}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { responsiblePhone: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="Nombre legal *">
+                        <Input
+                          value={draft.legalEntityName}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { legalEntityName: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="CIF/NIF *">
+                        <Input
+                          value={draft.legalEntityTaxId}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { legalEntityTaxId: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                      <Field label="Nombre completo del firmante *">
+                        <Input
+                          value={draft.signatureName}
+                          onChange={(event) =>
+                            updateDraft(setDraft, { signatureName: event.target.value })
+                          }
+                          required
+                        />
+                      </Field>
+                    </div>
+
+                    <div className="space-y-4 rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
+                      <ConsentCheckbox
+                        checked={draft.declaresLegalAuthority}
+                        onChange={(value) =>
+                          updateDraft(setDraft, { declaresLegalAuthority: value })
+                        }
+                      >
+                        Declaro representar legalmente o contar con autorización para actuar en
+                        nombre de esta organización.
+                      </ConsentCheckbox>
+                      <ConsentCheckbox
+                        checked={draft.acceptedTruthfulness}
+                        onChange={(value) => updateDraft(setDraft, { acceptedTruthfulness: value })}
+                      >
+                        Declaro que la información aportada es veraz.
+                      </ConsentCheckbox>
+                      <ConsentCheckbox
+                        checked={draft.acceptedDeontologicalCode}
+                        onChange={(value) =>
+                          updateDraft(setDraft, { acceptedDeontologicalCode: value })
+                        }
+                      >
+                        He leído y acepto el{" "}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setActiveDocumentModal("deontological");
+                          }}
+                          className="underline text-[#526046] font-medium hover:text-[#3d4b34] transition-colors"
+                        >
+                          Código Deontológico de Mallorca Holística
+                        </button>
+                        .
+                      </ConsentCheckbox>
+                    </div>
+
+                    <div className="space-y-4 rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
+                      <ConsentCheckbox
+                        checked={draft.acceptedPrivacyPolicy}
+                        onChange={(value) =>
+                          updateDraft(setDraft, { acceptedPrivacyPolicy: value })
+                        }
+                      >
+                        He leído y acepto la{" "}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setActiveDocumentModal("privacy");
+                          }}
+                          className="underline text-[#526046] font-medium hover:text-[#3d4b34] transition-colors"
+                        >
+                          Política de Privacidad
+                        </button>
+                        .
+                      </ConsentCheckbox>
+                      <ConsentCheckbox
+                        checked={draft.acceptedTermsOfUse}
+                        onChange={(value) => updateDraft(setDraft, { acceptedTermsOfUse: value })}
+                      >
+                        He leído y acepto las{" "}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setActiveDocumentModal("terms");
+                          }}
+                          className="underline text-[#526046] font-medium hover:text-[#3d4b34] transition-colors"
+                        >
+                          Condiciones de Uso de Mallorca Holística
+                        </button>
+                        .
+                      </ConsentCheckbox>
+                      <ConsentCheckbox
+                        checked={draft.acceptedPublication}
+                        onChange={(value) => updateDraft(setDraft, { acceptedPublication: value })}
+                      >
+                        Autorizo la publicación de mi perfil en Mallorca Holística.
+                      </ConsentCheckbox>
+                    </div>
+
+                    <div className="rounded-2xl border border-[#eadfce] bg-[#f7efe7] p-5 text-sm leading-7 text-[#5d5144]">
+                      <p className="font-medium text-[#342b22]">Firma</p>
+                      <p>
+                        Nombre completo del firmante: <strong>{draft.signatureName || "—"}</strong>
+                      </p>
+                      <p>(Fecha, hora e IP registradas automáticamente)</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
                     {config.isProfessional && (
                       <div className="space-y-4 rounded-2xl border border-[#eadfce] bg-[#fffaf4] p-5">
                         <h4 className="font-display text-lg text-[#11100e]">
@@ -1565,7 +1675,19 @@ function OnboardingPage() {
                           updateDraft(setDraft, { acceptedDeontologicalCode: value })
                         }
                       >
-                        He leído y acepto el Código Deontológico de Mallorca Holística.
+                        He leído y acepto el{" "}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setActiveDocumentModal("deontological");
+                          }}
+                          className="underline text-[#526046] font-medium hover:text-[#3d4b34] transition-colors"
+                        >
+                          Código Deontológico de Mallorca Holística
+                        </button>
+                        .
                       </ConsentCheckbox>
                       <ConsentCheckbox
                         checked={draft.acceptedTruthfulness}
@@ -1579,13 +1701,37 @@ function OnboardingPage() {
                           updateDraft(setDraft, { acceptedPrivacyPolicy: value })
                         }
                       >
-                        Acepto la Política de Privacidad.
+                        He leído y acepto la{" "}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setActiveDocumentModal("privacy");
+                          }}
+                          className="underline text-[#526046] font-medium hover:text-[#3d4b34] transition-colors"
+                        >
+                          Política de Privacidad
+                        </button>
+                        .
                       </ConsentCheckbox>
                       <ConsentCheckbox
                         checked={draft.acceptedTermsOfUse}
                         onChange={(value) => updateDraft(setDraft, { acceptedTermsOfUse: value })}
                       >
-                        Acepto las Condiciones de Uso.
+                        He leído y acepto las{" "}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setActiveDocumentModal("terms");
+                          }}
+                          className="underline text-[#526046] font-medium hover:text-[#3d4b34] transition-colors"
+                        >
+                          Condiciones de Uso de Mallorca Holística
+                        </button>
+                        .
                       </ConsentCheckbox>
                       <ConsentCheckbox
                         checked={draft.acceptedPublication}
@@ -1601,6 +1747,70 @@ function OnboardingPage() {
                     </div>
                   </>
                 )}
+              </StepShell>
+            )}
+
+            {step === 7 && config.slug !== "presencia" && (
+              <StepShell
+                icon={Leaf}
+                title="7. Activación de suscripción"
+                intro="Completa el registro de tu método de pago seguro para activar tu suscripción."
+              >
+                <div className="space-y-6">
+                  <div className="rounded-2xl border border-[#dfcfbd] bg-[#fffaf4] p-6 space-y-4 text-[#5a4c3e]">
+                    <h3 className="font-display text-xl text-[#526046] flex items-center gap-2">
+                      🌿 Ya casi formas parte de Mallorca Holística
+                    </h3>
+                    <p className="text-sm leading-6">
+                      Has completado prácticamente todo el proceso.
+                    </p>
+                    <p className="text-sm leading-6">
+                      Para continuar con un plan de pago, Stripe registrará tu método de pago de
+                      forma segura.
+                    </p>
+                    <p className="text-sm leading-6 font-medium">
+                      No hay cargos durante la revisión. Si aprobamos tu perfil, activaremos la
+                      suscripción del plan elegido.
+                    </p>
+
+                    <div className="border-t border-[#dfcfbd]/60 pt-4 space-y-2">
+                      <h4 className="text-sm font-semibold text-[#1f1c18] flex items-center gap-1.5">
+                        Condiciones de fundador
+                      </h4>
+                      <ul className="text-sm space-y-1 list-disc pl-5">
+                        <li>
+                          Si tu cuenta es fundadora, pagas 0 EUR hoy y disfrutas{" "}
+                          <strong>180 días sin cargo</strong> desde la aprobación.
+                        </li>
+                        <li>
+                          Durante ese periodo fundador tendrás activas las ventajas premium del
+                          plan.
+                        </li>
+                        <li>
+                          Después, Stripe cargará automáticamente la tarifa fundadora especial del
+                          plan elegido, salvo cancelación previa.
+                        </li>
+                        <li>
+                          <strong>Sin permanencia.</strong>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 rounded-2xl border border-[#eadfce] bg-[#fffcf9] p-5">
+                    <h4 className="font-display text-base font-semibold text-[#11100e] flex items-center gap-2">
+                      🔒 Autorización
+                    </h4>
+                    <ConsentCheckbox
+                      checked={acceptedPaymentRegistration}
+                      onChange={setAcceptedPaymentRegistration}
+                    >
+                      Autorizo a Mallorca Holística a registrar mi método de pago de forma segura y
+                      activar automáticamente mi suscripción una vez finalizado el período gratuito
+                      correspondiente, siempre que mi solicitud haya sido aprobada.
+                    </ConsentCheckbox>
+                  </div>
+                </div>
               </StepShell>
             )}
 
@@ -1623,7 +1833,11 @@ function OnboardingPage() {
                 disabled={saving}
                 className="rounded-full bg-[#526046] px-8 text-white hover:bg-[#435039]"
               >
-                {step === 5 ? (saving ? "Finalizando..." : "Finalizar Perfil") : "Guardar y continuar"}
+                {step === maxStep
+                  ? saving
+                    ? "Finalizando..."
+                    : "Finalizar Perfil"
+                  : "Guardar y continuar"}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
@@ -1662,6 +1876,22 @@ function OnboardingPage() {
           <span>¿Tienes dudas? Escríbenos a hola@mallorcaholistica.com</span>
         </footer>
       </form>
+      {activeDocumentModal && (
+        <LegalDocumentModal
+          documentType={activeDocumentModal}
+          onClose={() => setActiveDocumentModal(null)}
+          onAccept={() => {
+            if (activeDocumentModal === "deontological") {
+              updateDraft(setDraft, { acceptedDeontologicalCode: true });
+            } else if (activeDocumentModal === "privacy") {
+              updateDraft(setDraft, { acceptedPrivacyPolicy: true });
+            } else if (activeDocumentModal === "terms") {
+              updateDraft(setDraft, { acceptedTermsOfUse: true });
+            }
+            setActiveDocumentModal(null);
+          }}
+        />
+      )}
     </PageShell>
   );
 
@@ -1695,21 +1925,22 @@ function OnboardingPage() {
       config,
       Boolean(logoFile),
       Boolean(diplomaFile),
+      acceptedPaymentRegistration,
     );
     if (validationError) {
       toast.error(validationError);
       return;
     }
 
-    if (step < 5) {
+    if (step < maxStep) {
       setSaving(true);
       try {
         await saveDraftProgress((step + 1) as WizardStep);
-        setStep((current) => Math.min(5, (current + 1) as WizardStep) as WizardStep);
+        setStep((current) => Math.min(maxStep, (current + 1) as WizardStep) as WizardStep);
       } catch (saveError) {
         console.error("Auto-save error:", saveError);
         toast.error("No se pudo autoguardar tu progreso, pero puedes continuar.");
-        setStep((current) => Math.min(5, (current + 1) as WizardStep) as WizardStep);
+        setStep((current) => Math.min(maxStep, (current + 1) as WizardStep) as WizardStep);
       } finally {
         setSaving(false);
       }
@@ -1871,6 +2102,8 @@ function OnboardingPage() {
         status: "pending",
         verified: false,
         plan_id: planId,
+        pending_plan_id: config.slug !== "presencia" ? planId : null,
+        pending_plan_slug: config.slug !== "presencia" ? selectedPlanSlug : null,
         is_founder: user?.user_metadata?.is_founder === true,
         verification_submitted_at: config.isProfessional ? new Date().toISOString() : null,
         verification_document_path: diplomaUpload?.path ?? null,
@@ -1927,6 +2160,33 @@ function OnboardingPage() {
         toast.warning("Perfil enviado, pero no pudimos avisar al equipo por email.");
       }
 
+      if (config.slug !== "presencia") {
+        try {
+          const accessToken = await getAccessToken();
+          const { url } = await createCheckoutSession({
+            data: {
+              planSlug: selectedPlanSlug,
+              origin: window.location.origin,
+            },
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+
+          if (!url) throw new Error("Stripe no devolvió una URL de checkout.");
+          toast.success("Perfil guardado. Te llevamos a Stripe para registrar el método de pago.");
+          window.location.href = url;
+          return;
+        } catch (stripeError) {
+          console.error("Stripe checkout session creation failed:", stripeError);
+          toast.error(
+            "Perfil guardado, pero no pudimos abrir Stripe. Completa el registro de pago desde Facturación.",
+          );
+          navigate({ to: "/dashboard/billing" });
+          return;
+        }
+      }
+
       toast.success("Tu perfil ha sido guardado. Redirigiendo al panel...");
       navigate({ to: "/dashboard" });
     } catch (error) {
@@ -1949,8 +2209,7 @@ function OnboardingPage() {
       draft.professionalName.trim() ||
         (isOrganisation ? draft.organizationName.trim() : publicFullName),
     );
-    const therapistSlug =
-      currentTherapistSlug || `${slugBase}-${Math.floor(Math.random() * 1000)}`;
+    const therapistSlug = currentTherapistSlug || `${slugBase}-${Math.floor(Math.random() * 1000)}`;
     if (!currentTherapistSlug) {
       setCurrentTherapistSlug(therapistSlug);
     }
@@ -2360,11 +2619,7 @@ function UploadBox({
       <div className="flex flex-col items-center gap-4 sm:flex-row">
         {showCircularPreview && previewSrc && (
           <div className="relative h-20 w-24 flex-shrink-0 overflow-hidden rounded-full border-2 border-[#d8c6b0]">
-            <img
-              src={previewSrc}
-              alt="Vista previa"
-              className="h-full w-full object-cover"
-            />
+            <img src={previewSrc} alt="Vista previa" className="h-full w-full object-cover" />
           </div>
         )}
         <label className="flex flex-1 cursor-pointer flex-col gap-3">
@@ -2434,72 +2689,6 @@ function MultiUploadBox({
           ))}
         </ul>
       )}
-    </div>
-  );
-}
-
-function CheckboxGrid({
-  title,
-  description,
-  items,
-  values,
-  onChange,
-  columns,
-  helperByItem,
-}: {
-  title: string;
-  description: string;
-  items: string[];
-  values: string[];
-  onChange: (values: string[]) => void;
-  columns: string;
-  helperByItem?: Record<string, string>;
-}) {
-  function toggle(item: string) {
-    const exists = values.includes(item);
-    const next = exists ? values.filter((value) => value !== item) : [...values, item];
-    onChange(next);
-  }
-
-  return (
-    <div className="space-y-3 rounded-3xl border border-[#eadfce] bg-[#fffaf4] p-5">
-      <div>
-        <h4 className="font-display text-lg text-[#11100e]">{title}</h4>
-        <p className="mt-1 text-sm text-[#6d5b43]">{description}</p>
-      </div>
-      <div className={`grid gap-3 ${columns}`}>
-        {items.map((item) => {
-          const selected = values.includes(item);
-          return (
-            <button
-              key={item}
-              type="button"
-              onClick={() => toggle(item)}
-              className={`rounded-2xl border px-4 py-3 text-left text-sm transition-colors ${
-                selected
-                  ? "border-[#526046] bg-white text-[#1f1c18]"
-                  : "border-[#eadfce] bg-white/70 text-[#342b22] hover:bg-white"
-              }`}
-            >
-              <span className="flex items-center gap-2">
-                <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                    selected ? "border-[#526046] bg-[#526046] text-white" : "border-[#c5b39d]"
-                  }`}
-                >
-                  {selected && <Check className="h-3 w-3" />}
-                </span>
-                <span>{item}</span>
-              </span>
-              {helperByItem?.[item] && (
-                <span className="mt-2 block text-xs leading-5 text-[#7a6653]">
-                  {helperByItem[item]}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }
@@ -2594,163 +2783,6 @@ function BenefitsStrip({ plan }: { plan: OnboardingPlan }) {
   );
 }
 
-function CatalogPicker({
-  title,
-  description,
-  placeholder,
-  items,
-  selectedIds,
-  maxSelection,
-  search,
-  onSearchChange,
-  onChange,
-  helperText,
-  draggedIndex,
-  onDragIndexChange,
-}: {
-  title: string;
-  description: string;
-  placeholder: string;
-  items: CatalogItem[];
-  selectedIds: string[];
-  maxSelection: number | null;
-  search: string;
-  onSearchChange: (value: string) => void;
-  onChange: (values: string[]) => void;
-  helperText: string;
-  draggedIndex: number | null;
-  onDragIndexChange: (value: number | null) => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const filtered = items.filter((item) =>
-    item.name.toLowerCase().includes(search.trim().toLowerCase()),
-  );
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  function toggle(id: string) {
-    const exists = selectedIds.includes(id);
-    if (!exists && maxSelection !== null && selectedIds.length >= maxSelection) return;
-    const next = exists ? selectedIds.filter((value) => value !== id) : [...selectedIds, id];
-    onChange(next);
-  }
-
-  function remove(id: string) {
-    onChange(selectedIds.filter((value) => value !== id));
-  }
-
-  function move(fromIndex: number, toIndex: number) {
-    if (fromIndex === toIndex) return;
-    const next = [...selectedIds];
-    const [item] = next.splice(fromIndex, 1);
-    next.splice(toIndex, 0, item);
-    onChange(next);
-  }
-
-  return (
-    <div className="space-y-4 rounded-3xl border border-[#eadfce] bg-[#fffaf4] p-5">
-      <div>
-        <h4 className="font-display text-lg text-[#11100e]">{title}</h4>
-        <p className="mt-1 text-sm text-[#6d5b43]">{description}</p>
-      </div>
-
-      <div className="relative" ref={containerRef}>
-        <Input
-          value={search}
-          onChange={(event) => {
-            onSearchChange(event.target.value);
-            setIsOpen(true);
-          }}
-          onFocus={() => setIsOpen(true)}
-          placeholder={placeholder}
-          className="pr-10"
-        />
-        <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8c7a66]" />
-
-        {isOpen && (
-          <div className="absolute left-0 right-0 top-full z-50 mt-1 grid max-h-60 gap-2 overflow-auto rounded-2xl border border-[#eadfce] bg-white p-3 shadow-lg">
-            {filtered.map((item) => {
-              const selected = selectedIds.includes(item.id);
-              const disabled = !selected && maxSelection !== null && selectedIds.length >= maxSelection;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => toggle(item.id)}
-                  disabled={disabled}
-                  className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition-colors ${
-                    selected
-                      ? "border-[#526046] bg-[#f4ede6] text-[#1f1c18]"
-                      : "border-[#eadfce] bg-white text-[#342b22] hover:bg-[#fffaf4]"
-                  } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
-                >
-                  <span>{item.name}</span>
-                  {selected ? (
-                    <Check className="h-4 w-4 text-[#526046]" />
-                  ) : (
-                    <Plus className="h-4 w-4 text-[#8c7a66]" />
-                  )}
-                </button>
-              );
-            })}
-            {filtered.length === 0 && (
-              <p className="px-3 py-2 text-sm text-[#8c7a66] text-center">No encontramos resultados.</p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {selectedIds.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {selectedIds.map((id, index) => {
-            const item = items.find((entry) => entry.id === id);
-            if (!item) return null;
-            return (
-              <div
-                key={id}
-                draggable
-                onDragStart={() => onDragIndexChange(index)}
-                onDragOver={(event) => event.preventDefault()}
-                onDrop={() => {
-                  if (draggedIndex === null) return;
-                  move(draggedIndex, index);
-                  onDragIndexChange(null);
-                }}
-                className="inline-flex items-center gap-2 rounded-full border border-[#d8c6b0] bg-white px-3 py-2 text-sm text-[#342b22]"
-              >
-                <GripVertical className="h-3.5 w-3.5 text-[#8c7a66]" />
-                <span>{item.name}</span>
-                <button
-                  type="button"
-                  onClick={() => remove(id)}
-                  className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#f2e6d7] text-[#7f6046]"
-                  aria-label={`Quitar ${item.name}`}
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <p className="text-xs text-[#6d5b43]">{helperText}</p>
-    </div>
-  );
-}
-
 function FormationEditor({
   formations,
   onChange,
@@ -2789,10 +2821,7 @@ function FormationEditor({
       </div>
       <div className="space-y-4">
         {formations.map((formation, index) => (
-          <div
-            key={index}
-            className="rounded-2xl border border-[#eadfce] bg-white p-4"
-          >
+          <div key={index} className="rounded-2xl border border-[#eadfce] bg-white p-4">
             <div className="mb-4 flex items-center justify-between">
               <span className="text-sm font-medium text-[#5d5144]">Formación {index + 1}</span>
               {formations.length > 1 && (
@@ -2871,10 +2900,7 @@ function TeamEditor({
       </div>
       <div className="space-y-4">
         {members.map((member, index) => (
-          <div
-            key={index}
-            className="rounded-2xl border border-[#eadfce] bg-white p-4"
-          >
+          <div key={index} className="rounded-2xl border border-[#eadfce] bg-white p-4">
             <div className="mb-4 flex items-center justify-between">
               <span className="text-sm font-medium text-[#5d5144]">Miembro {index + 1}</span>
               {members.length > 1 && (
@@ -2944,6 +2970,7 @@ function validateStep(
   config: ReturnType<typeof getOnboardingPlanConfig>,
   hasLogoFile: boolean,
   hasDiplomaFile: boolean,
+  acceptedPaymentRegistration?: boolean,
 ) {
   if (step === 1) {
     if (config.isOrganisation) {
@@ -2977,8 +3004,10 @@ function validateStep(
     }
     const isFreePlan = config.slug === "presencia";
     if (!isFreePlan) {
-      if (!draft.locations[0]?.centerName.trim()) return "Añade el nombre de la ubicación principal.";
-      if (!draft.locations[0]?.address.trim()) return "Añade la dirección de la ubicación principal.";
+      if (!draft.locations[0]?.centerName.trim())
+        return "Añade el nombre de la ubicación principal.";
+      if (!draft.locations[0]?.address.trim())
+        return "Añade la dirección de la ubicación principal.";
     }
     if (!draft.locations[0]?.municipalityId)
       return "Selecciona el municipio de la ubicación principal.";
@@ -2992,6 +3021,15 @@ function validateStep(
   }
 
   if (step === 5) {
+    if (!config.isOrganisation) {
+      if (!draft.website.trim() && !draft.instagramUrl.trim()) {
+        return "Añade al menos una forma de encontrarte online.";
+      }
+    }
+    return null;
+  }
+
+  if (step === 6) {
     if (config.isOrganisation) {
       if (!draft.responsibleFirstName.trim()) return "Añade el nombre de la persona responsable.";
       if (!draft.responsibleLastName.trim())
@@ -3013,9 +3051,6 @@ function validateStep(
       return null;
     }
 
-    if (!draft.website.trim() && !draft.instagramUrl.trim()) {
-      return "Añade al menos una forma de encontrarte online.";
-    }
     if (!draft.acceptedDeontologicalCode) return "Debes aceptar el Código Deontológico.";
     if (!draft.acceptedTruthfulness) return "Debes declarar que la información es veraz.";
     if (!draft.acceptedPrivacyPolicy) return "Debes aceptar la Política de Privacidad.";
@@ -3026,6 +3061,16 @@ function validateStep(
         return "Debes confirmar tu seguro de responsabilidad civil.";
       if (!hasDiplomaFile) return "Debes subir al menos un diploma o certificado.";
     }
+    return null;
+  }
+
+  if (step === 7) {
+    if (config.slug !== "presencia") {
+      if (!acceptedPaymentRegistration) {
+        return "Debes autorizar el registro de tu método de pago.";
+      }
+    }
+    return null;
   }
 
   return null;
@@ -3075,4 +3120,140 @@ function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
   if (typeof error === "string") return error;
   return "No se pudo guardar el perfil.";
+}
+
+function LegalDocumentModal({
+  documentType,
+  onClose,
+  onAccept,
+}: {
+  documentType: "deontological" | "privacy" | "terms";
+  onClose: () => void;
+  onAccept: () => void;
+}) {
+  const getDocumentDetails = () => {
+    switch (documentType) {
+      case "deontological":
+        return {
+          title: "Código Deontológico",
+          text: DEONTOLOGICAL_CODE,
+        };
+      case "privacy":
+        return {
+          title: "Política de Privacidad",
+          text: PRIVACY_POLICY,
+        };
+      case "terms":
+        return {
+          title: "Condiciones de Uso",
+          text: TERMS_OF_USE,
+        };
+    }
+  };
+
+  const { title, text } = getDocumentDetails();
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 sm:p-6 md:p-10 animate-in fade-in duration-300">
+      <div className="relative flex h-full max-h-[85vh] w-full max-w-3xl flex-col rounded-[2rem] border border-[#eadfce] bg-white p-6 shadow-2xl md:p-8 animate-in zoom-in-95 duration-300">
+        {/* Top Header */}
+        <div className="flex items-center justify-between pb-4 border-b border-[#eadfce]/60 mb-4">
+          <div className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f4ede6] text-[#526046]">
+              <ShieldCheck className="h-4 w-4" />
+            </span>
+            <h3 className="font-display text-lg font-semibold text-[#1f1c18] md:text-xl">
+              {title}
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-full p-1 text-muted-foreground hover:bg-[#fff6ee] hover:text-foreground transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto border border-[#eadfce]/60 bg-[#fffdf9] rounded-2xl p-4 sm:p-6 mb-6">
+          <LegalTextRenderer text={text} />
+        </div>
+
+        {/* Bottom Actions */}
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-[#eadfce]/60">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-2xl border border-[#eadfce] bg-white py-2.5 px-5 text-sm font-semibold hover:bg-[#fff9f1] active:scale-95 transition-all text-[#5a4c3e]"
+          >
+            Cerrar
+          </button>
+          <button
+            type="button"
+            onClick={onAccept}
+            className="rounded-2xl bg-[#526046] py-2.5 px-6 text-sm font-semibold text-white hover:bg-[#434f37] active:scale-95 transition-all shadow-md shadow-[#526046]/10"
+          >
+            He leído y acepto
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LegalTextRenderer({ text }: { text: string }) {
+  const lines = text.split("\n");
+  return (
+    <div className="space-y-4">
+      {lines.map((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed) return <div key={idx} className="h-2" />;
+
+        // Header check
+        const isHeader =
+          /^[0-9]+\.\s+/.test(trimmed) ||
+          trimmed.startsWith("Nuestra manera de entender") ||
+          trimmed.startsWith("Finalidad del Código") ||
+          trimmed.startsWith("Principio fundacional") ||
+          trimmed.startsWith("Preámbulo") ||
+          trimmed.startsWith("Compromiso del Profesional") ||
+          trimmed.startsWith("Adhesión al Código") ||
+          trimmed.startsWith("Aceptación de las Condiciones") ||
+          trimmed.startsWith("Confirmación de lectura") ||
+          trimmed === "Datos identificativos" ||
+          trimmed === "Datos profesionales" ||
+          trimmed === "Datos de verificación" ||
+          trimmed === "Datos técnicos" ||
+          trimmed === "Gestión de tu cuenta" ||
+          trimmed === "Publicación de perfiles" ||
+          trimmed === "Proceso de verificación" ||
+          trimmed === "Comunicación" ||
+          trimmed === "Mejora de la plataforma" ||
+          trimmed === "Comunicaciones informativas";
+
+        if (isHeader) {
+          return (
+            <h4 key={idx} className="font-display text-base font-semibold text-[#1f1c18] mt-6 mb-2">
+              {trimmed}
+            </h4>
+          );
+        }
+
+        if (trimmed.startsWith("•") || trimmed.startsWith("-") || trimmed.startsWith("✓")) {
+          return (
+            <li key={idx} className="ml-4 list-none flex items-start gap-2 text-[#5d5144]">
+              <span className="text-[#526046] mt-1">•</span>
+              <span>{trimmed.substring(1).trim()}</span>
+            </li>
+          );
+        }
+
+        return (
+          <p key={idx} className="text-xs sm:text-sm text-[#5d5144] leading-relaxed">
+            {trimmed}
+          </p>
+        );
+      })}
+    </div>
+  );
 }

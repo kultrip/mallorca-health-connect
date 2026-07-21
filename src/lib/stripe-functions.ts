@@ -98,32 +98,49 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       customerId,
     });
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: "subscription",
-      client_reference_id: therapist.id,
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/dashboard/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/dashboard/billing?checkout=cancelled`,
-      subscription_data: {
-        trial_period_days: useFounderPrice ? 180 : undefined,
-        metadata: {
-          user_id: context.userId,
-          therapist_id: therapist.id,
-          plan_id: plan.id,
-          plan_slug: plan.slug,
-          is_founder: useFounderPrice ? "true" : "false",
-        },
-      },
-      metadata: {
-        checkout_kind: "subscription",
-        user_id: context.userId,
-        therapist_id: therapist.id,
-        plan_id: plan.id,
-        plan_slug: plan.slug,
-        is_founder: useFounderPrice ? "true" : "false",
-      },
-    });
+    const isPublished = therapist.verified === true && therapist.status === "published";
+    const checkoutMetadata = {
+      user_id: context.userId,
+      therapist_id: therapist.id,
+      plan_id: plan.id,
+      plan_slug: plan.slug,
+      is_founder: useFounderPrice ? "true" : "false",
+    };
+
+    const session = await stripe.checkout.sessions.create(
+      isPublished
+        ? {
+            customer: customerId,
+            mode: "subscription",
+            client_reference_id: therapist.id,
+            line_items: [{ price: priceId, quantity: 1 }],
+            success_url: `${origin}/dashboard/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/dashboard/billing?checkout=cancelled`,
+            subscription_data: {
+              trial_period_days: useFounderPrice ? 180 : undefined,
+              metadata: checkoutMetadata,
+            },
+            metadata: {
+              checkout_kind: "subscription",
+              ...checkoutMetadata,
+            },
+          }
+        : {
+            customer: customerId,
+            mode: "setup",
+            client_reference_id: therapist.id,
+            payment_method_types: ["card"],
+            success_url: `${origin}/dashboard/billing?checkout=setup_success&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/dashboard/billing?checkout=cancelled`,
+            setup_intent_data: {
+              metadata: checkoutMetadata,
+            },
+            metadata: {
+              checkout_kind: "setup",
+              ...checkoutMetadata,
+            },
+          },
+    );
 
     const { error: pendingError } = await supabaseAdmin
       .from("therapists")
@@ -137,7 +154,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
     if (pendingError) throw pendingError;
 
-    return { url: session.url, mode: "subscription" };
+    return { url: session.url, mode: isPublished ? "subscription" : "setup" };
   });
 
 export const createCustomerPortalSession = createServerFn({ method: "POST" })

@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-background">
       <div className="mx-auto max-w-[1180px] px-6 py-16 md:px-10">
         <div className="grid gap-12 md:grid-cols-4">
-          <div className="md:col-span-2">
+          <div>
             <div className="font-display text-lg tracking-tight">Mallorca Holística</div>
             <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
               Un espacio de confianza para encontrar profesionales verificados de terapias naturales
@@ -57,6 +57,33 @@ export function SiteFooter() {
               <li>
                 <Link to="/login" className="hover:text-foreground">
                   Acceder
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Documentos legales
+            </div>
+            <ul className="mt-4 space-y-2 text-sm">
+              <li>
+                <Link to="/terms" className="hover:text-foreground">
+                  Condiciones de Uso
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="hover:text-foreground">
+                  Política de Privacidad
+                </Link>
+              </li>
+              <li>
+                <Link to="/cookies" className="hover:text-foreground">
+                  Política de Cookies
+                </Link>
+              </li>
+              <li>
+                <Link to="/codigo-deontologico" className="hover:text-foreground">
+                  Código Deontológico
                 </Link>
               </li>
             </ul>

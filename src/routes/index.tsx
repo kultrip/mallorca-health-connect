@@ -1,10 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Hero } from "@/components/home/Hero";
 import { SymptomPrompt } from "@/components/search/SymptomPrompt";
-import { HomeTrustStrip } from "@/components/home/HomeTrustStrip";
-import { StartHere } from "@/components/home/StartHere";
-import { TrustBlock } from "@/components/home/TrustBlock";
-import { Testimonials } from "@/components/home/Testimonials";
+import { HomeTrustSection } from "@/components/home/HomeTrustSection";
+import { TherapistsCarousel } from "@/components/home/TherapistsCarousel";
+import { DiscoverMore } from "@/components/home/DiscoverMore";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 
@@ -28,18 +27,36 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Mallorca Holística",
+    "url": "https://mallorcaholistica.com",
+    "logo": "https://mallorcaholistica.com/favicon.png",
+    "description": "Profesionales verificados de bienestar en Mallorca. Terapias naturales, complementarias y actividades integrativas.",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Mallorca",
+      "addressRegion": "Islas Baleares",
+      "addressCountry": "ES"
+    }
+  };
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#fffaf3]">
+    <div className="flex min-h-screen flex-col bg-[#fffdf9]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       <SiteHeader />
       <main className="flex-1">
         <Hero />
-        <section className="px-6 pb-10 pt-10 md:px-10 md:pb-14 md:pt-14">
+        <section className="px-6 pb-12 pt-12 md:px-10 md:pb-20 md:pt-16">
           <SymptomPrompt />
         </section>
-        <HomeTrustStrip />
-        <StartHere />
-        <TrustBlock />
-        <Testimonials />
+        <HomeTrustSection />
+        <TherapistsCarousel />
+        <DiscoverMore />
       </main>
       <SiteFooter />
     </div>

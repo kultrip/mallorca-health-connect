@@ -27,6 +27,7 @@ The core visitor journeys are:
 Treat `comentarios-nadege` as the latest product authority.
 
 Especially important files:
+
 - `Comentarios_Nadege.docx`
 - `business_model.docx`
 - `Arquitectura de Planes Mallorca Holística (1).pdf`
@@ -75,6 +76,7 @@ main
 ```
 
 Implemented on the branch:
+
 - root metadata changed from Lovable to Mallorca Holística
 - `src/lib/plan-access.ts` added for plan-aware contact decisions
 - therapist profile page reworked toward Nadège MVP spec
@@ -134,6 +136,7 @@ npx eslint src/features/therapies/types.ts src/features/therapies/therapy-utils.
 ```
 
 Known non-blocking/current issues:
+
 - `npm run lint` fails repo-wide due to pre-existing Prettier/type issues outside the touched files.
 - `npm run build` prints a CSS `@import` ordering warning from `src/styles.css`.
 - Wrangler may print a log-write permission warning while still exiting `0`.
@@ -216,6 +219,7 @@ http://localhost:8080/
 ```
 
 Checked:
+
 - homepage title metadata is Mallorca Holística
 - homepage uses the branch/plant hero image
 - conversational search page eventually shows:

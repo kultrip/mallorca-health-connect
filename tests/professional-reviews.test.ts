@@ -13,6 +13,16 @@ test("paid published profiles can show reviews", () => {
   );
 });
 
+test("founder trialing profiles can show reviews", () => {
+  assert.equal(
+    therapistCanShowReviews(
+      { status: "published", subscription_status: "trialing" },
+      { slug: "profesional" },
+    ),
+    true,
+  );
+});
+
 test("free profiles cannot show reviews", () => {
   assert.equal(
     therapistCanShowReviews(

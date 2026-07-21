@@ -5,6 +5,7 @@
 **Architecture:** Store reviews in a single `professional_reviews` table with RLS. Public visitors can insert reviews without auth for now, public pages can only read published reviews, and admins moderate publication in the dashboard. Paid profile pages render the reviews section; FREE profiles do not.
 
 **Rules:**
+
 - FREE / Presencia: no reviews section.
 - Profesional / Centros: show a reviews section.
 - If no reviews exist, show a calm placeholder.
@@ -13,6 +14,7 @@
 - Public visibility only applies to profiles that are both published and in a paid plan.
 
 **Scope limits:**
+
 - No visitor accounts.
 - No review replies.
 - No review analytics.

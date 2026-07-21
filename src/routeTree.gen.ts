@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrustRouteImport } from './routes/trust'
 import { Route as TherapiesRouteImport } from './routes/therapies'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TerapiasRouteImport } from './routes/terapias'
 import { Route as SoyProfesionalRouteImport } from './routes/soy-profesional'
 import { Route as SearchRouteImport } from './routes/search'
@@ -19,6 +20,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfessionalsRouteImport } from './routes/professionals'
 import { Route as ProfesionalesRouteImport } from './routes/profesionales'
 import { Route as ProfesionalFundadorRouteImport } from './routes/profesional-fundador'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PlanesRouteImport } from './routes/planes'
 import { Route as PlanPresenciaRouteImport } from './routes/plan-presencia'
@@ -26,10 +28,12 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as ConfianzaRouteImport } from './routes/confianza'
 import { Route as ComunidadFundadoraOrganizacionesRouteImport } from './routes/comunidad-fundadora-organizaciones'
 import { Route as ComunidadFundadoraBienvenidaRouteImport } from './routes/comunidad-fundadora-bienvenida'
 import { Route as ComunidadFundadoraAccesoRouteImport } from './routes/comunidad-fundadora-acceso'
+import { Route as CodigoDeontologicoRouteImport } from './routes/codigo-deontologico'
 import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as ActivitiesRouteImport } from './routes/activities'
 import { Route as ActividadesRouteImport } from './routes/actividades'
@@ -47,6 +51,7 @@ import { Route as ActivitiesSlugRouteImport } from './routes/activities_.$slug'
 import { Route as TherapiesSlugProfessionalsRouteImport } from './routes/therapies_.$slug.professionals'
 import { Route as TerapiasSlugProfesionalesRouteImport } from './routes/terapias_.$slug.profesionales'
 import { Route as DashboardAdminAnalyticsRouteImport } from './routes/dashboard/admin/analytics'
+import { Route as ActivitiesSlugEditRouteImport } from './routes/activities_.$slug.edit'
 
 const TrustRoute = TrustRouteImport.update({
   id: '/trust',
@@ -56,6 +61,11 @@ const TrustRoute = TrustRouteImport.update({
 const TherapiesRoute = TherapiesRouteImport.update({
   id: '/therapies',
   path: '/therapies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TerapiasRoute = TerapiasRouteImport.update({
@@ -98,6 +108,11 @@ const ProfesionalFundadorRoute = ProfesionalFundadorRouteImport.update({
   path: '/profesional-fundador',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlansRoute = PlansRouteImport.update({
   id: '/plans',
   path: '/plans',
@@ -133,6 +148,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConfianzaRoute = ConfianzaRouteImport.update({
   id: '/confianza',
   path: '/confianza',
@@ -156,6 +176,11 @@ const ComunidadFundadoraAccesoRoute =
     path: '/comunidad-fundadora-acceso',
     getParentRoute: () => rootRouteImport,
   } as any)
+const CodigoDeontologicoRoute = CodigoDeontologicoRouteImport.update({
+  id: '/codigo-deontologico',
+  path: '/codigo-deontologico',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BuscarRoute = BuscarRouteImport.update({
   id: '/buscar',
   path: '/buscar',
@@ -243,16 +268,23 @@ const DashboardAdminAnalyticsRoute = DashboardAdminAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => DashboardAdminRoute,
 } as any)
+const ActivitiesSlugEditRoute = ActivitiesSlugEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => ActivitiesSlugRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/actividades': typeof ActividadesRoute
   '/activities': typeof ActivitiesRoute
   '/buscar': typeof BuscarRoute
+  '/codigo-deontologico': typeof CodigoDeontologicoRoute
   '/comunidad-fundadora-acceso': typeof ComunidadFundadoraAccesoRoute
   '/comunidad-fundadora-bienvenida': typeof ComunidadFundadoraBienvenidaRoute
   '/comunidad-fundadora-organizaciones': typeof ComunidadFundadoraOrganizacionesRoute
   '/confianza': typeof ConfianzaRoute
+  '/cookies': typeof CookiesRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
@@ -260,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/plan-presencia': typeof PlanPresenciaRoute
   '/planes': typeof PlanesRoute
   '/plans': typeof PlansRoute
+  '/privacy': typeof PrivacyRoute
   '/profesional-fundador': typeof ProfesionalFundadorRoute
   '/profesionales': typeof ProfesionalesRoute
   '/professionals': typeof ProfessionalsRoute
@@ -268,9 +301,10 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/soy-profesional': typeof SoyProfesionalRoute
   '/terapias': typeof TerapiasRoute
+  '/terms': typeof TermsRoute
   '/therapies': typeof TherapiesRoute
   '/trust': typeof TrustRoute
-  '/activities/$slug': typeof ActivitiesSlugRoute
+  '/activities/$slug': typeof ActivitiesSlugRouteWithChildren
   '/activities/new': typeof ActivitiesNewRoute
   '/dashboard/admin': typeof DashboardAdminRouteWithChildren
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
@@ -280,6 +314,7 @@ export interface FileRoutesByFullPath {
   '/terapias/$slug': typeof TerapiasSlugRouteWithChildren
   '/therapies/$slug': typeof TherapiesSlugRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
+  '/activities/$slug/edit': typeof ActivitiesSlugEditRoute
   '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
   '/terapias/$slug/profesionales': typeof TerapiasSlugProfesionalesRoute
   '/therapies/$slug/professionals': typeof TherapiesSlugProfessionalsRoute
@@ -289,16 +324,19 @@ export interface FileRoutesByTo {
   '/actividades': typeof ActividadesRoute
   '/activities': typeof ActivitiesRoute
   '/buscar': typeof BuscarRoute
+  '/codigo-deontologico': typeof CodigoDeontologicoRoute
   '/comunidad-fundadora-acceso': typeof ComunidadFundadoraAccesoRoute
   '/comunidad-fundadora-bienvenida': typeof ComunidadFundadoraBienvenidaRoute
   '/comunidad-fundadora-organizaciones': typeof ComunidadFundadoraOrganizacionesRoute
   '/confianza': typeof ConfianzaRoute
+  '/cookies': typeof CookiesRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/plan-presencia': typeof PlanPresenciaRoute
   '/planes': typeof PlanesRoute
   '/plans': typeof PlansRoute
+  '/privacy': typeof PrivacyRoute
   '/profesional-fundador': typeof ProfesionalFundadorRoute
   '/profesionales': typeof ProfesionalesRoute
   '/professionals': typeof ProfessionalsRoute
@@ -307,9 +345,10 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/soy-profesional': typeof SoyProfesionalRoute
   '/terapias': typeof TerapiasRoute
+  '/terms': typeof TermsRoute
   '/therapies': typeof TherapiesRoute
   '/trust': typeof TrustRoute
-  '/activities/$slug': typeof ActivitiesSlugRoute
+  '/activities/$slug': typeof ActivitiesSlugRouteWithChildren
   '/activities/new': typeof ActivitiesNewRoute
   '/dashboard/admin': typeof DashboardAdminRouteWithChildren
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
@@ -319,6 +358,7 @@ export interface FileRoutesByTo {
   '/terapias/$slug': typeof TerapiasSlugRouteWithChildren
   '/therapies/$slug': typeof TherapiesSlugRouteWithChildren
   '/dashboard': typeof DashboardIndexRoute
+  '/activities/$slug/edit': typeof ActivitiesSlugEditRoute
   '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
   '/terapias/$slug/profesionales': typeof TerapiasSlugProfesionalesRoute
   '/therapies/$slug/professionals': typeof TherapiesSlugProfessionalsRoute
@@ -329,10 +369,12 @@ export interface FileRoutesById {
   '/actividades': typeof ActividadesRoute
   '/activities': typeof ActivitiesRoute
   '/buscar': typeof BuscarRoute
+  '/codigo-deontologico': typeof CodigoDeontologicoRoute
   '/comunidad-fundadora-acceso': typeof ComunidadFundadoraAccesoRoute
   '/comunidad-fundadora-bienvenida': typeof ComunidadFundadoraBienvenidaRoute
   '/comunidad-fundadora-organizaciones': typeof ComunidadFundadoraOrganizacionesRoute
   '/confianza': typeof ConfianzaRoute
+  '/cookies': typeof CookiesRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/for-professionals': typeof ForProfessionalsRoute
   '/login': typeof LoginRoute
@@ -340,6 +382,7 @@ export interface FileRoutesById {
   '/plan-presencia': typeof PlanPresenciaRoute
   '/planes': typeof PlanesRoute
   '/plans': typeof PlansRoute
+  '/privacy': typeof PrivacyRoute
   '/profesional-fundador': typeof ProfesionalFundadorRoute
   '/profesionales': typeof ProfesionalesRoute
   '/professionals': typeof ProfessionalsRoute
@@ -348,9 +391,10 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/soy-profesional': typeof SoyProfesionalRoute
   '/terapias': typeof TerapiasRoute
+  '/terms': typeof TermsRoute
   '/therapies': typeof TherapiesRoute
   '/trust': typeof TrustRoute
-  '/activities_/$slug': typeof ActivitiesSlugRoute
+  '/activities_/$slug': typeof ActivitiesSlugRouteWithChildren
   '/activities_/new': typeof ActivitiesNewRoute
   '/dashboard/admin': typeof DashboardAdminRouteWithChildren
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
@@ -360,6 +404,7 @@ export interface FileRoutesById {
   '/terapias_/$slug': typeof TerapiasSlugRouteWithChildren
   '/therapies_/$slug': typeof TherapiesSlugRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
+  '/activities_/$slug/edit': typeof ActivitiesSlugEditRoute
   '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
   '/terapias_/$slug/profesionales': typeof TerapiasSlugProfesionalesRoute
   '/therapies_/$slug/professionals': typeof TherapiesSlugProfessionalsRoute
@@ -371,10 +416,12 @@ export interface FileRouteTypes {
     | '/actividades'
     | '/activities'
     | '/buscar'
+    | '/codigo-deontologico'
     | '/comunidad-fundadora-acceso'
     | '/comunidad-fundadora-bienvenida'
     | '/comunidad-fundadora-organizaciones'
     | '/confianza'
+    | '/cookies'
     | '/dashboard'
     | '/for-professionals'
     | '/login'
@@ -382,6 +429,7 @@ export interface FileRouteTypes {
     | '/plan-presencia'
     | '/planes'
     | '/plans'
+    | '/privacy'
     | '/profesional-fundador'
     | '/profesionales'
     | '/professionals'
@@ -390,6 +438,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/soy-profesional'
     | '/terapias'
+    | '/terms'
     | '/therapies'
     | '/trust'
     | '/activities/$slug'
@@ -402,6 +451,7 @@ export interface FileRouteTypes {
     | '/terapias/$slug'
     | '/therapies/$slug'
     | '/dashboard/'
+    | '/activities/$slug/edit'
     | '/dashboard/admin/analytics'
     | '/terapias/$slug/profesionales'
     | '/therapies/$slug/professionals'
@@ -411,16 +461,19 @@ export interface FileRouteTypes {
     | '/actividades'
     | '/activities'
     | '/buscar'
+    | '/codigo-deontologico'
     | '/comunidad-fundadora-acceso'
     | '/comunidad-fundadora-bienvenida'
     | '/comunidad-fundadora-organizaciones'
     | '/confianza'
+    | '/cookies'
     | '/for-professionals'
     | '/login'
     | '/onboarding'
     | '/plan-presencia'
     | '/planes'
     | '/plans'
+    | '/privacy'
     | '/profesional-fundador'
     | '/profesionales'
     | '/professionals'
@@ -429,6 +482,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/soy-profesional'
     | '/terapias'
+    | '/terms'
     | '/therapies'
     | '/trust'
     | '/activities/$slug'
@@ -441,6 +495,7 @@ export interface FileRouteTypes {
     | '/terapias/$slug'
     | '/therapies/$slug'
     | '/dashboard'
+    | '/activities/$slug/edit'
     | '/dashboard/admin/analytics'
     | '/terapias/$slug/profesionales'
     | '/therapies/$slug/professionals'
@@ -450,10 +505,12 @@ export interface FileRouteTypes {
     | '/actividades'
     | '/activities'
     | '/buscar'
+    | '/codigo-deontologico'
     | '/comunidad-fundadora-acceso'
     | '/comunidad-fundadora-bienvenida'
     | '/comunidad-fundadora-organizaciones'
     | '/confianza'
+    | '/cookies'
     | '/dashboard'
     | '/for-professionals'
     | '/login'
@@ -461,6 +518,7 @@ export interface FileRouteTypes {
     | '/plan-presencia'
     | '/planes'
     | '/plans'
+    | '/privacy'
     | '/profesional-fundador'
     | '/profesionales'
     | '/professionals'
@@ -469,6 +527,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/soy-profesional'
     | '/terapias'
+    | '/terms'
     | '/therapies'
     | '/trust'
     | '/activities_/$slug'
@@ -481,6 +540,7 @@ export interface FileRouteTypes {
     | '/terapias_/$slug'
     | '/therapies_/$slug'
     | '/dashboard/'
+    | '/activities_/$slug/edit'
     | '/dashboard/admin/analytics'
     | '/terapias_/$slug/profesionales'
     | '/therapies_/$slug/professionals'
@@ -491,10 +551,12 @@ export interface RootRouteChildren {
   ActividadesRoute: typeof ActividadesRoute
   ActivitiesRoute: typeof ActivitiesRoute
   BuscarRoute: typeof BuscarRoute
+  CodigoDeontologicoRoute: typeof CodigoDeontologicoRoute
   ComunidadFundadoraAccesoRoute: typeof ComunidadFundadoraAccesoRoute
   ComunidadFundadoraBienvenidaRoute: typeof ComunidadFundadoraBienvenidaRoute
   ComunidadFundadoraOrganizacionesRoute: typeof ComunidadFundadoraOrganizacionesRoute
   ConfianzaRoute: typeof ConfianzaRoute
+  CookiesRoute: typeof CookiesRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   LoginRoute: typeof LoginRoute
@@ -502,6 +564,7 @@ export interface RootRouteChildren {
   PlanPresenciaRoute: typeof PlanPresenciaRoute
   PlanesRoute: typeof PlanesRoute
   PlansRoute: typeof PlansRoute
+  PrivacyRoute: typeof PrivacyRoute
   ProfesionalFundadorRoute: typeof ProfesionalFundadorRoute
   ProfesionalesRoute: typeof ProfesionalesRoute
   ProfessionalsRoute: typeof ProfessionalsRoute
@@ -510,9 +573,10 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SoyProfesionalRoute: typeof SoyProfesionalRoute
   TerapiasRoute: typeof TerapiasRoute
+  TermsRoute: typeof TermsRoute
   TherapiesRoute: typeof TherapiesRoute
   TrustRoute: typeof TrustRoute
-  ActivitiesSlugRoute: typeof ActivitiesSlugRoute
+  ActivitiesSlugRoute: typeof ActivitiesSlugRouteWithChildren
   ActivitiesNewRoute: typeof ActivitiesNewRoute
   ProfesionalesSlugRoute: typeof ProfesionalesSlugRoute
   ProfessionalsSlugRoute: typeof ProfessionalsSlugRoute
@@ -534,6 +598,13 @@ declare module '@tanstack/react-router' {
       path: '/therapies'
       fullPath: '/therapies'
       preLoaderRoute: typeof TherapiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terapias': {
@@ -592,6 +663,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfesionalFundadorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/plans': {
       id: '/plans'
       path: '/plans'
@@ -641,6 +719,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/confianza': {
       id: '/confianza'
       path: '/confianza'
@@ -667,6 +752,13 @@ declare module '@tanstack/react-router' {
       path: '/comunidad-fundadora-acceso'
       fullPath: '/comunidad-fundadora-acceso'
       preLoaderRoute: typeof ComunidadFundadoraAccesoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/codigo-deontologico': {
+      id: '/codigo-deontologico'
+      path: '/codigo-deontologico'
+      fullPath: '/codigo-deontologico'
+      preLoaderRoute: typeof CodigoDeontologicoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/buscar': {
@@ -788,6 +880,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminAnalyticsRouteImport
       parentRoute: typeof DashboardAdminRoute
     }
+    '/activities_/$slug/edit': {
+      id: '/activities_/$slug/edit'
+      path: '/edit'
+      fullPath: '/activities/$slug/edit'
+      preLoaderRoute: typeof ActivitiesSlugEditRouteImport
+      parentRoute: typeof ActivitiesSlugRoute
+    }
   }
 }
 
@@ -821,6 +920,18 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
   DashboardRouteChildren,
 )
 
+interface ActivitiesSlugRouteChildren {
+  ActivitiesSlugEditRoute: typeof ActivitiesSlugEditRoute
+}
+
+const ActivitiesSlugRouteChildren: ActivitiesSlugRouteChildren = {
+  ActivitiesSlugEditRoute: ActivitiesSlugEditRoute,
+}
+
+const ActivitiesSlugRouteWithChildren = ActivitiesSlugRoute._addFileChildren(
+  ActivitiesSlugRouteChildren,
+)
+
 interface TerapiasSlugRouteChildren {
   TerapiasSlugProfesionalesRoute: typeof TerapiasSlugProfesionalesRoute
 }
@@ -850,10 +961,12 @@ const rootRouteChildren: RootRouteChildren = {
   ActividadesRoute: ActividadesRoute,
   ActivitiesRoute: ActivitiesRoute,
   BuscarRoute: BuscarRoute,
+  CodigoDeontologicoRoute: CodigoDeontologicoRoute,
   ComunidadFundadoraAccesoRoute: ComunidadFundadoraAccesoRoute,
   ComunidadFundadoraBienvenidaRoute: ComunidadFundadoraBienvenidaRoute,
   ComunidadFundadoraOrganizacionesRoute: ComunidadFundadoraOrganizacionesRoute,
   ConfianzaRoute: ConfianzaRoute,
+  CookiesRoute: CookiesRoute,
   DashboardRoute: DashboardRouteWithChildren,
   ForProfessionalsRoute: ForProfessionalsRoute,
   LoginRoute: LoginRoute,
@@ -861,6 +974,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlanPresenciaRoute: PlanPresenciaRoute,
   PlanesRoute: PlanesRoute,
   PlansRoute: PlansRoute,
+  PrivacyRoute: PrivacyRoute,
   ProfesionalFundadorRoute: ProfesionalFundadorRoute,
   ProfesionalesRoute: ProfesionalesRoute,
   ProfessionalsRoute: ProfessionalsRoute,
@@ -869,9 +983,10 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SoyProfesionalRoute: SoyProfesionalRoute,
   TerapiasRoute: TerapiasRoute,
+  TermsRoute: TermsRoute,
   TherapiesRoute: TherapiesRoute,
   TrustRoute: TrustRoute,
-  ActivitiesSlugRoute: ActivitiesSlugRoute,
+  ActivitiesSlugRoute: ActivitiesSlugRouteWithChildren,
   ActivitiesNewRoute: ActivitiesNewRoute,
   ProfesionalesSlugRoute: ProfesionalesSlugRoute,
   ProfessionalsSlugRoute: ProfessionalsSlugRoute,

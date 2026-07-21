@@ -34,10 +34,13 @@ test("paid professionals sort above free professionals and alphabetically within
     },
   ]);
 
-  assert.deepEqual(list.map((item) => item.id), ["paid-a", "paid-b", "free-a", "free-z"]);
+  assert.deepEqual(
+    list.map((item) => item.id),
+    ["paid-a", "paid-b", "free-a", "free-z"],
+  );
 });
 
-test("paid priority only applies to active Profesional or Centros plans", () => {
+test("paid priority applies to active or trialing Profesional/Centros plans", () => {
   assert.equal(
     isPaidPriorityProfessional({
       subscription_status: "active",
@@ -57,7 +60,7 @@ test("paid priority only applies to active Profesional or Centros plans", () => 
       subscription_status: "trialing",
       plans: { slug: "centros-organizadores" },
     }),
-    false,
+    true,
   );
 });
 
@@ -92,9 +95,8 @@ test("paid professionals stay above free ones even when free profiles match more
     },
   );
 
-  assert.deepEqual(list.map((item) => item.id), [
-    "paid-high-match",
-    "paid-low-match",
-    "free-high-match",
-  ]);
+  assert.deepEqual(
+    list.map((item) => item.id),
+    ["paid-high-match", "paid-low-match", "free-high-match"],
+  );
 });

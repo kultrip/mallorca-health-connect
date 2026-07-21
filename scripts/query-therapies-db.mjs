@@ -29,15 +29,22 @@ async function run() {
   try {
     const { data, error } = await supabase
       .from("therapies")
-      .select("id, slug, name, category, short_description, description, detail_sections, benefits, session_description");
-    
+      .select(
+        "id, slug, name, category, short_description, description, detail_sections, benefits, session_description",
+      );
+
     if (error) {
       console.log("Error status:", error.status, "Message:", error.message);
     } else {
       console.log(`Successfully fetched ${data.length} therapies:`);
       for (const t of data) {
-        const hasDetails = (t.detail_sections && t.detail_sections.length > 0) || (t.benefits && t.benefits.length > 0) || t.session_description;
-        console.log(`- Slug: ${t.slug}, Name: ${t.name}, Description: ${t.description ? t.description.slice(0, 30) + '...' : 'null'}, HasDetails: ${!!hasDetails}`);
+        const hasDetails =
+          (t.detail_sections && t.detail_sections.length > 0) ||
+          (t.benefits && t.benefits.length > 0) ||
+          t.session_description;
+        console.log(
+          `- Slug: ${t.slug}, Name: ${t.name}, Description: ${t.description ? t.description.slice(0, 30) + "..." : "null"}, HasDetails: ${!!hasDetails}`,
+        );
       }
     }
   } catch (err) {

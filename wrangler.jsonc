@@ -8,22 +8,21 @@
   "routes": [
     {
       "pattern": "mallorcaholistica.com/*",
-      "zone_name": "mallorcaholistica.com"
+      "zone_name": "mallorcaholistica.com",
     },
     {
       "pattern": "www.mallorcaholistica.com/*",
-      "zone_name": "mallorcaholistica.com"
+      "zone_name": "mallorcaholistica.com",
     },
     {
       "pattern": "mallorcaholistica.com",
       "zone_name": "mallorcaholistica.com",
-      "custom_domain": true
+      "custom_domain": true,
     },
     {
       "pattern": "www.mallorcaholistica.com",
       "zone_name": "mallorcaholistica.com",
-      "custom_domain": true
-    }
-  ]
+      "custom_domain": true,
+    },
+  ],
 }
-

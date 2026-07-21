@@ -46,16 +46,22 @@ function Page() {
     if (error) {
       if (error.message.toLowerCase().includes("invalid login credentials")) {
         // Check if the user exists in auth.users via our RPC function
-        const { data: userExists, error: rpcError } = await supabase.rpc("check_user_exists_by_email", {
-          check_email: email,
-        });
+        const { data: userExists, error: rpcError } = await supabase.rpc(
+          "check_user_exists_by_email",
+          {
+            check_email: email,
+          },
+        );
         setLoading(false);
 
         if (!rpcError && userExists === false) {
           setLoginError("no_user");
-          toast.error("No tienes un usuario registrado con este correo. Te redirigiremos para crear tu cuenta...", {
-            duration: 4000
-          });
+          toast.error(
+            "No tienes un usuario registrado con este correo. Te redirigiremos para crear tu cuenta...",
+            {
+              duration: 4000,
+            },
+          );
           setTimeout(() => {
             navigate({ to: "/register" });
           }, 3000);
@@ -71,7 +77,11 @@ function Page() {
       setLoading(false);
       window.localStorage.setItem(REMEMBER_SESSION_STORAGE_KEY, rememberSession ? "true" : "false");
       toast.success("Has accedido correctamente");
-      navigate({ to: "/dashboard" });
+      if (search.redirect) {
+        navigate({ to: search.redirect });
+      } else {
+        navigate({ to: "/dashboard" });
+      }
     }
   };
 
@@ -88,9 +98,13 @@ function Page() {
             )}
             {loginError === "no_user" && (
               <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                <span className="font-semibold text-destructive">No tienes una cuenta de usuario</span>
+                <span className="font-semibold text-destructive">
+                  No tienes una cuenta de usuario
+                </span>
                 <span className="text-xs text-muted-foreground leading-normal">
-                  No hemos encontrado ningún perfil con el correo <strong className="text-destructive">{email}</strong>. Te estamos redirigiendo para crear tu cuenta...
+                  No hemos encontrado ningún perfil con el correo{" "}
+                  <strong className="text-destructive">{email}</strong>. Te estamos redirigiendo
+                  para crear tu cuenta...
                 </span>
               </div>
             )}
@@ -98,7 +112,12 @@ function Page() {
               <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 px-4 py-3 text-sm text-amber-700 flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
                 <span className="font-semibold text-amber-800">Contraseña incorrecta</span>
                 <span className="text-xs text-muted-foreground leading-normal">
-                  La contraseña ingresada no coincide. Si has olvidado tu contraseña o quieres registrar una nueva cuenta, haz clic en <Link to="/register" className="font-semibold text-primary underline">Crea tu perfil</Link>.
+                  La contraseña ingresada no coincide. Si has olvidado tu contraseña o quieres
+                  registrar una nueva cuenta, haz clic en{" "}
+                  <Link to="/register" className="font-semibold text-primary underline">
+                    Crea tu perfil
+                  </Link>
+                  .
                 </span>
               </div>
             )}

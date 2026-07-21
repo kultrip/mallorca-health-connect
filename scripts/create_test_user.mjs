@@ -28,27 +28,27 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
-  }
+  },
 });
 
 async function createManualUser() {
   const email = "charles-test@mallorcaholistica.com";
   const password = "MallorcaTest2026!";
-  
+
   console.log(`Connecting to: ${supabaseUrl}`);
   console.log(`Creating manual confirmed user: ${email}...`);
-  
+
   const { data, error } = await supabaseAdmin.auth.admin.createUser({
     email: email,
     password: password,
-    email_confirm: true // Automatically confirm email so it is instantly active!
+    email_confirm: true, // Automatically confirm email so it is instantly active!
   });
-  
+
   if (error) {
     console.error("❌ Error creating user:", error.message);
     process.exit(1);
   }
-  
+
   console.log(`\n✅ User successfully created in new database!`);
   console.log(`ID: ${data.user.id}`);
   console.log(`Email: ${data.user.email}`);

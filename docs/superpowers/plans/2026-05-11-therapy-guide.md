@@ -29,6 +29,7 @@
 ### Task 1: Therapy Types And Pure Helpers
 
 **Files:**
+
 - Create: `src/features/therapies/types.ts`
 - Create: `src/features/therapies/therapy-utils.ts`
 
@@ -126,6 +127,7 @@ git commit -m "feat: add therapy guide helpers"
 ### Task 2: A-Z Therapy Index Page
 
 **Files:**
+
 - Create: `src/features/therapies/TherapiesPage.tsx`
 - Modify: `src/routes/therapies.tsx`
 
@@ -147,7 +149,12 @@ import { filterTherapies, groupTherapiesByLetter } from "./therapy-utils";
 export function TherapiesPage() {
   const [query, setQuery] = useState("");
 
-  const { data: therapies = [], isLoading, isError, refetch } = useQuery<Therapy[]>({
+  const {
+    data: therapies = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<Therapy[]>({
     queryKey: ["therapies"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -338,6 +345,7 @@ git commit -m "feat: build therapies index"
 ### Task 3: Therapy Detail Page And Canonical Route
 
 **Files:**
+
 - Create: `src/features/therapies/TherapyDetailPage.tsx`
 - Create: `src/routes/therapies_.$slug.tsx`
 - Modify: `src/lib/routes.ts`
@@ -447,9 +455,7 @@ export function TherapyDetailPage({ slug }: { slug: string }) {
     return (
       <PageShell>
         <div className="mx-auto max-w-[900px] px-6 py-24 text-center md:px-10">
-          <p className="font-display text-2xl text-foreground/80">
-            No encontramos esta terapia.
-          </p>
+          <p className="font-display text-2xl text-foreground/80">No encontramos esta terapia.</p>
           <Link
             to="/therapies"
             className="mt-6 inline-flex rounded-full border border-border bg-background px-5 py-2 text-sm hover:bg-muted"
@@ -586,6 +592,7 @@ git commit -m "feat: add therapy detail pages"
 ### Task 4: Spanish Detail Redirect
 
 **Files:**
+
 - Modify: `src/lib/redirects.ts`
 - Create: `src/routes/terapias_.$slug.tsx`
 
@@ -635,6 +642,7 @@ git commit -m "feat: redirect legacy therapy details"
 ### Task 5: Handoff Docs And Browser Verification
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `CONTEXT.md`
 - Modify: `PLAN.md`

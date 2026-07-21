@@ -1,4 +1,3 @@
-
 # Mallorca Holística — MVP Plan
 
 A platform that connects users in Mallorca with verified holistic professionals. Two ways to discover: by therapy + location, or by describing how you feel ("estoy ansioso", "no duermo bien") via a conversational AI search. No internal booking — contact via WhatsApp or the therapist's external link (Calendly, etc.).
@@ -8,12 +7,14 @@ A platform that connects users in Mallorca with verified holistic professionals.
 ## 1. Visual & frontend direction
 
 ### Aesthetic
+
 - **Tone**: human, warm, calm, editorial. Think Doctoralia's clarity but more authentic, closer to tahona-santana.com.
 - **Backgrounds**: pure white across the entire platform; only the home hero uses the uploaded branch photo (`retouched_H1A6720.jpg`) — no black border.
 - **Titles are static**. No motion on headings anywhere. Only ultra-subtle fades on lists / cards on scroll.
 - **Spacing**: very generous. Editorial whitespace, never dense.
 
 ### Color tokens (oklch in `src/styles.css`)
+
 - `--background`: warm off-white `oklch(0.985 0.005 80)`
 - `--foreground`: deep ink `oklch(0.22 0.02 60)`
 - `--muted`: warm beige `oklch(0.94 0.01 75)`
@@ -27,12 +28,14 @@ A platform that connects users in Mallorca with verified holistic professionals.
 - Dark mode included but the product is light-first.
 
 ### Typography
+
 - **Display / titles**: a refined humanist serif (e.g. Cormorant Garamond or Fraunces) — thin to medium weight, large sizes, tight tracking.
 - **Body / UI**: a quiet humanist sans (Inter Tight or Söhne-style fallback), 15–16px.
 - Hierarchy: H1 ~56px serif thin, H2 ~36px serif, body 16/1.7. All in Spanish first.
 - Loaded via `@import` in `styles.css`; usage governed by tokens (`font-display`, `font-sans`).
 
 ### Layout primitives
+
 - Max content width ~1180px, comfortable gutters (24/40/64).
 - Cards: 1px border `--border`, 16px radius, no heavy shadows; on hover a subtle background lift (`bg-muted/40`).
 - Buttons (extend shadcn variants):
@@ -43,6 +46,7 @@ A platform that connects users in Mallorca with verified holistic professionals.
 - Iconography: lucide, 1.25 stroke. Used sparingly.
 
 ### Reusable frontend components (`src/components/`)
+
 - `layout/SiteHeader.tsx` — small wordmark "Mallorca Holística" left, nav: Inicio · Profesionales · Actividades · Terapias · Soy profesional · (Login). Transparent on home over the hero, white + bottom border elsewhere.
 - `layout/SiteFooter.tsx` — quiet 3-column footer with disclaimer "Orientación informativa. No sustituye diagnóstico médico."
 - `home/Hero.tsx` — full-bleed branch photo background (top section only), serif title "Encuentra tu bienestar en Mallorca", subtitle "Profesionales verificados en terapias naturales y complementarias", and the dual `SearchBar` floating on a white card.
@@ -65,6 +69,7 @@ A platform that connects users in Mallorca with verified holistic professionals.
 ### Routes (TanStack Start, file-based) — every public route gets unique `head()` SEO
 
 Public:
+
 - `/` Home — hero + dual search + symptom chips + Empieza por aquí + trust + testimonials.
 - `/profesionales` — filterable list. Filters: therapy, municipality (Cerca de mí / Toda Mallorca / alphabetical), modality (presencial/online), sort.
 - `/profesionales/$slug` — therapist profile.
@@ -79,23 +84,29 @@ Public:
 - `/login`, `/registro`.
 
 Authenticated `_authenticated/`:
+
 - `/dashboard` (overview), `/dashboard/perfil`, `/dashboard/actividades`, `/dashboard/verificacion`, `/dashboard/plan`.
 
 Admin `_authenticated/_admin/`:
+
 - `/admin/verificaciones`, `/admin/terapias`, `/admin/profesionales`, `/admin/actividades`.
 
 API public routes (`src/routes/api/public/`):
+
 - `POST /api/public/track` — analytics events (`view_profile`, `click_reserva`, `click_whatsapp`).
 
 ### Responsive
+
 - Mobile-first (the user often previews at ~1000px). Hero collapses to stacked, dual search stacks vertically, header turns into a sheet menu, profile becomes one column with sticky bottom action bar (Solicitar sesión / WhatsApp).
 
 ### Accessibility & SEO
+
 - Semantic HTML, single H1 per page, aria-labels on icon buttons, focus rings via `--ring`, color contrast AA.
 - Per-route `head()` with title <60 chars and meta description <160 chars; OG tags; JSON-LD `LocalBusiness`/`MedicalBusiness` for therapist pages; canonical tags.
 - Lazy-load images, `aspect-ratio` to prevent CLS.
 
 ### Frontend libraries to add
+
 - `react-leaflet` + `leaflet` (map, free, no key).
 - `@tanstack/react-query` (already installed) for data fetching.
 - `framer-motion` only for ultra-subtle list/card fades (NOT titles).

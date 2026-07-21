@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AdminActivitiesPanel } from "@/components/admin/AdminActivitiesPanel";
+import { AdminDiscoveryPanel } from "@/components/admin/AdminDiscoveryPanel";
 import { AdminEmailCenterPanel } from "@/components/admin/AdminEmailCenterPanel";
 import { AdminHelpAreasPanel } from "@/components/admin/AdminHelpAreasPanel";
 import { AdminPlansPanel } from "@/components/admin/AdminPlansPanel";
@@ -139,6 +140,7 @@ function AdminPanel() {
           <TabsTrigger value="plans">Planes</TabsTrigger>
           <TabsTrigger value="opiniones">Opiniones ({pendingReviews.length})</TabsTrigger>
           <TabsTrigger value="emails">Emails</TabsTrigger>
+          <TabsTrigger value="discovery" className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-amber-600 animate-pulse" />Descubrimiento</TabsTrigger>
         </TabsList>
 
         <TabsContent value="requests">
@@ -150,6 +152,7 @@ function AdminPanel() {
             therapies={therapies}
             helpAreas={helpAreas}
             municipalities={municipalities}
+            plans={plans}
             onReload={loadAdminData}
             onEmailOne={handleEmailOne}
           />
@@ -184,6 +187,13 @@ function AdminPanel() {
             municipalities={municipalities}
             initialTherapistId={emailInitialTherapistId}
             onInitialTherapistHandled={() => setEmailInitialTherapistId(null)}
+          />
+        </TabsContent>
+        <TabsContent value="discovery">
+          <AdminDiscoveryPanel
+            therapists={therapists}
+            municipalities={municipalities}
+            onReload={loadAdminData}
           />
         </TabsContent>
       </Tabs>

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, CalendarDays, Clock, Heart, Leaf, MapPin, Plus, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
+import { z } from "zod";
 
 import heroImg from "@/assets/hero-branch.jpg";
 import { PageShell } from "@/components/layout/PageShell";
@@ -13,7 +14,12 @@ import type { Database } from "@/integrations/supabase/types";
 
 type ActivityRow = Database["public"]["Tables"]["activities"]["Row"];
 
+const activitiesSearchSchema = z.object({
+  includePast: z.boolean().optional().catch(false),
+});
+
 export const Route = createFileRoute("/activities")({
+  validateSearch: (search) => activitiesSearchSchema.parse(search),
   head: () => ({
     meta: [
       { title: "Actividades en Mallorca — Mallorca Holística" },
@@ -39,25 +45,59 @@ const categories = [
 
 function Page() {
   const [category, setCategory] = useState("Todas");
-  const { data: activities = [], isLoading } = useQuery<ActivityRow[]>({
-    queryKey: ["public-activities"],
+  const { includePast } = Route.useSearch();
+
+  const { data: user } = useQuery({
+    queryKey: ["current-user"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      return user;
+    },
+  });
+
+  const { data: therapist } = useQuery({
+    queryKey: ["current-therapist", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("therapists")
+        .select("id")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const { data: activities = [], isLoading } = useQuery<ActivityRow[]>({
+    queryKey: ["public-activities", therapist?.id, includePast],
+    queryFn: async () => {
+      let query = supabase
         .from("activities")
-        .select("*")
-        .eq("status", "published")
-        .order("starts_at", { ascending: true });
+        .select("*");
+
+      if (!includePast) {
+        query = query.gte("starts_at", new Date().toISOString());
+      }
+
+      const { data, error } = await query.order("starts_at", { ascending: true });
       if (error) throw error;
       return (data ?? []) as ActivityRow[];
     },
   });
 
   const filtered = useMemo(() => {
-    if (category === "Todas") return activities;
-    return activities.filter(
+    const base = activities.filter(
+      (activity) =>
+        activity.status === "published" ||
+        (therapist?.id && activity.therapist_id === therapist.id),
+    );
+    if (category === "Todas") return base;
+    return base.filter(
       (activity) => inferCategory(activity).toLowerCase() === category.toLowerCase(),
     );
-  }, [activities, category]);
+  }, [activities, therapist?.id, category]);
 
   return (
     <PageShell>
@@ -117,19 +157,38 @@ function Page() {
           ) : (
             <div className="rounded-[1.8rem] border border-dashed border-[#d9c5aa] bg-white/58 p-12 text-center">
               <Sparkles className="mx-auto h-8 w-8 text-[#9a7041]" />
-              <h2 className="mt-4 font-display text-3xl text-[#1f3326]">
-                Estamos preparando nuevas actividades.
-              </h2>
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#5d5144]">
-                Muy pronto encontrarás talleres, retiros, formaciones y encuentros publicados por la
-                comunidad.
-              </p>
-              <Button
-                asChild
-                className="mt-6 rounded-full bg-[#526046] text-white hover:bg-[#435039]"
-              >
-                <Link to="/activities/new">Publicar una actividad</Link>
-              </Button>
+              {category !== "Todas" && activities.length > 0 ? (
+                <>
+                  <h2 className="mt-4 font-display text-3xl text-[#1f3326]">
+                    No hay actividades de {category} actualmente.
+                  </h2>
+                  <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#5d5144]">
+                    Explora otras categorías o vuelve a ver el programa completo para descubrir todas las experiencias de bienestar disponibles.
+                  </p>
+                  <Button
+                    onClick={() => setCategory("Todas")}
+                    className="mt-6 rounded-full bg-[#526046] text-white hover:bg-[#435039] cursor-pointer"
+                  >
+                    Ver todas las actividades
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <h2 className="mt-4 font-display text-3xl text-[#1f3326]">
+                    Estamos preparando nuevas actividades.
+                  </h2>
+                  <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#5d5144]">
+                    Muy pronto encontrarás talleres, retiros, formaciones y encuentros publicados por la
+                    comunidad.
+                  </p>
+                  <Button
+                    asChild
+                    className="mt-6 rounded-full bg-[#526046] text-white hover:bg-[#435039] cursor-pointer"
+                  >
+                    <Link to="/activities/new">Publicar una actividad</Link>
+                  </Button>
+                </>
+              )}
             </div>
           )}
 
@@ -163,18 +222,43 @@ function Page() {
 function ActivityListCard({ activity }: { activity: ActivityRow }) {
   const start = activity.starts_at ? new Date(activity.starts_at) : null;
   const category = inferCategory(activity);
+  const isUnpublished = activity.status !== "published";
+
+  let statusLabel = "";
+  let statusStyles = "";
+  if (isUnpublished) {
+    if (activity.status === "pending") {
+      statusLabel = "Pendiente de moderación";
+      statusStyles = "bg-[#9a7041]/15 text-[#9a7041] border-[#9a7041]/20";
+    } else if (activity.status === "draft") {
+      statusLabel = "Borrador";
+      statusStyles = "bg-gray-100 text-gray-600 border-gray-200";
+    } else {
+      statusLabel = "No publicado";
+      statusStyles = "bg-amber-100 text-amber-800 border-amber-200";
+    }
+  }
 
   return (
-    <article className="grid overflow-hidden rounded-[1.4rem] border border-[#eadfce] bg-white/72 shadow-[0_14px_45px_rgba(96,68,31,0.08)] md:grid-cols-[420px_90px_1fr]">
+    <article className="grid overflow-hidden rounded-[1.4rem] border border-[#eadfce] bg-white/72 shadow-[0_14px_45px_rgba(96,68,31,0.08)] md:grid-cols-[280px_90px_1fr]">
       <div className="relative h-56 md:h-full">
         <img
           src={activity.image_url || heroImg}
           alt={activity.title}
           className="h-full w-full object-cover"
         />
-        <span className="absolute left-4 top-4 rounded-full bg-[#526046] px-3 py-1 text-[11px] font-bold uppercase text-white">
-          {category}
-        </span>
+        <div className="absolute left-4 top-4 flex flex-col gap-2">
+          <span className="rounded-full bg-[#526046] px-3 py-1 text-[11px] font-bold uppercase text-white shadow-sm w-fit">
+            {category}
+          </span>
+          {isUnpublished && (
+            <span
+              className={`rounded-full border px-3 py-1 text-[11px] font-semibold shadow-sm w-fit ${statusStyles}`}
+            >
+              {statusLabel}
+            </span>
+          )}
+        </div>
       </div>
       <div className="flex items-center justify-center border-b border-[#eadfce] p-5 text-center md:border-b-0 md:border-r">
         <div>

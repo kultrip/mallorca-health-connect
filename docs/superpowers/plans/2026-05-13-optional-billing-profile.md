@@ -44,6 +44,7 @@
 ## Task 1: Add `billing_profiles` Table
 
 **Files:**
+
 - Create: `supabase/migrations/20260513000005_billing_profiles.sql`
 
 - [ ] **Step 1: Create migration**
@@ -120,6 +121,7 @@ Finished supabase db push.
 ## Task 2: Add Supabase Types
 
 **Files:**
+
 - Modify: `src/integrations/supabase/types.ts`
 
 - [ ] **Step 1: Add `billing_profiles` table type**
@@ -201,6 +203,7 @@ Expected: TypeScript completes with no errors.
 ## Task 3: Add Billing Profile Server Functions
 
 **Files:**
+
 - Create: `src/lib/billing-profile.ts`
 
 - [ ] **Step 1: Create server function module**
@@ -366,7 +369,10 @@ function validateOptionalInvoiceProfile(data: BillingProfileInput) {
 
   if (
     hasAnyAddress &&
-    (!data.address_line1?.trim() || !data.city?.trim() || !data.postal_code?.trim() || !data.country?.trim())
+    (!data.address_line1?.trim() ||
+      !data.city?.trim() ||
+      !data.postal_code?.trim() ||
+      !data.country?.trim())
   ) {
     throw new Error("La direccion, ciudad y codigo postal son necesarios para datos de factura.");
   }
@@ -419,10 +425,10 @@ function hasCompleteInvoiceAddress(profile: {
 }) {
   return Boolean(
     profile.legal_name?.trim() &&
-      profile.address_line1?.trim() &&
-      profile.city?.trim() &&
-      profile.postal_code?.trim() &&
-      profile.country?.trim(),
+    profile.address_line1?.trim() &&
+    profile.city?.trim() &&
+    profile.postal_code?.trim() &&
+    profile.country?.trim(),
   );
 }
 
@@ -437,8 +443,8 @@ function hasStripeSyncableBillingDetails(profile: {
 }) {
   return Boolean(
     profile.legal_name?.trim() ||
-      hasCompleteInvoiceAddress(profile) ||
-      (profile.tax_id_type && profile.tax_id_value?.trim()),
+    hasCompleteInvoiceAddress(profile) ||
+    (profile.tax_id_type && profile.tax_id_value?.trim()),
   );
 }
 
@@ -471,6 +477,7 @@ No lint errors.
 ## Task 4: Sync Optional Billing Data Before Checkout
 
 **Files:**
+
 - Modify: `src/lib/stripe-functions.ts`
 
 - [ ] **Step 1: Import sync helper**
@@ -510,6 +517,7 @@ No lint errors.
 ## Task 5: Add Billing Profile UI
 
 **Files:**
+
 - Modify: `src/routes/dashboard/billing.tsx`
 
 - [ ] **Step 1: Import form controls and server function**
@@ -562,11 +570,7 @@ Change `Promise.all` to include a billing profile query:
 
 ```ts
 const [profileResult, plansResult, billingProfileResult] = await Promise.all([
-  supabase
-    .from("therapists")
-    .select("*, plans(name, slug)")
-    .eq("user_id", user.id)
-    .maybeSingle(),
+  supabase.from("therapists").select("*, plans(name, slug)").eq("user_id", user.id).maybeSingle(),
   supabase
     .from("plans")
     .select("id, slug, name, description, price_monthly_cents, features, rank, billing_enabled")
@@ -632,7 +636,8 @@ Place this card after the current plan card and before pending-plan card:
   <CardHeader>
     <CardTitle>Datos fiscales para facturas</CardTitle>
     <CardDescription>
-      Opcional. Estos datos se usan si necesitas facturas con NIF/CIF/NIE. No se muestran en tu perfil publico.
+      Opcional. Estos datos se usan si necesitas facturas con NIF/CIF/NIE. No se muestran en tu
+      perfil publico.
     </CardDescription>
   </CardHeader>
   <CardContent className="space-y-4">
@@ -797,6 +802,7 @@ No lint errors.
 ## Task 6: Update Docs
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `CONTEXT.md`
 - Modify: `PLAN.md`
@@ -840,6 +846,7 @@ Add product rule:
 ## Task 7: Verification
 
 **Files:**
+
 - Verify all files modified in Tasks 1-6.
 
 - [ ] **Step 1: Run focused lint**

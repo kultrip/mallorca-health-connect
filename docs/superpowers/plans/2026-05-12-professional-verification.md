@@ -56,6 +56,7 @@
 ### Task 1: Add Verification Metadata Schema
 
 **Files:**
+
 - Create: `supabase/migrations/20260512000000_professional_verification_workflow.sql`
 - Modify: `src/integrations/supabase/types.ts`
 
@@ -84,14 +85,14 @@ CREATE INDEX IF NOT EXISTS idx_therapists_pending_verification
 In `src/integrations/supabase/types.ts`, add these fields to `therapists.Row`, `therapists.Insert`, and `therapists.Update`:
 
 ```ts
-verification_document_path: string | null
-verification_document_name: string | null
-verification_extra_document_path: string | null
-verification_extra_document_name: string | null
-verification_submitted_at: string | null
-verification_reviewed_at: string | null
-verification_review_note: string | null
-verification_reviewed_by: string | null
+verification_document_path: string | null;
+verification_document_name: string | null;
+verification_extra_document_path: string | null;
+verification_extra_document_name: string | null;
+verification_submitted_at: string | null;
+verification_reviewed_at: string | null;
+verification_review_note: string | null;
+verification_reviewed_by: string | null;
 ```
 
 For `Insert` and `Update`, all eight fields are optional and nullable.
@@ -111,6 +112,7 @@ Expected: output shows the migration and all three type sections.
 ### Task 2: Add Server Email Helpers
 
 **Files:**
+
 - Create: `src/lib/email/resend.ts`
 - Create: `src/lib/verification-emails.ts`
 
@@ -241,7 +243,8 @@ export async function sendProfessionalApprovedEmail(payload: ProfessionalEmailPa
 
 export async function sendProfessionalRejectedEmail(payload: ProfessionalEmailPayload) {
   const note = payload.reviewNote?.trim();
-  const reason = note || "Necesitamos revisar o completar algunos datos antes de aprobar tu perfil.";
+  const reason =
+    note || "Necesitamos revisar o completar algunos datos antes de aprobar tu perfil.";
 
   return sendEmail({
     to: payload.professionalEmail,
@@ -282,6 +285,7 @@ Expected: exits 0.
 ### Task 3: Add Server Verification Operations
 
 **Files:**
+
 - Create: `src/lib/professional-verification.ts`
 
 - [ ] **Step 1: Create server operation module**
@@ -410,6 +414,7 @@ Expected: exits 0.
 ### Task 4: Wire Onboarding Submission
 
 **Files:**
+
 - Modify: `src/routes/onboarding.tsx`
 
 - [ ] **Step 1: Import server notification operation**
@@ -445,7 +450,7 @@ Replace the current document upload block:
 
 ```ts
 if (docFile) {
-  await uploadFile(docFile, 'verification-docs');
+  await uploadFile(docFile, "verification-docs");
 }
 ```
 
@@ -529,13 +534,10 @@ Under the required document input, add:
     <FileText className="h-4 w-4" /> Documento adicional opcional
   </Label>
   <p className="mb-2 text-xs text-muted-foreground">
-    Puedes añadir otro certificado, acreditación o documento que ayude al equipo a revisar tu solicitud.
+    Puedes añadir otro certificado, acreditación o documento que ayude al equipo a revisar tu
+    solicitud.
   </p>
-  <Input
-    id="extraDoc"
-    type="file"
-    onChange={(e) => setExtraDocFile(e.target.files?.[0] || null)}
-  />
+  <Input id="extraDoc" type="file" onChange={(e) => setExtraDocFile(e.target.files?.[0] || null)} />
 </div>
 ```
 
@@ -554,6 +556,7 @@ Expected: exits 0.
 ### Task 5: Wire Admin Approval And Rejection Emails
 
 **Files:**
+
 - Modify: `src/routes/dashboard/admin.tsx`
 
 - [ ] **Step 1: Import server review operations and UI controls**
@@ -561,7 +564,10 @@ Expected: exits 0.
 Add:
 
 ```ts
-import { approveProfessionalRequest, rejectProfessionalRequest } from "@/lib/professional-verification";
+import {
+  approveProfessionalRequest,
+  rejectProfessionalRequest,
+} from "@/lib/professional-verification";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 ```
@@ -695,6 +701,7 @@ Expected: exits 0.
 ### Task 6: Document Local Environment Variables
 
 **Files:**
+
 - Modify: `docs/superpowers/specs/2026-05-12-professional-verification-design.md`
 - Modify: `README.md` or `CONTEXT.md`
 
@@ -732,6 +739,7 @@ Expected: no real Resend API key appears in tracked docs or source.
 ### Task 7: Final Verification
 
 **Files:**
+
 - Verify all files modified in Tasks 1-6.
 
 - [ ] **Step 1: Run targeted lint**

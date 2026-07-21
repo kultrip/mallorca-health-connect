@@ -93,6 +93,7 @@ Do not commit real Stripe or Supabase secrets.
 ### Task 1: Add Stripe Mapping To Plans
 
 **Files:**
+
 - Create: `supabase/migrations/20260512000001_subscription_plan_mapping.sql`
 - Modify: `src/integrations/supabase/types.ts`
 
@@ -220,6 +221,7 @@ Expected: output shows the SQL migration and all three TypeScript type sections.
 ### Task 2: Harden Plan Benefit Checks
 
 **Files:**
+
 - Modify: `src/lib/plan-access.ts`
 - Modify: `src/features/professionals/ProfessionalProfilePage.tsx`
 
@@ -308,6 +310,7 @@ Expected: exits 0.
 ### Task 3: Replace Stripe Server Functions
 
 **Files:**
+
 - Modify: `src/lib/stripe-functions.ts`
 
 - [ ] **Step 1: Replace client-trusted inputs**
@@ -364,7 +367,9 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       throw new Response("Therapist profile not found", { status: 404 });
     }
     if (therapist.verified !== true || therapist.status !== "published") {
-      throw new Response("Professional verification is required before subscribing", { status: 403 });
+      throw new Response("Professional verification is required before subscribing", {
+        status: 403,
+      });
     }
 
     const { data: plan, error: planError } = await supabaseAdmin
@@ -470,6 +475,7 @@ Expected: exits 0. If `.inputValidator` fails at runtime, match the established 
 ### Task 4: Update Billing UI
 
 **Files:**
+
 - Modify: `src/routes/dashboard/billing.tsx`
 
 - [ ] **Step 1: Use typed state and load paid plans from Supabase**
@@ -579,6 +585,7 @@ Expected: exits 0.
 ### Task 5: Harden Stripe Webhook
 
 **Files:**
+
 - Modify: `supabase/functions/stripe-webhook/index.ts`
 
 - [ ] **Step 1: Use Stripe price IDs to map subscriptions to plans**
@@ -590,7 +597,8 @@ async function applySubscriptionState(
   supabase: ReturnType<typeof createClient>,
   subscription: Stripe.Subscription,
 ) {
-  const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
+  const customerId =
+    typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
   const firstItem = subscription.items.data[0];
   const priceId = firstItem?.price?.id ?? null;
 
@@ -659,7 +667,7 @@ case "customer.subscription.deleted": {
 Confirm the helper sets:
 
 ```ts
-plan_id: subscription.status === "active" && plan?.id ? plan.id : null
+plan_id: subscription.status === "active" && plan?.id ? plan.id : null;
 ```
 
 Expected: canceled, unpaid, incomplete, or past-due subscriptions do not keep paid direct-contact benefits.
@@ -679,6 +687,7 @@ Expected: deploy succeeds after Supabase secrets are set. If testing locally fir
 ### Task 6: Apply Migration And Configure Stripe Values
 
 **Files:**
+
 - Remote Supabase database
 - Stripe Dashboard
 
@@ -727,6 +736,7 @@ Expected:
 ### Task 7: End-To-End Verification
 
 **Files:**
+
 - Verify all files modified in Tasks 1-6.
 
 - [ ] **Step 1: Run targeted lint**

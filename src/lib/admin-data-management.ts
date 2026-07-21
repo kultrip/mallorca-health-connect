@@ -4,6 +4,9 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { sendEmail } from "@/lib/email/resend";
 
+type SupabaseAdminClient =
+  (typeof import("@/integrations/supabase/client.server"))["supabaseAdmin"];
+
 const slugSchema = z
   .string()
   .trim()
@@ -20,6 +23,7 @@ const optionalUrlSchema = z
 
 const therapistInputSchema = z.object({
   id: z.string().uuid(),
+  slug: slugSchema,
   full_name: z.string().trim().min(1),
   headline: z.string().trim().optional().nullable(),
   frase_clave: z.string().trim().optional().nullable(),
@@ -42,6 +46,8 @@ const therapistInputSchema = z.object({
   lng: z.number().min(-180).max(180).optional().nullable(),
   status: z.enum(["draft", "pending", "published", "suspended"]),
   verified: z.boolean(),
+  photo_url: optionalUrlSchema,
+  logo_url: optionalUrlSchema,
   therapyIds: z.array(z.string().uuid()).default([]),
   helpAreaIds: z.array(z.string().uuid()).default([]),
 });
@@ -109,6 +115,7 @@ export const saveAdminTherapist = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin
       .from("therapists")
       .update({
+        slug: data.slug,
         full_name: data.full_name,
         headline: nullable(data.headline),
         frase_clave: nullable(data.frase_clave),
@@ -131,6 +138,8 @@ export const saveAdminTherapist = createServerFn({ method: "POST" })
         lng: data.lng ?? null,
         status: data.status,
         verified: data.verified,
+        photo_url: nullable(data.photo_url),
+        logo_url: nullable(data.logo_url),
         updated_at: new Date().toISOString(),
       })
       .eq("id", data.id);
@@ -391,3 +400,211 @@ function escapeHtml(value: string) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
+function throwIfSupabaseError(error: { message: string } | null | undefined) {
+  if (error) throw error;
+}
+
+async function authUserEmailExists(supabaseAdmin: SupabaseAdminClient, email: string) {
+  const target = email.trim().toLowerCase();
+  const perPage = 1000;
+  let page = 1;
+
+  while (true) {
+    const {
+      data: { users },
+      error,
+    } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+
+    if (error) throw error;
+    if (users.some((user) => user.email?.toLowerCase() === target)) return true;
+    if (users.length < perPage) return false;
+    page += 1;
+  }
+}
+
+const deleteAdminActivitySchema = z.object({
+  id: z.string().uuid(),
+});
+
+const deleteAdminTherapistSchema = z.object({
+  id: z.string().uuid(),
+});
+
+const createAdminTherapistSchema = z.object({
+  email: z.string().trim().email("Usa un correo valido."),
+  full_name: z.string().trim().min(1, "El nombre es obligatorio."),
+  password: z.string().min(8, "La contrasena debe tener al menos 8 caracteres."),
+  photo_url: optionalUrlSchema,
+});
+
+export const deleteAdminActivity = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => deleteAdminActivitySchema.parse(input))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Delete analytics events associated with this activity
+    const { error: analyticsError } = await supabaseAdmin
+      .from("analytics_events")
+      .delete()
+      .eq("activity_id", data.id);
+
+    if (analyticsError) throw analyticsError;
+
+    // 2. Delete the activity itself
+    const { error: deleteError } = await supabaseAdmin
+      .from("activities")
+      .delete()
+      .eq("id", data.id);
+
+    if (deleteError) throw deleteError;
+
+    return { success: true };
+  });
+
+export const deleteAdminTherapist = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => deleteAdminTherapistSchema.parse(input))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Fetch the therapist to find their user_id
+    const { data: therapist, error: fetchError } = await supabaseAdmin
+      .from("therapists")
+      .select("id, user_id")
+      .eq("id", data.id)
+      .maybeSingle();
+
+    if (fetchError) throw fetchError;
+    if (!therapist) throw new Error("Profesional no encontrado.");
+
+    // 2. Delete therapist's activities' analytics events, then activities
+    const { data: activities, error: fetchActivitiesError } = await supabaseAdmin
+      .from("activities")
+      .select("id")
+      .eq("therapist_id", data.id);
+
+    if (fetchActivitiesError) throw fetchActivitiesError;
+
+    const activityIds = (activities ?? []).map((a) => a.id);
+    if (activityIds.length > 0) {
+      const { error: activityAnalyticsError } = await supabaseAdmin
+        .from("analytics_events")
+        .delete()
+        .in("activity_id", activityIds);
+      throwIfSupabaseError(activityAnalyticsError);
+
+      const { error: activitiesDeleteError } = await supabaseAdmin
+        .from("activities")
+        .delete()
+        .in("id", activityIds);
+      throwIfSupabaseError(activitiesDeleteError);
+    }
+
+    // 3. Delete any analytics events directly referencing therapist_id
+    const { error: therapistAnalyticsError } = await supabaseAdmin
+      .from("analytics_events")
+      .delete()
+      .eq("therapist_id", data.id);
+    throwIfSupabaseError(therapistAnalyticsError);
+
+    // 4. Delete therapist relations
+    const { error: therapiesDeleteError } = await supabaseAdmin
+      .from("therapist_therapies")
+      .delete()
+      .eq("therapist_id", data.id);
+    throwIfSupabaseError(therapiesDeleteError);
+
+    const { error: helpAreasDeleteError } = await supabaseAdmin
+      .from("therapist_help_areas")
+      .delete()
+      .eq("therapist_id", data.id);
+    throwIfSupabaseError(helpAreasDeleteError);
+
+    // 5. Delete the user from auth.users (cascades public profiles, user_roles)
+    if (therapist.user_id) {
+      const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(
+        therapist.user_id,
+      );
+      if (deleteUserError) throw deleteUserError;
+    } else {
+      // Direct delete from therapists if no user_id exists
+      const { error: deleteTherapistError } = await supabaseAdmin
+        .from("therapists")
+        .delete()
+        .eq("id", data.id);
+      if (deleteTherapistError) throw deleteTherapistError;
+    }
+
+    return { success: true };
+  });
+
+export const createAdminTherapist = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => createAdminTherapistSchema.parse(input))
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Check if email already exists in auth.users
+    if (await authUserEmailExists(supabaseAdmin, data.email)) {
+      throw new Error("El correo electronico ya esta registrado.");
+    }
+
+    // 2. Create the auth user
+    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { display_name: data.full_name },
+    });
+
+    if (createError) throw createError;
+    const userId = newUser.user.id;
+
+    // 3. Generate a unique slug
+    let slug = data.full_name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    const { data: existingSlug } = await supabaseAdmin
+      .from("therapists")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (existingSlug) {
+      slug = `${slug}-${Math.floor(1000 + Math.random() * 9000)}`;
+    }
+
+    // 4. Create the therapist profile row
+    const { data: therapist, error: insertError } = await supabaseAdmin
+      .from("therapists")
+      .insert({
+        user_id: userId,
+        full_name: data.full_name,
+        email: data.email,
+        slug: slug,
+        status: "draft",
+        pending_plan_slug: "profesional", // triggers role sync to 'professional'
+        photo_url: data.photo_url || null,
+        updated_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+
+    if (insertError) {
+      // Attempt auth rollback if profile creation fails
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      throw insertError;
+    }
+
+    return { therapistId: therapist.id };
+  });

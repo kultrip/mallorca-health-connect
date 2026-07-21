@@ -23,7 +23,7 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
-  }
+  },
 });
 
 async function listPlans() {
@@ -33,8 +33,10 @@ async function listPlans() {
     process.exit(1);
   }
   console.log("Plans in database:");
-  plans.forEach(p => {
-    console.log(`- Slug: ${p.slug} | Name: ${p.name} | ID: ${p.id} | Price: ${p.price_monthly_cents} | Founder Price: ${p.founder_price_monthly_cents}`);
+  plans.forEach((p) => {
+    console.log(
+      `- Slug: ${p.slug} | Name: ${p.name} | ID: ${p.id} | Price: ${p.price_monthly_cents} | Founder Price: ${p.founder_price_monthly_cents}`,
+    );
   });
 }
 

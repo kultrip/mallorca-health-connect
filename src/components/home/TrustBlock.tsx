@@ -25,9 +25,9 @@ export function TrustBlock() {
         <div className="max-w-[620px]">
           <h2>Profesionales en los que puedes confiar</h2>
           <p className="mt-5 text-[15px] leading-8 text-muted-foreground">
-            En Mallorca Holística, cada profesional pasa por un proceso de verificación
-            antes de formar parte de la plataforma. Revisamos su identidad y su
-            trayectoria para que puedas elegir con tranquilidad y confianza.
+            En Mallorca Holística, cada profesional pasa por un proceso de verificación antes de
+            formar parte de la plataforma. Revisamos su identidad y su trayectoria para que puedas
+            elegir con tranquilidad y confianza.
           </p>
         </div>
         <div className="mt-12 grid gap-9 md:grid-cols-3">
@@ -40,8 +40,8 @@ export function TrustBlock() {
           ))}
         </div>
         <p className="mt-12 max-w-3xl text-xs text-muted-foreground">
-          Las terapias complementarias acompañan procesos de salud, pero no sustituyen
-          la atención médica cuando es necesaria.
+          Las terapias complementarias acompañan procesos de salud, pero no sustituyen la atención
+          médica cuando es necesaria.
         </p>
       </div>
     </section>

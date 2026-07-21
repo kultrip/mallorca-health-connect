@@ -6,8 +6,12 @@ const root = resolve(new URL("..", import.meta.url).pathname);
 loadEnv(resolve(root, ".env"));
 loadEnv(resolve(root, ".env.local"));
 
-const supabaseUrl = process.env.SECRET_SUPABASE_URL || process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const serviceRoleKey = process.env.SECRET_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+const supabaseUrl =
+  process.env.SECRET_SUPABASE_URL || process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const serviceRoleKey =
+  process.env.SECRET_SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SECRET_KEY;
 
 if (!supabaseUrl || !serviceRoleKey) {
   console.error("Missing Supabase service credentials.");
@@ -62,7 +66,12 @@ const municipalities = [
   { slug: "puigpunyent", name: "Puigpunyent", lat: 39.6225, lng: 2.5275 },
   { slug: "sa-pobla", name: "Sa Pobla", lat: 39.7711, lng: 3.0236 },
   { slug: "sant-joan", name: "Sant Joan", lat: 39.5936, lng: 3.0406 },
-  { slug: "sant-llorenc-des-cardassar", name: "Sant Llorenç des Cardassar", lat: 39.6111, lng: 3.2842 },
+  {
+    slug: "sant-llorenc-des-cardassar",
+    name: "Sant Llorenç des Cardassar",
+    lat: 39.6111,
+    lng: 3.2842,
+  },
   { slug: "santa-eugenia", name: "Santa Eugènia", lat: 39.6247, lng: 2.8389 },
   { slug: "santa-margalida", name: "Santa Margalida", lat: 39.7011, lng: 3.1036 },
   { slug: "santa-maria-del-cami", name: "Santa Maria del Camí", lat: 39.6517, lng: 2.7956 },

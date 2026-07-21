@@ -68,6 +68,7 @@
 ## Task 1: Add Email Log Migration
 
 **Files:**
+
 - Create: `supabase/migrations/20260513000006_admin_email_logs.sql`
 
 - [ ] **Step 1: Create migration**
@@ -124,6 +125,7 @@ Expected: `20260513000006_admin_email_logs.sql` is applied to the linked remote 
 ## Task 2: Add Supabase Types
 
 **Files:**
+
 - Modify: `src/integrations/supabase/types.ts`
 
 - [ ] **Step 1: Add `admin_email_logs` table type**
@@ -196,6 +198,7 @@ Expected: exits `0`.
 ## Task 3: Create Admin Server Functions
 
 **Files:**
+
 - Create: `src/lib/admin-data-management.ts`
 
 - [ ] **Step 1: Create schemas and admin assertion**
@@ -599,6 +602,7 @@ Expected: exits `0`.
 ## Task 4: Add Shared Admin UI Helpers
 
 **Files:**
+
 - Create: `src/components/admin/admin-utils.ts`
 
 - [ ] **Step 1: Create helpers**
@@ -655,6 +659,7 @@ Expected: exits `0`.
 ## Task 5: Split Existing Requests Panel
 
 **Files:**
+
 - Create: `src/components/admin/AdminRequestsPanel.tsx`
 - Modify later: `src/routes/dashboard/admin.tsx`
 
@@ -692,6 +697,7 @@ Expected: exits `0`.
 ## Task 6: Add Professionals Management Panel
 
 **Files:**
+
 - Create: `src/components/admin/AdminProfessionalsPanel.tsx`
 
 - [ ] **Step 1: Create professional panel**
@@ -751,6 +757,7 @@ Expected: exits `0`.
 ## Task 7: Add Therapy Management Panel
 
 **Files:**
+
 - Create: `src/components/admin/AdminTherapiesPanel.tsx`
 
 - [ ] **Step 1: Create therapy panel**
@@ -788,6 +795,7 @@ Expected: exits `0`.
 ## Task 8: Add Help Areas Panel
 
 **Files:**
+
 - Create: `src/components/admin/AdminHelpAreasPanel.tsx`
 
 - [ ] **Step 1: Create help areas panel**
@@ -817,6 +825,7 @@ Expected: exits `0`.
 ## Task 9: Add Activities Panel
 
 **Files:**
+
 - Create: `src/components/admin/AdminActivitiesPanel.tsx`
 
 - [ ] **Step 1: Create activities panel**
@@ -855,6 +864,7 @@ Expected: exits `0`.
 ## Task 10: Add Plans Overview Panel
 
 **Files:**
+
 - Create: `src/components/admin/AdminPlansPanel.tsx`
 
 - [ ] **Step 1: Create read-only plan overview**
@@ -894,6 +904,7 @@ Expected: exits `0`.
 ## Task 11: Add Email Center Panel
 
 **Files:**
+
 - Create: `src/components/admin/AdminEmailCenterPanel.tsx`
 
 - [ ] **Step 1: Create email center**
@@ -942,6 +953,7 @@ Expected: exits `0`.
 ## Task 12: Rewrite Admin Route as Console Coordinator
 
 **Files:**
+
 - Modify: `src/routes/dashboard/admin.tsx`
 
 - [ ] **Step 1: Replace route implementation**
@@ -977,15 +989,21 @@ const therapistSelect =
 ```
 
 ```ts
-const [therapistsResult, therapiesResult, helpAreasResult, municipalitiesResult, activitiesResult, plansResult] =
-  await Promise.all([
-    supabase.from("therapists").select(therapistSelect).order("created_at", { ascending: false }),
-    supabase.from("therapies").select("*").order("name"),
-    supabase.from("help_areas").select("*").order("name"),
-    supabase.from("municipalities").select("*").order("name"),
-    supabase.from("activities").select("*").order("created_at", { ascending: false }),
-    supabase.from("plans").select("*").order("rank", { ascending: true }),
-  ]);
+const [
+  therapistsResult,
+  therapiesResult,
+  helpAreasResult,
+  municipalitiesResult,
+  activitiesResult,
+  plansResult,
+] = await Promise.all([
+  supabase.from("therapists").select(therapistSelect).order("created_at", { ascending: false }),
+  supabase.from("therapies").select("*").order("name"),
+  supabase.from("help_areas").select("*").order("name"),
+  supabase.from("municipalities").select("*").order("name"),
+  supabase.from("activities").select("*").order("created_at", { ascending: false }),
+  supabase.from("plans").select("*").order("rank", { ascending: true }),
+]);
 ```
 
 - [ ] **Step 2: Run focused lint**
@@ -1001,6 +1019,7 @@ Expected: exits `0`.
 ## Task 13: Update Dashboard Sidebar Copy
 
 **Files:**
+
 - Modify: `src/routes/dashboard.tsx`
 
 - [ ] **Step 1: Rename admin link**
@@ -1014,7 +1033,7 @@ Panel de Administración
 To:
 
 ```tsx
-Administración
+Administración;
 ```
 
 Keep `/dashboard/admin/analytics` label as `Estadísticas globales`.
@@ -1032,6 +1051,7 @@ Expected: exits `0`.
 ## Task 14: Update Documentation
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `CONTEXT.md`
 - Modify: `PLAN.md`
@@ -1078,6 +1098,7 @@ Add product rule:
 ## Task 15: Verification
 
 **Files:**
+
 - Verify all files modified in Tasks 1-14.
 
 - [ ] **Step 1: Run focused lint**

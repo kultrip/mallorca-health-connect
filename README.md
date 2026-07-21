@@ -3,6 +3,7 @@
 Mallorca Holística is a public discovery platform for verified holistic wellbeing professionals in Mallorca.
 
 Visitors can:
+
 - search professionals by therapy, name, modality, and location
 - describe their current state in natural language, such as anxiety, sadness, fatigue, or pain
 - receive therapist recommendations based on needs/help areas
@@ -15,6 +16,7 @@ The MVP map is provider-free: it uses public therapist coordinates first, munici
 as fallback, and hides itself when a result set has no usable coordinates.
 
 Professionals can:
+
 - register and complete a profile onboarding flow
 - publish a verified profile (once approved by an admin)
 - manage their full public ficha via a secure dashboard
@@ -28,6 +30,7 @@ Activities/agenda publishing is deferred beyond the MVP.
 Use `comentarios-nadege` from the documentation zip as the latest source of truth.
 
 The platform should feel:
+
 - human
 - calm
 - professional
@@ -36,6 +39,7 @@ The platform should feel:
 - trustworthy
 
 It should not feel like:
+
 - a cold appointment marketplace
 - an internal booking/calendar system
 - an over-technical SaaS dashboard
@@ -60,6 +64,7 @@ npm run dev
 ```
 
 Notes:
+
 - `npm run build` currently exits successfully.
 - `npm run lint` fails repo-wide because of pre-existing formatting/type issues outside this pass.
 - The build prints a pre-existing Tailwind/CSS `@import` warning.

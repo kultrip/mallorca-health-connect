@@ -143,7 +143,7 @@ export const rejectProfessionalRequest = createServerFn({ method: "POST" })
         throw new Error(
           `Perfil rechazado, pero falló la cancelación/devolución en Stripe: ${
             stripeError instanceof Error ? stripeError.message : "Error desconocido"
-          }`
+          }`,
         );
       }
     }
@@ -252,3 +252,98 @@ async function requireAdmin(userId: string) {
   if (error) throw error;
   if (!data) throw new Response("Forbidden", { status: 403 });
 }
+
+type NotifyActivityInput = {
+  activityId: string;
+  activityTitle: string;
+  category: string;
+  startsAt: string | null;
+  location: string | null;
+  facilitatorName: string | null;
+  price: string;
+  therapistId: string;
+  origin: string;
+};
+
+export const notifyAdminOfNewActivity = createServerFn({ method: "POST" })
+  .inputValidator((data: NotifyActivityInput) => data)
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { sendEmail } = await import("@/lib/email/resend");
+    const { getAdminEmail } = await import("@/lib/verification-emails");
+
+    // Fetch therapist info
+    const { data: therapist, error } = await supabaseAdmin
+      .from("therapists")
+      .select("full_name, user_id")
+      .eq("id", data.therapistId)
+      .single();
+
+    if (error) throw error;
+    if (therapist.user_id !== context.userId) {
+      throw new Response("Forbidden", { status: 403 });
+    }
+
+    // Get therapist email from Auth
+    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(
+      therapist.user_id,
+    );
+    const therapistEmail = userData?.user?.email || "No especificado";
+
+    const to = getAdminEmail();
+    const subject = `Nueva actividad creada: ${data.activityTitle}`;
+
+    const escapeHtml = (val: string) => {
+      return val
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    };
+
+    const adminPanelUrl = `${data.origin}/dashboard/admin`;
+
+    const html = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eadfce; border-radius: 12px; background-color: #fffaf3;">
+        <h1 style="color: #1f3326; font-family: serif;">Nueva actividad pendiente de revisión</h1>
+        <p style="color: #5d5144; line-height: 1.6;">Se ha creado una nueva actividad en Mallorca Holística que requiere revisión:</p>
+        <ul style="color: #342b22; line-height: 1.8; list-style-type: none; padding-left: 0;">
+          <li><strong>Título:</strong> ${escapeHtml(data.activityTitle)}</li>
+          <li><strong>Categoría:</strong> ${escapeHtml(data.category)}</li>
+          <li><strong>Fecha:</strong> ${escapeHtml(data.startsAt || "No especificada")}</li>
+          <li><strong>Lugar:</strong> ${escapeHtml(data.location || "No especificado")}</li>
+          <li><strong>Facilitador:</strong> ${escapeHtml(data.facilitatorName || "No especificado")}</li>
+          <li><strong>Precio:</strong> ${escapeHtml(data.price)}</li>
+          <li><strong>Creado por:</strong> ${escapeHtml(therapist.full_name || "Terapeuta")} (${escapeHtml(therapistEmail)})</li>
+        </ul>
+        <div style="margin-top: 30px; text-align: center;">
+          <a href="${adminPanelUrl}" style="background-color: #526046; color: white; padding: 12px 24px; border-radius: 30px; text-decoration: none; font-weight: bold; display: inline-block;">Revisar en el panel de administración</a>
+        </div>
+      </div>
+    `;
+
+    const text = `
+Se ha creado una nueva actividad en Mallorca Holística que requiere revisión:
+
+Título: ${data.activityTitle}
+Categoría: ${data.category}
+Fecha: ${data.startsAt || "No especificada"}
+Lugar: ${data.location || "No especificado"}
+Facilitador: ${data.facilitatorName || "No especificado"}
+Precio: ${data.price}
+Creado por: ${therapist.full_name || "Terapeuta"} (${therapistEmail})
+
+Accede al panel de administración para revisarla y publicarla: ${adminPanelUrl}
+    `.trim();
+
+    await sendEmail({
+      to,
+      subject,
+      text,
+      html,
+    });
+
+    return { success: true };
+  });

@@ -18,6 +18,7 @@ import {
   getRememberSessionPreference,
   shouldAutoSignOutOnVisibilityHidden,
 } from "@/lib/session-timeout";
+import { CookieConsent } from "@/components/layout/CookieConsent";
 
 function NotFoundComponent() {
   return (
@@ -88,7 +89,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Encuentra terapeutas y profesionales verificados en terapias naturales y complementarias en Mallorca.",
       },
       { name: "author", content: "Mallorca Holística" },
-      { property: "og:title", content: "Mallorca Holística — Profesionales verificados de bienestar" },
+      {
+        property: "og:title",
+        content: "Mallorca Holística — Profesionales verificados de bienestar",
+      },
       {
         property: "og:description",
         content:
@@ -96,7 +100,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Mallorca Holística — Profesionales verificados de bienestar" },
+      {
+        name: "twitter:title",
+        content: "Mallorca Holística — Profesionales verificados de bienestar",
+      },
       { name: "description", content: "Mallorca Holistica" },
       { property: "og:description", content: "Mallorca Holistica" },
       { name: "twitter:description", content: "Mallorca Holistica" },
@@ -146,6 +153,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <SessionActivityGuard />
       <Outlet />
+      <CookieConsent />
     </QueryClientProvider>
   );
 }

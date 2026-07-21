@@ -13,6 +13,7 @@
 ### Task 1: Add Therapy Guide Migration
 
 **Files:**
+
 - Create: `supabase/migrations/20260511000002_seed_therapy_guide.sql`
 
 - [ ] **Step 1: Add schema columns to `public.therapies`**
@@ -42,6 +43,7 @@ Insert every therapy from page 7 with a stable Spanish slug and a gentle default
 - [ ] **Step 3: Seed Acupuntura detail content**
 
 Update `slug = 'acupuntura'` with:
+
 - `category = 'Medicina tradicional china'`
 - `short_description` describing the therapy in one sentence
 - `description` as the full readable fallback text
@@ -54,6 +56,7 @@ Update `slug = 'acupuntura'` with:
 ### Task 2: Update App Types And Queries
 
 **Files:**
+
 - Modify: `src/integrations/supabase/types.ts`
 - Modify: `src/features/therapies/types.ts`
 - Modify: `src/features/therapies/TherapyDetailPage.tsx`
@@ -69,6 +72,7 @@ Add `TherapyDetailSection` and extend `Therapy` with the new optional fields.
 - [ ] **Step 3: Query and render the structured Acupuntura fields**
 
 Update the detail select list and render:
+
 - structured sections before fallback description
 - benefits list under “En qué puede ayudar”
 - session copy under “Cómo es una sesión”
@@ -78,6 +82,7 @@ Update the detail select list and render:
 ### Task 3: Verify
 
 **Files:**
+
 - Verify: `supabase/migrations/20260511000002_seed_therapy_guide.sql`
 - Verify: `src/features/therapies/types.ts`
 - Verify: `src/features/therapies/TherapyDetailPage.tsx`

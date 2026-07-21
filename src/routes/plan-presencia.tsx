@@ -29,7 +29,9 @@ function PlanPresenciaPage() {
         {/* Page Title */}
         <div className="flex items-center gap-3 mb-8">
           <span className="text-2xl md:text-3xl">🌿</span>
-          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">Plan Presencia</h1>
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+            Plan Presencia
+          </h1>
         </div>
 
         <div className="space-y-6">
@@ -39,24 +41,25 @@ function PlanPresenciaPage() {
               ✨ ¿PARA QUIÉN ES?
             </span>
             <p className="text-sm md:text-base text-foreground/90 leading-relaxed font-sans">
-              Para profesionales de la salud complementaria e integrativa que desean dar visibilidad a su actividad y comenzar a formar parte de Mallorca Holística.
+              Para profesionales de la salud complementaria e integrativa que desean dar visibilidad
+              a su actividad y comenzar a formar parte de Mallorca Holística.
             </p>
           </div>
 
           {/* Section 2: Qué es el plan */}
           <div className="rounded-xl border border-dashed border-foreground/20 bg-background/40 p-6 md:p-8 shadow-sm">
             <span className="text-[11px] font-bold tracking-widest text-amber-700/90 uppercase block mb-3 font-mono">
-              😊 ¿QUÉ ES EL PLAN PRESENCIA?
+              🌞 ¿QUÉ ES EL PLAN PRESENCIA?
             </span>
             <div className="space-y-4 text-sm md:text-base text-foreground/90 leading-relaxed font-sans">
+              <p>El Plan Presencia es la puerta de entrada a Mallorca Holística.</p>
               <p>
-                El Plan Presencia es la puerta de entrada a Mallorca Holística.
+                Permite crear una cuenta, completar un perfil profesional público y comenzar a
+                formar parte del ecosistema.
               </p>
               <p>
-                Permite crear una cuenta, completar un perfil profesional público y comenzar a formar parte del ecosistema.
-              </p>
-              <p>
-                Es la forma más sencilla de dar visibilidad a tu actividad profesional y facilitar que las personas descubran quién eres y cómo acompañas.
+                Es la forma más sencilla de dar visibilidad a tu actividad profesional y facilitar
+                que las personas descubran quién eres y cómo acompañas.
               </p>
             </div>
           </div>
@@ -66,12 +69,12 @@ function PlanPresenciaPage() {
             <span className="text-[11px] font-bold tracking-widest text-blue-700/90 uppercase block mb-6 font-mono">
               💎 ¿QUÉ INCLUYE?
             </span>
-            
+
             <div className="space-y-8">
               {/* Subsection 1 */}
               <div>
                 <h3 className="font-display text-sm md:text-base font-bold text-foreground flex items-center gap-2 mb-3">
-                  <span className="text-blue-500 text-xs">💙</span> Perfil profesional
+                  Perfil profesional
                 </h3>
                 <ul className="space-y-2.5 pl-5">
                   <li className="text-xs md:text-sm text-foreground/80 leading-relaxed flex items-start gap-2">
@@ -92,7 +95,7 @@ function PlanPresenciaPage() {
               {/* Subsection 2 */}
               <div>
                 <h3 className="font-display text-sm md:text-base font-bold text-foreground flex items-center gap-2 mb-3">
-                  <span className="text-blue-500 text-xs">💙</span> Actividad profesional
+                  Actividad profesional
                 </h3>
                 <ul className="space-y-2.5 pl-5">
                   <li className="text-xs md:text-sm text-foreground/80 leading-relaxed flex items-start gap-2">
@@ -121,7 +124,7 @@ function PlanPresenciaPage() {
               {/* Subsection 3 */}
               <div>
                 <h3 className="font-display text-sm md:text-base font-bold text-foreground flex items-center gap-2 mb-3">
-                  <span className="text-blue-500 text-xs">💙</span> Visibilidad
+                  Visibilidad
                 </h3>
                 <ul className="space-y-2.5 pl-5">
                   <li className="text-xs md:text-sm text-foreground/80 leading-relaxed flex items-start gap-2">
@@ -138,7 +141,7 @@ function PlanPresenciaPage() {
               {/* Subsection 4 */}
               <div>
                 <h3 className="font-display text-sm md:text-base font-bold text-foreground flex items-center gap-2 mb-3">
-                  <span className="text-blue-500 text-xs">💙</span> Contacto
+                  Contacto
                 </h3>
                 <ul className="space-y-2.5 pl-5">
                   <li className="text-xs md:text-sm text-foreground/80 leading-relaxed flex items-start gap-2">
@@ -151,7 +154,7 @@ function PlanPresenciaPage() {
               {/* Subsection 5 */}
               <div>
                 <h3 className="font-display text-sm md:text-base font-bold text-foreground flex items-center gap-2 mb-3">
-                  <span className="text-blue-500 text-xs">💙</span> Herramientas
+                  Herramientas
                 </h3>
                 <ul className="space-y-2.5 pl-5">
                   <li className="text-xs md:text-sm text-foreground/80 leading-relaxed flex items-start gap-2">
@@ -160,7 +163,10 @@ function PlanPresenciaPage() {
                   </li>
                   <li className="text-xs md:text-sm text-foreground/80 leading-relaxed flex items-start gap-2">
                     <span className="text-[#526046] font-bold">✓</span>
-                    <span>Posibilidad de solicitar la publicación ocasional de eventos grupales en la Agenda de Actividades.</span>
+                    <span>
+                      Posibilidad de solicitar la publicación ocasional de eventos grupales en la
+                      Agenda de Actividades.
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -177,7 +183,9 @@ function PlanPresenciaPage() {
                 El Plan Presencia puede acompañarte durante todo tu recorrido en Mallorca Holística.
               </p>
               <p>
-                Si en el futuro deseas acceder a nuevas funcionalidades, reforzar la confianza que transmites o dar mayor visibilidad a tu actividad, podrás solicitar el acceso al Plan Profesional Verificado o al Plan Centros & Organizadores.
+                Si en el futuro deseas acceder a nuevas funcionalidades, reforzar la confianza que
+                transmites o dar mayor visibilidad a tu actividad, podrás solicitar el acceso al
+                Plan Profesional Verificado o al Plan Centros & Organizadores.
               </p>
             </div>
           </div>
@@ -188,12 +196,25 @@ function PlanPresenciaPage() {
               ACCIONES
             </span>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="border-2 border-foreground bg-background hover:bg-foreground/5 text-foreground rounded-lg px-6 font-semibold flex-1 transition-all h-12 shadow-sm text-sm">
-                <Link to="/register" search={{ plan: "presencia", track: "presencia" }} className="flex items-center justify-center gap-2">
+              <Button
+                asChild
+                size="lg"
+                className="border-2 border-foreground bg-background hover:bg-foreground/5 text-foreground rounded-lg px-6 font-semibold flex-1 transition-all h-12 shadow-sm text-sm"
+              >
+                <Link
+                  to="/register"
+                  search={{ plan: "presencia", track: "presencia" }}
+                  className="flex items-center justify-center gap-2"
+                >
                   👉 Crear mi cuenta gratuita <span className="ml-1">→</span>
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="ghost" className="border-2 border-dashed border-foreground/30 bg-transparent hover:bg-foreground/5 text-foreground rounded-lg px-6 font-semibold flex-1 transition-all h-12 text-sm">
+              <Button
+                asChild
+                size="lg"
+                variant="ghost"
+                className="border-2 border-dashed border-foreground/30 bg-transparent hover:bg-foreground/5 text-foreground rounded-lg px-6 font-semibold flex-1 transition-all h-12 text-sm"
+              >
                 <Link to="/for-professionals" className="flex items-center justify-center gap-2">
                   ← Volver a planes
                 </Link>

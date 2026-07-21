@@ -28,7 +28,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
-  }
+  },
 });
 
 async function main() {
@@ -40,28 +40,33 @@ async function main() {
   console.log("Fetching reference taxonomies from database...");
   const { data: plansList, error: planErr } = await supabase.from("plans").select("*");
   if (planErr) throw planErr;
-  const plans = Object.fromEntries(plansList.map(p => [p.slug, p]));
+  const plans = Object.fromEntries(plansList.map((p) => [p.slug, p]));
 
   const { data: munisList, error: muniErr } = await supabase.from("municipalities").select("*");
   if (muniErr) throw muniErr;
-  const munis = Object.fromEntries(munisList.map(m => [m.slug, m]));
+  const munis = Object.fromEntries(munisList.map((m) => [m.slug, m]));
 
   const { data: therapiesList, error: thErr } = await supabase.from("therapies").select("*");
   if (thErr) throw thErr;
-  const therapies = Object.fromEntries(therapiesList.map(t => [t.slug, t]));
+  const therapies = Object.fromEntries(therapiesList.map((t) => [t.slug, t]));
 
   const { data: helpAreasList, error: haErr } = await supabase.from("help_areas").select("*");
   if (haErr) throw haErr;
-  const helpAreas = Object.fromEntries(helpAreasList.map(h => [h.slug, h]));
+  const helpAreas = Object.fromEntries(helpAreasList.map((h) => [h.slug, h]));
 
-  console.log(`✅ Loaded ${plansList.length} plans, ${munisList.length} municipalities, ${therapiesList.length} therapies, and ${helpAreasList.length} help areas.`);
+  console.log(
+    `✅ Loaded ${plansList.length} plans, ${munisList.length} municipalities, ${therapiesList.length} therapies, and ${helpAreasList.length} help areas.`,
+  );
 
   // 2. Teardown any existing test users ending with @test.mh
   console.log("\n🧹 Cleaning up any existing @test.mh users...");
-  const { data: { users }, error: listErr } = await supabase.auth.admin.listUsers();
+  const {
+    data: { users },
+    error: listErr,
+  } = await supabase.auth.admin.listUsers();
   if (listErr) throw listErr;
 
-  const testUsers = users.filter(u => u.email && u.email.endsWith("@test.mh"));
+  const testUsers = users.filter((u) => u.email && u.email.endsWith("@test.mh"));
   console.log(`Found ${testUsers.length} existing @test.mh user accounts to delete.`);
   for (const user of testUsers) {
     const { error: delErr } = await supabase.auth.admin.deleteUser(user.id);
@@ -78,7 +83,7 @@ async function main() {
     {
       email: "admin@test.mh",
       role: "admin",
-      isTherapist: false
+      isTherapist: false,
     },
     {
       email: "presencia-active@test.mh",
@@ -96,10 +101,11 @@ async function main() {
         modalities: ["presencial"],
         whatsapp: "+34600112233",
         phone: "+34600112233",
-        sobre_mi: "Soy un terapeuta de Reiki en Palma de Mallorca ofreciendo un espacio de calma y sanación.",
+        sobre_mi:
+          "Soy un terapeuta de Reiki en Palma de Mallorca ofreciendo un espacio de calma y sanación.",
         therapy_slugs: ["reiki"],
-        help_area_slugs: ["ansiedad"]
-      }
+        help_area_slugs: ["ansiedad"],
+      },
     },
     {
       email: "presencia-onboarding@test.mh",
@@ -119,8 +125,8 @@ async function main() {
         phone: "+34600112234",
         sobre_mi: "Perfil de prueba en estado de borrador/onboarding.",
         therapy_slugs: [],
-        help_area_slugs: []
-      }
+        help_area_slugs: [],
+      },
     },
     {
       email: "profesional-standard@test.mh",
@@ -139,10 +145,11 @@ async function main() {
         whatsapp: "+34600223344",
         phone: "+34600223344",
         website: "https://standardtherapist.com",
-        sobre_mi: "Especialista en acupuntura con amplia experiencia clínica en el tratamiento del dolor y del estrés.",
+        sobre_mi:
+          "Especialista en acupuntura con amplia experiencia clínica en el tratamiento del dolor y del estrés.",
         therapy_slugs: ["acupuntura"],
-        help_area_slugs: ["estres", "dolor-cronico"]
-      }
+        help_area_slugs: ["estres", "dolor-cronico"],
+      },
     },
     {
       email: "profesional-founder@test.mh",
@@ -161,10 +168,11 @@ async function main() {
         whatsapp: "+34600334455",
         phone: "+34600334455",
         website: "https://foundertherapist.com",
-        sobre_mi: "Osteópata y terapeuta de Reiki en Inca. Formo parte de la Comunidad Fundadora de Mallorca Holística.",
+        sobre_mi:
+          "Osteópata y terapeuta de Reiki en Inca. Formo parte de la Comunidad Fundadora de Mallorca Holística.",
         therapy_slugs: ["osteopatia", "reiki"],
-        help_area_slugs: ["dolor-cronico", "ansiedad"]
-      }
+        help_area_slugs: ["dolor-cronico", "ansiedad"],
+      },
     },
     {
       email: "profesional-pending@test.mh",
@@ -184,8 +192,8 @@ async function main() {
         phone: "+34600445566",
         sobre_mi: "Naturópata en Palma, perfil pendiente de validación administrativa.",
         therapy_slugs: ["naturopatia"],
-        help_area_slugs: ["fatiga"]
-      }
+        help_area_slugs: ["fatiga"],
+      },
     },
     {
       email: "centro-active@test.mh",
@@ -206,9 +214,9 @@ async function main() {
         website: "https://centroholisticoactive.com",
         sobre_mi: "Centro de bienestar y meditación en el corazón de Palma de Mallorca.",
         therapy_slugs: ["meditacion", "terapia-emocional"],
-        help_area_slugs: ["equilibrio-emocional", "insomnio"]
-      }
-    }
+        help_area_slugs: ["equilibrio-emocional", "insomnio"],
+      },
+    },
   ];
 
   console.log(`\n👥 Creating ${userConfigs.length} test users in Auth...`);
@@ -217,7 +225,7 @@ async function main() {
     const { data: userData, error: createErr } = await supabase.auth.admin.createUser({
       email: config.email,
       password: testPassword,
-      email_confirm: true
+      email_confirm: true,
     });
     if (createErr) throw createErr;
     const user = userData.user;
@@ -227,7 +235,7 @@ async function main() {
     if (config.role === "admin") {
       const { error: roleErr } = await supabase.from("user_roles").insert({
         user_id: user.id,
-        role: "admin"
+        role: "admin",
       });
       if (roleErr) throw roleErr;
       console.log(`   └─ Assigned admin role successfully.`);
@@ -260,7 +268,7 @@ async function main() {
         sobre_mi: tc.sobre_mi,
         verified: tc.status === "published",
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       const { data: thData, error: thErr } = await supabase
@@ -279,9 +287,9 @@ async function main() {
       // Seed therapist therapies relation
       if (tc.therapy_slugs && tc.therapy_slugs.length > 0) {
         const tRows = tc.therapy_slugs
-          .map(slug => therapies[slug]?.id)
+          .map((slug) => therapies[slug]?.id)
           .filter(Boolean)
-          .map(therapy_id => ({ therapist_id: therapistId, therapy_id }));
+          .map((therapy_id) => ({ therapist_id: therapistId, therapy_id }));
         if (tRows.length > 0) {
           const { error: relErr } = await supabase.from("therapist_therapies").insert(tRows);
           if (relErr) throw relErr;
@@ -291,16 +299,18 @@ async function main() {
       // Seed therapist help areas relation
       if (tc.help_area_slugs && tc.help_area_slugs.length > 0) {
         const hRows = tc.help_area_slugs
-          .map(slug => helpAreas[slug]?.id)
+          .map((slug) => helpAreas[slug]?.id)
           .filter(Boolean)
-          .map(help_area_id => ({ therapist_id: therapistId, help_area_id }));
+          .map((help_area_id) => ({ therapist_id: therapistId, help_area_id }));
         if (hRows.length > 0) {
           const { error: relErr } = await supabase.from("therapist_help_areas").insert(hRows);
           if (relErr) throw relErr;
         }
       }
 
-      console.log(`   └─ Associated ${tc.therapy_slugs.length} therapies and ${tc.help_area_slugs.length} help areas.`);
+      console.log(
+        `   └─ Associated ${tc.therapy_slugs.length} therapies and ${tc.help_area_slugs.length} help areas.`,
+      );
     }
   }
 
@@ -309,7 +319,7 @@ async function main() {
   console.log("=================================================");
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error("❌ Fatal error in main:", err);
   process.exit(1);
 });

@@ -137,3 +137,79 @@ fallbackTherapiesBySlug.set("acupuntura", {
   empty_professionals_message:
     "Estamos ampliando nuestra red de profesionales con mucho cuidado. Muy pronto encontrarás aquí a la persona adecuada para ti.",
 });
+
+fallbackTherapiesBySlug.set("yoga", {
+  id: "local-yoga",
+  slug: "yoga",
+  name: "Yoga",
+  category: "Cuerpo y mente",
+  short_description:
+    "Práctica milenaria que integra el movimiento corporal, la respiración consciente y la meditación para cultivar un estado de presencia, calma y equilibrio integral.",
+  detail_sections: [
+    {
+      title: "Qué es",
+      body: "El Yoga es una disciplina milenaria originaria de la India que busca la unión armónica entre el cuerpo, la mente y el espíritu. A través de posturas físicas (asanas), ejercicios de respiración (pranayama) y técnicas de meditación, el Yoga nos invita a cultivar la presencia plena, la autoconciencia y un profundo bienestar interior.",
+    },
+    {
+      title: "Cómo funciona",
+      body: "Una sesión de Yoga se adapta al ritmo y condiciones de cada persona. Se realiza una secuencia de movimientos suaves y fluidos sincronizados con la respiración, alternando posturas activas con momentos de relajación y quietud mental. El enfoque principal es escuchar el propio cuerpo con amabilidad, sin juicios ni sobreesfuerzos.",
+    },
+  ],
+  benefits: [
+    "Estrés y fatiga acumulada",
+    "Flexibilidad y movilidad física",
+    "Tensión y rigidez corporal",
+    "Calma mental y claridad emocional",
+    "Postura y consciencia corporal",
+  ],
+  session_description:
+    "Las sesiones se desarrollan en un espacio cómodo y tranquilo. Comienzan con una toma de contacto para conectar con la respiración, seguidas de una práctica de asanas guiada de forma gradual, y finalizan con una relajación profunda o meditación que asienta los beneficios de la sesión.",
+  medical_disclaimer:
+    "Las terapias complementarias acompañan procesos de salud, pero no sustituyen la atención médica cuando es necesaria.",
+  empty_professionals_message:
+    "Estamos ampliando nuestra red de profesionales con mucho cuidado. Muy pronto encontrarás aquí a la persona adecuada para ti.",
+});
+
+fallbackTherapiesBySlug.set("osteopatia", {
+  id: "local-osteopatia",
+  slug: "osteopatia",
+  name: "Osteopatía",
+  category: "Terapia manual",
+  short_description:
+    "Disciplina terapéutica manual que se centra en el restablecimiento de la movilidad global del cuerpo para favorecer su capacidad de autorregulación y bienestar natural.",
+  detail_sections: [
+    {
+      title: "Qué es",
+      body: "La osteopatía es un enfoque terapéutico manual que considera al cuerpo como una unidad interconectada. Mediante técnicas suaves y precisas de palpación y movilización, el osteópata busca identificar y liberar tensiones en las estructuras músculo-esqueléticas, viscerales y craneales para acompañar la salud y el equilibrio del organismo.",
+    },
+    {
+      title: "Cómo funciona",
+      body: "El osteópata trabaja con sus manos de forma sumamente sutil e indolora. Evalúa las zonas de menor movilidad del cuerpo y aplica movilizaciones y estiramientos que ayudan a liberar las restricciones y tensiones acumuladas. El objetivo no es forzar la estructura, sino acompañar al cuerpo hacia su propia homeostasis y rango natural de movimiento.",
+    },
+  ],
+  benefits: [
+    "Sobrecarga muscular o articular",
+    "Trastornos posturales o digestivos",
+    "Estrés físico y fatiga",
+    "Dolor cervical, lumbar o de espalda",
+    "Restricciones de movilidad funcional",
+  ],
+  session_description:
+    "Una sesión típica se inicia con una entrevista detallada sobre la historia de salud de la persona. Luego, se realiza una valoración postural y funcional mediante palpación manual suave. A continuación, se aplican las movilizaciones específicas adaptadas a las necesidades del momento, finalizando con un espacio de reposo e integración.",
+  medical_disclaimer:
+    "Las terapias complementarias acompañan procesos de salud, pero no sustituyen la atención médica cuando es necesaria.",
+  empty_professionals_message:
+    "Estamos ampliando nuestra red de profesionales con mucho cuidado. Muy pronto encontrarás aquí a la persona adecuada para ti.",
+});
+
+// Synchronize detailed descriptions back into the main canvaTherapies list
+for (const [slug, customTherapy] of fallbackTherapiesBySlug.entries()) {
+  const index = canvaTherapies.findIndex((t) => t.slug === slug);
+  if (index !== -1) {
+    canvaTherapies[index] = {
+      ...canvaTherapies[index],
+      ...customTherapy,
+    };
+  }
+}
+

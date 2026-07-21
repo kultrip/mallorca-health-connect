@@ -245,6 +245,30 @@ export function ProfessionalProfilePage({ slug }: { slug: string }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
+      {!data.is_claimed && (
+        <div className="bg-[#fcf8f2] border-b border-[#eadfce] px-6 py-4 relative z-40 shadow-sm animate-fade-in">
+          <div className="mx-auto max-w-[1180px] flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-800">
+                <Sparkles className="h-5 w-5 animate-pulse" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#1f3326]">¿Eres tú {data.full_name || data.business_name}?</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Este perfil se ha recopilado de fuentes públicas. Reclámalo gratis para editar tus datos, responder valoraciones y captar clientes.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/register"
+              search={{ claim: data.id }}
+              className="inline-flex items-center gap-2 rounded-full bg-[#1f3326] px-5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-[#112016] transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0"
+            >
+              Reclamar este Perfil Gratis <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+      )}
       <article className="bg-[#fff9f1]">
         <section className="relative overflow-hidden bg-[#f4eadb]">
           <img

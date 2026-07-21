@@ -69,7 +69,12 @@ const reference = {
     { slug: "puigpunyent", name: "Puigpunyent", lat: 39.6225, lng: 2.5275 },
     { slug: "sa-pobla", name: "Sa Pobla", lat: 39.7711, lng: 3.0236 },
     { slug: "sant-joan", name: "Sant Joan", lat: 39.5936, lng: 3.0406 },
-    { slug: "sant-llorenc-des-cardassar", name: "Sant Llorenç des Cardassar", lat: 39.6111, lng: 3.2842 },
+    {
+      slug: "sant-llorenc-des-cardassar",
+      name: "Sant Llorenç des Cardassar",
+      lat: 39.6111,
+      lng: 3.2842,
+    },
     { slug: "santa-eugenia", name: "Santa Eugènia", lat: 39.6247, lng: 2.8389 },
     { slug: "santa-margalida", name: "Santa Margalida", lat: 39.7011, lng: 3.1036 },
     { slug: "santa-maria-del-cami", name: "Santa Maria del Camí", lat: 39.6517, lng: 2.7956 },
@@ -480,8 +485,10 @@ const therapists = [
     full_name: "Demo - Andreu Bosch",
     headline: "Osteópata y Fisioterapeuta deportivo",
     frase_clave: "Recupera el movimiento natural de tu cuerpo libre de dolor.",
-    sobre_mi: "Soy Andreu, apasionado de la salud corporal y el movimiento. Trabajo combinando técnicas de osteopatía estructural, visceral y craneosacral con masaje terapéutico profundo para aliviar contracturas, dolores de espalda y recuperar lesiones deportivas en Sóller.",
-    formacion: "Graduado en Fisioterapia por la UIB\nMáster en Osteopatía Estructural\nEspecialista en Masaje Deportivo",
+    sobre_mi:
+      "Soy Andreu, apasionado de la salud corporal y el movimiento. Trabajo combinando técnicas de osteopatía estructural, visceral y craneosacral con masaje terapéutico profundo para aliviar contracturas, dolores de espalda y recuperar lesiones deportivas en Sóller.",
+    formacion:
+      "Graduado en Fisioterapia por la UIB\nMáster en Osteopatía Estructural\nEspecialista en Masaje Deportivo",
     experiencia: "7 años de práctica clínica en centros deportivos y consulta privada.",
     especialidad: "Osteopatía",
     subespecialidades: ["Osteopatía estructural", "Masaje deportivo", "Molestias de espalda"],
@@ -507,7 +514,12 @@ const therapists = [
     helpAreas: ["dolor-cronico", "estres"],
     sessions: [
       { name: "Sesión de Osteopatía", duration: "60 min", price_cents: 7000, position: 1 },
-      { name: "Masaje Terapéutico / Deportivo", duration: "45 min", price_cents: 5500, position: 2 },
+      {
+        name: "Masaje Terapéutico / Deportivo",
+        duration: "45 min",
+        price_cents: 5500,
+        position: 2,
+      },
     ],
   },
   {
@@ -515,8 +527,10 @@ const therapists = [
     full_name: "Demo - Clara Sastre",
     headline: "Naturópata y Acupuntora especialista en salud femenina",
     frase_clave: "Equilibra tus hormonas y recupera tu vitalidad de forma natural.",
-    sobre_mi: "Acompaño a mujeres en procesos de desajustes hormonales, fatiga, estrés e insomnio, utilizando la acupuntura y la naturopatía como herramientas integrales para restaurar el ritmo natural del organismo.",
-    formacion: "Diplomada en Medicina Tradicional China\nTítulo Superior en Naturopatía y Nutrición Celular\nEspecialización en Ginecología Natural",
+    sobre_mi:
+      "Acompaño a mujeres en procesos de desajustes hormonales, fatiga, estrés e insomnio, utilizando la acupuntura y la naturopatía como herramientas integrales para restaurar el ritmo natural del organismo.",
+    formacion:
+      "Diplomada en Medicina Tradicional China\nTítulo Superior en Naturopatía y Nutrición Celular\nEspecialización en Ginecología Natural",
     experiencia: "9 años guiando consultas de salud integrativa.",
     especialidad: "Acupuntura",
     subespecialidades: ["Acupuntura ginecológica", "Fitoterapia y nutrición", "Insomnio"],
@@ -541,7 +555,12 @@ const therapists = [
     therapies: ["acupuntura", "naturopatia"],
     helpAreas: ["fatiga", "insomnio", "estres"],
     sessions: [
-      { name: "Primera consulta con acupuntura", duration: "90 min", price_cents: 8000, position: 1 },
+      {
+        name: "Primera consulta con acupuntura",
+        duration: "90 min",
+        price_cents: 8000,
+        position: 1,
+      },
       { name: "Sesión de seguimiento", duration: "60 min", price_cents: 6000, position: 2 },
     ],
   },
@@ -550,17 +569,22 @@ const therapists = [
     full_name: "Demo - Centro de Bienestar Equilibrio",
     headline: "Centro de Yoga, Meditación y Terapias Integrativas",
     frase_clave: "Un oasis de paz y autoconocimiento en el corazón de la Tramuntana.",
-    sobre_mi: "Somos un espacio dedicado al bienestar integral. Ofrecemos clases diarias de Yoga Terapéutico, talleres de Meditación y Mindfulness, así como sesiones individuales de Terapia Emocional y acompañamiento holístico.",
+    sobre_mi:
+      "Somos un espacio dedicado al bienestar integral. Ofrecemos clases diarias de Yoga Terapéutico, talleres de Meditación y Mindfulness, así como sesiones individuales de Terapia Emocional y acompañamiento holístico.",
     formacion: "Equipo multidisciplinar de terapeutas certificados y profesores senior.",
     experiencia: "Abiertos desde 2018 facilitando retiros, clases y consultas.",
     especialidad: "Yoga terapéutico",
-    subespecialidades: ["Yoga grupal e individual", "Clases de meditación", "Acompañamiento integrativo"],
+    subespecialidades: [
+      "Yoga grupal e individual",
+      "Clases de meditación",
+      "Acompañamiento integrativo",
+    ],
     modalities: ["presencial"],
     years_experience: 8,
     municipality: "soller",
     city: "Sóller",
     address: "Gran Via 12, Sóller",
-    lat: 39.7670,
+    lat: 39.767,
     lng: 2.7155,
     whatsapp: "+34633333444",
     phone: "+34633333444",
@@ -577,8 +601,18 @@ const therapists = [
     helpAreas: ["ansiedad", "estres", "equilibrio-emocional"],
     sessions: [
       { name: "Clase de Yoga Individual", duration: "60 min", price_cents: 6500, position: 1 },
-      { name: "Bono de 4 clases de yoga grupal", duration: "Mensual", price_cents: 5000, position: 2 },
-      { name: "Sesión Terapia de Pareja / Familiar", duration: "75 min", price_cents: 9000, position: 3 },
+      {
+        name: "Bono de 4 clases de yoga grupal",
+        duration: "Mensual",
+        price_cents: 5000,
+        position: 2,
+      },
+      {
+        name: "Sesión Terapia de Pareja / Familiar",
+        duration: "75 min",
+        price_cents: 9000,
+        position: 3,
+      },
     ],
   },
   {
@@ -586,7 +620,8 @@ const therapists = [
     full_name: "Demo - Isabel Oliver",
     headline: "Terapeuta de Reiki y Acompañamiento Holístico",
     frase_clave: "Libera bloqueos energéticos y encuentra tu centro.",
-    sobre_mi: "Ofrezco sesiones de Reiki y terapia emocional en un entorno tranquilo en Marratxí. Mi enfoque combina la canalización de energía con herramientas de escucha consciente para apoyarte en periodos de estrés o cambios de vida.",
+    sobre_mi:
+      "Ofrezco sesiones de Reiki y terapia emocional en un entorno tranquilo en Marratxí. Mi enfoque combina la canalización de energía con herramientas de escucha consciente para apoyarte en periodos de estrés o cambios de vida.",
     formacion: "Federada en Reiki Usui (Nivel Maestría)\nTaller de Psicología Gestalt aplicada",
     experiencia: "5 años facilitando sesiones individuales de equilibrio energético.",
     especialidad: "Reiki",
@@ -613,7 +648,12 @@ const therapists = [
     therapies: ["reiki", "terapia-emocional"],
     helpAreas: ["equilibrio-emocional", "ansiedad", "estres"],
     sessions: [
-      { name: "Sesión de Reiki y Armonización", duration: "60 min", price_cents: 5000, position: 1 },
+      {
+        name: "Sesión de Reiki y Armonización",
+        duration: "60 min",
+        price_cents: 5000,
+        position: 1,
+      },
     ],
   },
   {
@@ -621,8 +661,10 @@ const therapists = [
     full_name: "Demo - Mateu Coll",
     headline: "Profesor de Yoga y Quiromasajista",
     frase_clave: "Salud para tu espalda y calma para tu mente.",
-    sobre_mi: "Combino la práctica del Yoga Terapéutico para tonificar y flexibilizar el cuerpo con técnicas de quiromasaje para aliviar contracturas y tensiones acumuladas en la zona cervical y lumbar.",
-    formacion: "Profesor de Hatha Yoga (Yoga Alliance RYT-500)\nQuiromasajista Profesional Certificado",
+    sobre_mi:
+      "Combino la práctica del Yoga Terapéutico para tonificar y flexibilizar el cuerpo con técnicas de quiromasaje para aliviar contracturas y tensiones acumuladas en la zona cervical y lumbar.",
+    formacion:
+      "Profesor de Hatha Yoga (Yoga Alliance RYT-500)\nQuiromasajista Profesional Certificado",
     experiencia: "6 años impartiendo clases individuales y realizando terapias de masaje.",
     especialidad: "Yoga terapéutico",
     subespecialidades: ["Yoga para la espalda", "Quiromasaje terapéutico", "Tensión muscular"],
@@ -647,8 +689,18 @@ const therapists = [
     therapies: ["yoga-terapeutico", "masaje-terapeutico"],
     helpAreas: ["dolor-cronico", "insomnio"],
     sessions: [
-      { name: "Clase privada de Yoga en Manacor", duration: "60 min", price_cents: 4500, position: 1 },
-      { name: "Masaje Descontracturante / Relajante", duration: "60 min", price_cents: 6000, position: 2 },
+      {
+        name: "Clase privada de Yoga en Manacor",
+        duration: "60 min",
+        price_cents: 4500,
+        position: 1,
+      },
+      {
+        name: "Masaje Descontracturante / Relajante",
+        duration: "60 min",
+        price_cents: 6000,
+        position: 2,
+      },
     ],
   },
 ];

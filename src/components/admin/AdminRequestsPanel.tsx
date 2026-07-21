@@ -91,16 +91,61 @@ export function AdminRequestsPanel({ pendingTherapists, onReload }: AdminRequest
               <span>Tel: {therapist.phone}</span>
               <span>Email: {therapist.email}</span>
             </div>
-            <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-              {therapist.verification_document_name && (
-                <p>Documento profesional: {therapist.verification_document_name}</p>
+            <div className="mt-3 space-y-2 text-xs text-muted-foreground">
+              {therapist.verification_document_path && (
+                <p className="flex items-center gap-1.5">
+                  <span className="font-semibold text-foreground">Documento profesional:</span>
+                  <a
+                    href={supabase.storage.from("verification-docs").getPublicUrl(therapist.verification_document_path).data.publicUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[#526046] hover:underline font-medium inline-flex items-center gap-1"
+                  >
+                    📄 {therapist.verification_document_name || "Descargar documento"}
+                  </a>
+                </p>
               )}
-              {therapist.verification_extra_document_name && (
-                <p>Documento adicional: {therapist.verification_extra_document_name}</p>
+              
+              {therapist.verification_extra_document_path && (
+                <div className="space-y-1">
+                  <span className="font-semibold text-foreground">Documentos adicionales:</span>
+                  <div className="pl-4 space-y-1">
+                    {therapist.verification_extra_document_path.split("\n").map((path, idx) => {
+                      const name = therapist.verification_extra_document_name?.split("\n")[idx] || `Doc adicional ${idx + 1}`;
+                      const url = supabase.storage.from("verification-docs").getPublicUrl(path).data.publicUrl;
+                      return (
+                        <div key={path}>
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[#526046] hover:underline font-medium inline-flex items-center gap-1"
+                          >
+                            📄 {name}
+                          </a>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
+
+              <p className="flex items-center gap-1.5 mt-1">
+                <span className="font-semibold text-foreground">Seguro de Responsabilidad Civil:</span>
+                {therapist.has_liability_insurance ? (
+                  <span className="rounded bg-emerald-100 text-emerald-800 px-1.5 py-0.5 text-[10px] font-bold">
+                    Sí, declarado
+                  </span>
+                ) : (
+                  <span className="rounded bg-red-100 text-red-800 px-1.5 py-0.5 text-[10px] font-bold">
+                    No declarado
+                  </span>
+                )}
+              </p>
+
               {therapist.verification_submitted_at && (
                 <p>
-                  Enviado:{" "}
+                  <span className="font-semibold text-foreground">Enviado:</span>{" "}
                   {new Date(therapist.verification_submitted_at).toLocaleDateString("es-ES")}
                 </p>
               )}

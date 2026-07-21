@@ -14,7 +14,7 @@ export function inferCategory(activity: Pick<ActivityRow, "category" | "title" |
 }
 
 export function formatPrice(priceCents: number | null) {
-  if (priceCents === null) return "Precio por confirmar";
+  if (priceCents === null) return "Consultar";
   if (priceCents === 0) return "Gratuito";
   return new Intl.NumberFormat("es-ES", {
     style: "currency",

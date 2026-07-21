@@ -1,8 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import { PageShell } from "@/components/layout/PageShell";
-import { ProfessionalResultsWithMap, ProfessionalResultsSkeleton } from "@/components/therapists/ProfessionalResultsWithMap";
+import {
+  ProfessionalResultsWithMap,
+  ProfessionalResultsSkeleton,
+} from "@/components/therapists/ProfessionalResultsWithMap";
 import type { TherapistCardData } from "@/components/therapists/TherapistCard";
 import { supabase } from "@/integrations/supabase/client";
 import { sortProfessionalsByPriority } from "@/lib/professional-ranking";
@@ -20,10 +23,7 @@ function firstRelation<T>(value: T | T[] | null | undefined): T | null {
 }
 
 export function TherapyProfessionalsPage({ slug }: { slug: string }) {
-  const {
-    data: therapy,
-    isLoading: isTherapyLoading,
-  } = useQuery<Therapy | null>({
+  const { data: therapy, isLoading: isTherapyLoading } = useQuery<Therapy | null>({
     queryKey: ["therapy", slug],
     initialData: fallbackTherapiesBySlug.get(slug) ?? null,
     queryFn: async () => {
@@ -39,10 +39,9 @@ export function TherapyProfessionalsPage({ slug }: { slug: string }) {
   });
 
   const therapyId = therapy?.id;
-  const {
-    data: relatedTherapists = [],
-    isLoading: areTherapistsLoading,
-  } = useQuery<RankedTherapistCardData[]>({
+  const { data: relatedTherapists = [], isLoading: areTherapistsLoading } = useQuery<
+    RankedTherapistCardData[]
+  >({
     queryKey: ["therapy-related-therapists-list", therapyId],
     enabled: !!therapyId && !therapyId.startsWith("local-"),
     queryFn: async () => {
@@ -60,7 +59,7 @@ export function TherapyProfessionalsPage({ slug }: { slug: string }) {
       return sortProfessionalsByPriority(
         (data as RelatedTherapistRow[])
           .map((row) => firstRelation(row.therapists))
-          .filter((therapist): therapist is RankedTherapistCardData => Boolean(therapist))
+          .filter((therapist): therapist is RankedTherapistCardData => Boolean(therapist)),
       );
     },
   });
@@ -90,19 +89,30 @@ export function TherapyProfessionalsPage({ slug }: { slug: string }) {
             mapTitle={`Profesionales de ${therapy?.name}`}
           />
         ) : (
-          <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">
-            <p className="font-display text-xl text-foreground/80">
+          <div className="mt-8 rounded-[2rem] border border-[#eadfce] bg-white/72 shadow-[0_14px_45px_rgba(96,68,31,0.06)] p-10 text-center max-w-2xl mx-auto">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#fcf5ec] text-[#b48752] mb-5">
+              <Sparkles className="h-6 w-6" />
+            </span>
+            <h3 className="font-display text-2xl text-[#1f3326] font-semibold">
               No encontramos profesionales en este momento.
+            </h3>
+            <p className="mt-3 text-sm text-[#5d5144] leading-relaxed">
+              Estamos ampliando con mucho cuidado nuestra red de profesionales cualificados para esta especialidad. Te invitamos a explorar el directorio completo o volver en unos días.
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Puedes volver a la terapia o explorar el directorio completo.
-            </p>
-            <Link
-              to="/professionals"
-              className="mt-6 inline-flex rounded-full border border-border bg-background px-5 py-2 text-sm hover:bg-muted"
-            >
-              Ver todos los profesionales
-            </Link>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Link
+                to="/professionals"
+                className="rounded-full bg-[#526046] text-white px-6 py-2.5 text-sm font-medium hover:bg-[#435039] transition-all shadow-sm"
+              >
+                Ver todos los profesionales
+              </Link>
+              <Link
+                to="/therapies"
+                className="rounded-full border border-[#eadfce] bg-white text-[#5d5144] px-6 py-2.5 text-sm font-medium hover:bg-[#fcf9f5] transition-all"
+              >
+                Volver a terapias
+              </Link>
+            </div>
           </div>
         )}
       </div>

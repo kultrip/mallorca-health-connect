@@ -68,9 +68,7 @@ export function SingleProfessionalMap({
           `;
         }
 
-        const marker = new mapboxgl.Marker({ element: el })
-          .setLngLat([lng, lat])
-          .addTo(map);
+        const marker = new mapboxgl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
 
         markerRef.current = marker;
       });
@@ -92,7 +90,12 @@ export function SingleProfessionalMap({
         </div>
         <h4 className="font-display text-sm font-semibold text-[#11100e]">Mapa no disponible</h4>
         <p className="mt-1 text-[11px] text-[#6d5b43] max-w-xs leading-normal">
-          Configura la clave <code className="bg-muted px-1 py-0.5 rounded text-red-500 text-[9px]">VITE_MAPBOX_ACCESS_TOKEN</code> en <code className="bg-muted px-1 py-0.5 rounded text-[9px]">.env</code> para ver la ubicación interactiva.
+          Configura la clave{" "}
+          <code className="bg-muted px-1 py-0.5 rounded text-red-500 text-[9px]">
+            VITE_MAPBOX_ACCESS_TOKEN
+          </code>{" "}
+          en <code className="bg-muted px-1 py-0.5 rounded text-[9px]">.env</code> para ver la
+          ubicación interactiva.
         </p>
       </div>
     );

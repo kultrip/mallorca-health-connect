@@ -1,12 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import { PageShell } from "@/components/layout/PageShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import type { Therapy, TherapyDetailSection } from "./types";
 import { fallbackTherapiesBySlug } from "./therapy-guide-content";
-
 
 export function TherapyDetailPage({ slug }: { slug: string }) {
   const {
@@ -32,10 +31,7 @@ export function TherapyDetailPage({ slug }: { slug: string }) {
   });
 
   const therapyId = therapy?.id;
-  const {
-    data: therapistsCount = 0,
-    isLoading: isCountLoading,
-  } = useQuery<number>({
+  const { data: therapistsCount = 0, isLoading: isCountLoading } = useQuery<number>({
     queryKey: ["therapy-related-therapists-count", therapyId],
     enabled: !!therapyId && !therapyId.startsWith("local-"),
     queryFn: async () => {
@@ -194,33 +190,45 @@ export function TherapyDetailPage({ slug }: { slug: string }) {
         ) : therapistsCount > 0 ? (
           <div className="mt-6 rounded-3xl border border-[#eadfce]/60 bg-gradient-to-br from-[#fcf9f5] to-white p-8 text-center shadow-[0_4px_20px_rgba(96,68,31,0.02)]">
             <p className="font-display text-2xl text-[#1f3326]">
-              Tenemos {therapistsCount} profesional{therapistsCount === 1 ? "" : "es"} de {therapy.name.toLowerCase()} disponible{therapistsCount === 1 ? "" : "s"} en Mallorca.
+              Tenemos {therapistsCount} profesional{therapistsCount === 1 ? "" : "es"} de{" "}
+              {therapy.name.toLowerCase()} disponible{therapistsCount === 1 ? "" : "s"} en Mallorca.
             </p>
             <p className="mt-2 text-sm text-[#5d5144]/80">
               Encuentra a la persona adecuada para acompañarte en tu proceso.
             </p>
             <Link
-              to="/therapies/$slug/professionals"
-              params={{ slug: therapy.slug }}
+              to="/professionals"
+              search={{ q: therapy.name }}
               className="mt-6 inline-flex rounded-full bg-[#8a6550] text-white px-6 py-2.5 text-sm font-medium hover:bg-[#8a6550]/90 transition-all shadow-sm"
             >
               Ver profesionales de {therapy.name.toLowerCase()}
             </Link>
           </div>
         ) : (
-          <div className="mt-6 rounded-3xl border border-dashed border-border bg-card/50 p-8 text-center">
-            <p className="font-display text-xl text-foreground/80">
+          <div className="mt-8 rounded-[2rem] border border-[#eadfce] bg-white/72 shadow-[0_14px_45px_rgba(96,68,31,0.06)] p-10 text-center max-w-2xl mx-auto">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#fcf5ec] text-[#b48752] mb-5">
+              <Sparkles className="h-6 w-6" />
+            </span>
+            <h3 className="font-display text-2xl text-[#1f3326] font-semibold">
               Todavía no tenemos profesionales vinculados a esta terapia.
+            </h3>
+            <p className="mt-3 text-sm text-[#5d5144] leading-relaxed">
+              {therapy.empty_professionals_message ?? "Estamos seleccionando con mucho cariño y cuidado a los mejores terapeutas cualificados de la isla para esta especialidad."}
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {therapy.empty_professionals_message ?? "Puedes explorar el directorio completo."}
-            </p>
-            <Link
-              to="/professionals"
-              className="mt-5 inline-flex rounded-full border border-border bg-background px-5 py-2 text-sm hover:bg-muted"
-            >
-              Ver profesionales
-            </Link>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Link
+                to="/professionals"
+                className="rounded-full bg-[#526046] text-white px-6 py-2.5 text-sm font-medium hover:bg-[#435039] transition-all shadow-sm"
+              >
+                Explorar el directorio
+              </Link>
+              <Link
+                to="/for-professionals"
+                className="rounded-full border border-[#eadfce] bg-white text-[#5d5144] px-6 py-2.5 text-sm font-medium hover:bg-[#fcf9f5] transition-all"
+              >
+                ¿Eres profesional? Únete
+              </Link>
+            </div>
           </div>
         )}
       </section>

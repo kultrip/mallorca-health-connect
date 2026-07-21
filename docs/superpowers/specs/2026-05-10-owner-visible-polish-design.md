@@ -9,6 +9,7 @@ Make the current public Spanish MVP feel materially closer to Nadège's latest c
 For this pass, the latest owner comments in `comentarios-nadege` override older architecture notes when there is a conflict.
 
 Key decisions:
+
 - Mallorca Holística is not an internal booking marketplace in the MVP.
 - The public experience should feel human, calm, clear, professional, and warm.
 - Visitors do not have accounts in the MVP.

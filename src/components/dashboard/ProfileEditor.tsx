@@ -16,6 +16,9 @@ import {
   User,
   X,
   Leaf,
+  Calendar,
+  Clock,
+  ExternalLink,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -42,6 +45,9 @@ import {
   resolveOnboardingPlan,
   type OnboardingPlan,
 } from "@/lib/onboarding-flow";
+import { CatalogPicker } from "@/components/therapists/forms/CatalogPicker";
+import { CheckboxGrid } from "@/components/therapists/forms/CheckboxGrid";
+
 
 type MunicipalityRow = Database["public"]["Tables"]["municipalities"]["Row"];
 type TherapyRow = Database["public"]["Tables"]["therapies"]["Row"];
@@ -211,12 +217,14 @@ export function DashboardProfileEditor({
   helpAreas,
   municipalities,
   centers,
+  onSaveSuccess,
 }: {
   therapist: TherapistEditorData;
   therapies: TherapyRow[];
   helpAreas: HelpAreaRow[];
   municipalities: MunicipalityRow[];
   centers: CenterRow[];
+  onSaveSuccess?: () => void;
 }) {
   const plan = useMemo(
     () => planToSlug(therapist.plans?.slug ?? therapist.pending_plan_slug),
@@ -237,6 +245,33 @@ export function DashboardProfileEditor({
   );
 
   const [saving, setSaving] = useState(false);
+  const [activities, setActivities] = useState<Database["public"]["Tables"]["activities"]["Row"][]>(
+    [],
+  );
+  const [loadingActivities, setLoadingActivities] = useState(true);
+
+  useEffect(() => {
+    async function fetchActivities() {
+      if (!therapist.id) return;
+      try {
+        const { data, error } = await supabase
+          .from("activities")
+          .select("*")
+          .eq("therapist_id", therapist.id)
+          .order("starts_at", { ascending: true });
+
+        if (error) throw error;
+        setActivities(data || []);
+      } catch (err) {
+        console.error("Error loading therapist activities:", err);
+      } finally {
+        setLoadingActivities(false);
+      }
+    }
+
+    void fetchActivities();
+  }, [therapist.id]);
+
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
@@ -578,7 +613,11 @@ export function DashboardProfileEditor({
       }
 
       toast.success("Perfil guardado.");
-      window.location.reload();
+      if (onSaveSuccess) {
+        onSaveSuccess();
+      } else {
+        window.location.reload();
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "No se pudo guardar el perfil.");
     } finally {
@@ -607,6 +646,7 @@ export function DashboardProfileEditor({
             <AnchorButton href="#consultas" label="Consultas y Modalidades" />
             <AnchorButton href="#perfil" label="Experiencia y Perfil" />
             <AnchorButton href="#redes" label="Redes y Verificación" />
+            <AnchorButton href="#actividades" label="Mis Actividades" />
           </div>
         </div>
       </section>
@@ -724,7 +764,9 @@ export function DashboardProfileEditor({
           </div>
 
           <div className="mt-6 flex flex-col gap-3">
-            <p className="font-display font-medium text-[#342b22]">Vista previa de tu cabecera (ficha pública)</p>
+            <p className="font-display font-medium text-[#342b22]">
+              Vista previa de tu cabecera (ficha pública)
+            </p>
             <div className="relative overflow-hidden rounded-2xl border border-[#eadfce] bg-[#f4eadb] p-6 md:p-8 shadow-sm">
               <img
                 src={heroImg}
@@ -770,7 +812,7 @@ export function DashboardProfileEditor({
                   <p className="mt-1 text-xs md:text-sm text-[#6d5b43] italic line-clamp-1">
                     {draft.tagline || "Tu frase de presentación aparecerá aquí."}
                   </p>
-                  
+
                   <div className="mt-4 flex flex-wrap justify-center sm:justify-start items-center gap-4 text-xs text-[#5d5144]">
                     <span className="inline-flex items-center gap-1.5 bg-white/50 backdrop-blur-[2px] px-3 py-1 rounded-full border border-[#eadfce]">
                       <MapPin className="h-3.5 w-3.5" /> {selectedMunicipality?.name || "Municipio"}
@@ -1205,27 +1247,11 @@ export function DashboardProfileEditor({
 
             <UpgradeLock
               title="Contenido ampliado"
-              description="Amplía tu biografía con enfoque, diferenciador y formación en el plan Profesional."
+              description="Amplía tu biografía con tu formación principal en el plan Profesional."
               requiredPlan="Profesional"
               isLocked={!config.isProfessional}
             >
               <div className="grid gap-6">
-                <Field label="Mi enfoque">
-                  <CharacterLimitedTextarea
-                    value={draft.approachText}
-                    maxLength={2000}
-                    onChange={(value) => updateDraft("approachText", value)}
-                    minHeight="min-h-40"
-                  />
-                </Field>
-                <Field label="Qué me diferencia (opcional)">
-                  <CharacterLimitedTextarea
-                    value={draft.differentiatorText}
-                    maxLength={1000}
-                    onChange={(value) => updateDraft("differentiatorText", value)}
-                    minHeight="min-h-32"
-                  />
-                </Field>
                 <Field label="Formación principal">
                   <Textarea
                     value={draft.formacion}
@@ -1503,6 +1529,131 @@ export function DashboardProfileEditor({
         </div>
       </section>
 
+      <section
+        id="actividades"
+        className="rounded-[1.6rem] border border-[#eadfce] bg-white p-6 md:p-8"
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
+          <SectionHeading
+            icon={Calendar}
+            title="Mis Actividades"
+            description="Tus talleres, retiros, cursos y encuentros creados en la plataforma."
+          />
+          <a
+            href="/activities/new"
+            className="inline-flex items-center gap-2 rounded-full bg-[#526046] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#435039] self-start sm:self-center"
+          >
+            <Plus className="h-4 w-4" />
+            Publicar actividad
+          </a>
+        </div>
+
+        {loadingActivities ? (
+          <div className="flex h-32 items-center justify-center text-sm text-[#5d5144]">
+            <Clock className="mr-2 h-4 w-4 animate-spin" /> Cargando tus actividades...
+          </div>
+        ) : activities.length > 0 ? (
+          <div className="overflow-hidden rounded-xl border border-[#eadfce] bg-[#fffaf5]">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-[#eadfce] bg-[#f5ebd6]/40 text-[#5a4c3e] font-semibold">
+                    <th className="p-4">Fecha y Hora</th>
+                    <th className="p-4">Título</th>
+                    <th className="p-4">Categoría</th>
+                    <th className="p-4">Estado</th>
+                    <th className="p-4 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#eadfce]/60">
+                  {activities.map((act) => {
+                    const dateStr = act.starts_at
+                      ? new Date(act.starts_at).toLocaleString("es-ES", {
+                          dateStyle: "short",
+                          timeStyle: "short",
+                        })
+                      : "Sin fecha";
+
+                    const isPublished = act.status === "published";
+                    const isPending = act.status === "pending";
+
+                    return (
+                      <tr key={act.id} className="hover:bg-white/40 transition-colors">
+                        <td className="p-4 whitespace-nowrap text-[#5d5144] font-medium">
+                          {dateStr}
+                        </td>
+                        <td className="p-4 text-[#11100e] font-semibold max-w-xs truncate">
+                          {act.title}
+                        </td>
+                        <td className="p-4 whitespace-nowrap text-[#5d5144]">
+                          <span className="inline-block rounded-full bg-[#eadfce]/30 px-2.5 py-0.5 text-xs text-[#5a4c3e]">
+                            {act.category}
+                          </span>
+                        </td>
+                        <td className="p-4 whitespace-nowrap">
+                          {isPublished ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                              Publicada
+                            </span>
+                          ) : isPending ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                              Pendiente de revisión
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 border border-gray-200 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                              <span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
+                              Borrador
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-4 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center gap-3">
+                            <a
+                              href={`/activities/${act.slug}/edit`}
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-[#526046] hover:text-[#435039] hover:underline"
+                            >
+                              Editar
+                            </a>
+                            <span className="text-[#eadfce] text-xs">|</span>
+                            <a
+                              href={`/activities/${act.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs font-medium text-[#7a5730] hover:text-[#5d3f1a] hover:underline"
+                            >
+                              Previsualizar <ExternalLink className="h-3 w-3" />
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#dfcfbd] bg-[#fffaf5] p-10 text-center">
+            <Calendar className="h-10 w-10 text-[#9a7041] mb-3" />
+            <h3 className="font-display text-xl text-[#1f3326] font-medium">
+              Aún no has creado ninguna actividad
+            </h3>
+            <p className="mt-2 text-sm text-[#5d5144] max-w-md">
+              Comparte tus talleres, retiros, conferencias o cursos con la comunidad de Mallorca
+              Holística para darles visibilidad.
+            </p>
+            <a
+              href="/activities/new"
+              className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#526046] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#435039]"
+            >
+              <Plus className="h-4 w-4" /> Publicar mi primera actividad
+            </a>
+          </div>
+        )}
+      </section>
+
       <footer className="flex flex-col gap-4 border-t border-[#eadfce] pt-6 md:flex-row md:items-center md:justify-between">
         <span className="text-xs text-[#5d5144]">
           <Lock className="mr-2 inline h-4 w-4" />
@@ -1651,209 +1802,7 @@ function InfoCard({
   );
 }
 
-function CatalogPicker({
-  title,
-  description,
-  placeholder,
-  items,
-  selectedIds,
-  maxSelection,
-  search,
-  onSearchChange,
-  onChange,
-  helperText,
-  draggedIndex,
-  onDragIndexChange,
-}: {
-  title: string;
-  description: string;
-  placeholder: string;
-  items: { id: string; name: string }[];
-  selectedIds: string[];
-  maxSelection: number | null;
-  search: string;
-  onSearchChange: (value: string) => void;
-  onChange: (values: string[]) => void;
-  helperText: string;
-  draggedIndex: number | null;
-  onDragIndexChange: (value: number | null) => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  const filtered = items.filter((item) =>
-    item.name.toLowerCase().includes(search.trim().toLowerCase()),
-  );
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  function toggle(id: string) {
-    const exists = selectedIds.includes(id);
-    if (!exists && maxSelection !== null && selectedIds.length >= maxSelection) return;
-    const next = exists ? selectedIds.filter((value) => value !== id) : [...selectedIds, id];
-    onChange(next);
-  }
-
-  function remove(id: string) {
-    onChange(selectedIds.filter((value) => value !== id));
-  }
-
-  function move(fromIndex: number, toIndex: number) {
-    if (fromIndex === toIndex) return;
-    const next = [...selectedIds];
-    const [item] = next.splice(fromIndex, 1);
-    next.splice(toIndex, 0, item);
-    onChange(next);
-  }
-
-  return (
-    <div className="space-y-4 rounded-3xl border border-[#eadfce] bg-[#fffaf4] p-5">
-      <div>
-        <h4 className="font-display text-lg text-[#11100e]">{title}</h4>
-        <p className="mt-1 text-sm text-[#6d5b43]">{description}</p>
-      </div>
-
-      <div className="relative" ref={containerRef}>
-        <Input
-          value={search}
-          onChange={(event) => {
-            onSearchChange(event.target.value);
-            setIsOpen(true);
-          }}
-          onFocus={() => setIsOpen(true)}
-          placeholder={placeholder}
-          className="pr-10"
-        />
-        <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8c7a66]" />
-
-        {isOpen && (
-          <div className="absolute left-0 right-0 top-full z-50 mt-1 grid max-h-60 gap-2 overflow-auto rounded-2xl border border-[#eadfce] bg-white p-3 shadow-lg">
-            {filtered.map((item) => {
-              const selected = selectedIds.includes(item.id);
-              const disabled = !selected && maxSelection !== null && selectedIds.length >= maxSelection;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => toggle(item.id)}
-                  disabled={disabled}
-                  className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition-colors ${
-                    selected
-                      ? "border-[#526046] bg-[#f4ede6] text-[#1f1c18]"
-                      : "border-[#eadfce] bg-white text-[#342b22] hover:bg-[#fffaf4]"
-                  } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
-                >
-                  <span>{item.name}</span>
-                  {selected ? (
-                    <Check className="h-4 w-4 text-[#526046]" />
-                  ) : (
-                    <Plus className="h-4 w-4 text-[#8c7a66]" />
-                  )}
-                </button>
-              );
-            })}
-            {filtered.length === 0 && (
-              <p className="px-3 py-2 text-sm text-[#8c7a66] text-center">No encontramos resultados.</p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {selectedIds.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {selectedIds.map((id, index) => {
-            const item = items.find((entry) => entry.id === id);
-            if (!item) return null;
-            return (
-              <div
-                key={id}
-                draggable
-                onDragStart={() => onDragIndexChange(index)}
-                onDragOver={(event) => event.preventDefault()}
-                onDrop={() => {
-                  if (draggedIndex === null) return;
-                  move(draggedIndex, index);
-                  onDragIndexChange(null);
-                }}
-                className="inline-flex items-center gap-2 rounded-full border border-[#d8c6b0] bg-white px-3 py-2 text-sm text-[#342b22]"
-              >
-                <GripVertical className="h-3.5 w-3.5 text-[#8c7a66]" />
-                <span>{item.name}</span>
-                <button
-                  type="button"
-                  onClick={() => remove(id)}
-                  className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#f2e6d7] text-[#7f6046]"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <p className="text-xs text-[#6d5b43]">{helperText}</p>
-    </div>
-  );
-}
-
-function CheckboxGrid({
-  title,
-  description,
-  items,
-  values,
-  onChange,
-  helperByItem,
-  columns = "md:grid-cols-2 lg:grid-cols-3",
-}: {
-  title: string;
-  description: string;
-  items: string[];
-  values: string[];
-  onChange: (values: string[]) => void;
-  helperByItem?: Record<string, string>;
-  columns?: string;
-}) {
-  return (
-    <div className="space-y-4 rounded-3xl border border-[#eadfce] bg-[#fffaf4] p-5">
-      <div>
-        <h4 className="font-display text-lg text-[#11100e]">{title}</h4>
-        <p className="mt-1 text-sm text-[#6d5b43]">{description}</p>
-      </div>
-      <div className={`grid gap-3 ${columns}`}>
-        {items.map((item) => (
-          <label
-            key={item}
-            className="rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-sm text-[#342b22]"
-          >
-            <div className="flex items-start gap-2">
-              <Checkbox
-                checked={values.includes(item)}
-                onCheckedChange={() => onChange(toggleValue(values, item))}
-              />
-              <div className="space-y-1">
-                <span className="block leading-6">{item}</span>
-                {helperByItem?.[item] && (
-                  <span className="block text-xs text-[#8c7a66]">{helperByItem[item]}</span>
-                )}
-              </div>
-            </div>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function UploadBox({
   file,
@@ -2052,10 +2001,7 @@ function TeamEditor({
       </div>
       <div className="space-y-4">
         {members.map((member, index) => (
-          <div
-            key={index}
-            className="rounded-2xl border border-[#eadfce] bg-white p-4"
-          >
+          <div key={index} className="rounded-2xl border border-[#eadfce] bg-white p-4">
             <div className="mb-4 flex items-center justify-between">
               <span className="text-sm font-medium text-[#5d5144]">Miembro {index + 1}</span>
               {members.length > 1 && (
@@ -2218,9 +2164,7 @@ function buildTeamMembers(
   }));
 }
 
-function toggleValue(values: string[], value: string) {
-  return values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
-}
+
 
 function deriveModalities(modalities: string[]) {
   const values: Array<"presencial" | "online" | "domicilio"> = [];

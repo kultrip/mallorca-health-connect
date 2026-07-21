@@ -53,6 +53,7 @@ Deferred to separate plans:
 ### Task 1: Add Analytics Event Schema
 
 **Files:**
+
 - Create: `supabase/migrations/20260513000000_analytics_events.sql`
 - Modify: `src/integrations/supabase/types.ts`
 
@@ -423,6 +424,7 @@ Expected: output shows the migration table, functions, and TypeScript entries.
 ### Task 2: Add Browser Analytics Helper
 
 **Files:**
+
 - Create: `src/lib/analytics.ts`
 
 - [ ] **Step 1: Create visitor ID and tracking helper**
@@ -503,6 +505,7 @@ Expected: exits 0.
 ### Task 3: Log Conversational Search Analytics
 
 **Files:**
+
 - Modify: `supabase/functions/symptom-search/index.ts`
 - Modify: `src/features/search/ConversationalSearchPage.tsx`
 
@@ -538,8 +541,7 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 with:
 
 ```ts
-const SUPABASE_URL =
-  Deno.env.get("SECRET_SUPABASE_URL") || Deno.env.get("SUPABASE_URL") || "";
+const SUPABASE_URL = Deno.env.get("SECRET_SUPABASE_URL") || Deno.env.get("SUPABASE_URL") || "";
 const SERVICE_KEY =
   Deno.env.get("SECRET_SUPABASE_SERVICE_ROLE_KEY") ||
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
@@ -707,6 +709,7 @@ Expected: deploy succeeds on project `zkmlbbbpfhbtbedskxcr`.
 ### Task 4: Track Profile Views And Contact Clicks
 
 **Files:**
+
 - Modify: `src/features/professionals/ProfessionalProfilePage.tsx`
 
 - [ ] **Step 1: Import analytics helper**
@@ -787,6 +790,7 @@ Expected: exits 0.
 ### Task 5: Build Professional Analytics Dashboard
 
 **Files:**
+
 - Modify: `src/routes/dashboard/analytics.tsx`
 
 - [ ] **Step 1: Replace the current single-count page with RPC summary**
@@ -959,6 +963,7 @@ Expected: exits 0.
 ### Task 6: Build Admin Analytics Route
 
 **Files:**
+
 - Create: `src/routes/dashboard/admin/analytics.tsx`
 - Modify: `src/routes/dashboard.tsx`
 
@@ -1057,10 +1062,26 @@ function AdminAnalyticsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <MetricCard icon={<Search className="h-4 w-4" />} label="Búsquedas hoy" value={summary.searches_today} />
-        <MetricCard icon={<Search className="h-4 w-4" />} label="Búsquedas 30 días" value={summary.searches_period} />
-        <MetricCard icon={<Eye className="h-4 w-4" />} label="Visitas a perfiles" value={summary.profile_views_period} />
-        <MetricCard icon={<MousePointerClick className="h-4 w-4" />} label="Contactos" value={summary.contact_clicks_period} />
+        <MetricCard
+          icon={<Search className="h-4 w-4" />}
+          label="Búsquedas hoy"
+          value={summary.searches_today}
+        />
+        <MetricCard
+          icon={<Search className="h-4 w-4" />}
+          label="Búsquedas 30 días"
+          value={summary.searches_period}
+        />
+        <MetricCard
+          icon={<Eye className="h-4 w-4" />}
+          label="Visitas a perfiles"
+          value={summary.profile_views_period}
+        />
+        <MetricCard
+          icon={<MousePointerClick className="h-4 w-4" />}
+          label="Contactos"
+          value={summary.contact_clicks_period}
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -1167,6 +1188,7 @@ Expected:
 ### Task 7: Apply Migration, Deploy Function, And Verify
 
 **Files:**
+
 - Remote Supabase database
 - Supabase Edge Function `symptom-search`
 
@@ -1269,6 +1291,7 @@ Expected after smoke testing:
 ### Task 8: Update Handoff Docs
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `CONTEXT.md`
 - Modify: `PLAN.md`

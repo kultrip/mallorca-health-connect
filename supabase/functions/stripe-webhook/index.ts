@@ -79,16 +79,17 @@ async function applySubscriptionState(supabase: SupabaseAdmin, subscription: Str
 
   if (planError) throw planError;
 
-  const isActive = subscription.status === "active";
+  const hasPremiumAccess =
+    subscription.status === "active" || subscription.status === "trialing";
   const update = {
     stripe_customer_id: customerId,
     stripe_subscription_id: subscription.id,
     stripe_price_id: priceId,
     subscription_status: subscription.status,
-    plan_id: isActive && plan?.id ? plan.id : null,
-    pending_plan_id: isActive ? null : undefined,
-    pending_plan_slug: isActive ? null : undefined,
-    subscription_activation_error: isActive ? null : undefined,
+    plan_id: hasPremiumAccess && plan?.id ? plan.id : null,
+    pending_plan_id: hasPremiumAccess ? null : undefined,
+    pending_plan_slug: hasPremiumAccess ? null : undefined,
+    subscription_activation_error: hasPremiumAccess ? null : undefined,
   };
   const cleanUpdate = Object.fromEntries(
     Object.entries(update).filter(([, value]) => value !== undefined),

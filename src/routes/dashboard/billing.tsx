@@ -12,6 +12,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -74,6 +82,9 @@ function BillingPage() {
   const [pendingPlanSlug, setPendingPlanSlug] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
+  const [selectedPlanForConsent, setSelectedPlanForConsent] = useState<BillingPlan | null>(null);
+  const [savingPayment, setSavingPayment] = useState(false);
+
   const loadBillingData = useCallback(async () => {
     setLoading(true);
 
@@ -101,7 +112,9 @@ function BillingPage() {
         .maybeSingle(),
       supabase
         .from("plans")
-        .select("id, slug, name, description, price_monthly_cents, founder_price_monthly_cents, founder_stripe_price_id, features, rank, billing_enabled")
+        .select(
+          "id, slug, name, description, price_monthly_cents, founder_price_monthly_cents, founder_stripe_price_id, features, rank, billing_enabled",
+        )
         .eq("billing_enabled", true)
         .order("rank", { ascending: true }),
       supabase.from("billing_profiles").select("*").eq("user_id", user.id).maybeSingle(),
@@ -149,24 +162,39 @@ function BillingPage() {
 
   const currentPlan = firstRelation(profile?.plans);
   const isActive = profile?.subscription_status === "active";
+  const hasPremiumSubscription =
+    profile?.subscription_status === "active" || profile?.subscription_status === "trialing";
   const isVerified = profile?.verified === true && profile.status === "published";
   const hasPendingPaidPlan = Boolean(profile?.pending_plan_id || profile?.pending_plan_slug);
   const hasSavedPaymentMethod = Boolean(profile?.stripe_payment_method_id);
   const currentPlanName = currentPlan?.name ?? "Presencia";
-  const canCheckout = Boolean(profile && !isActive);
+  const canCheckout = Boolean(profile && !hasPremiumSubscription);
   const hasSavedBillingDetails = Boolean(billingProfile && hasBillingDetails(billingForm));
 
   const sortedPlans = useMemo(() => [...plans].sort((a, b) => a.rank - b.rank), [plans]);
 
-  const handleSubscribe = async (planSlug: string) => {
+  const handleOpenConsentModal = (plan: BillingPlan) => {
+    setSelectedPlanForConsent(plan);
+  };
+
+  const handleCloseConsentModal = () => {
+    setSelectedPlanForConsent(null);
+  };
+
+  const handleSubscribe = (plan: BillingPlan) => {
     if (!canCheckout) return;
+    handleOpenConsentModal(plan);
+  };
+
+  const handleContinueToStripe = async () => {
+    if (!selectedPlanForConsent) return;
 
     try {
-      setPendingPlanSlug(planSlug);
+      setSavingPayment(true);
       const accessToken = await getAccessToken();
       const { url } = await createCheckoutSession({
         data: {
-          planSlug,
+          planSlug: selectedPlanForConsent.slug,
           origin: window.location.origin,
         },
         headers: {
@@ -174,11 +202,11 @@ function BillingPage() {
         },
       });
 
-      if (url) window.location.href = url;
+      if (!url) throw new Error("Stripe no devolvió una URL de checkout.");
+      window.location.href = url;
     } catch (error: unknown) {
       toast.error(getErrorMessage(error));
-    } finally {
-      setPendingPlanSlug(null);
+      setSavingPayment(false);
     }
   };
 
@@ -260,9 +288,17 @@ function BillingPage() {
                 Miembro Fundador de la Comunidad
               </h2>
               <p className="mt-1 text-sm text-amber-800/80 dark:text-amber-300/80 leading-relaxed">
-                ¡Gracias por ser parte del nacimiento de Mallorca Holística! Tienes reservada una plaza exclusiva con 
-                <span className="font-semibold text-amber-950 dark:text-amber-200"> 6 meses gratis </span> 
-                y una <span className="font-semibold text-amber-950 dark:text-amber-200">tarifa promocional de por vida</span>.
+                Gracias por ser parte del nacimiento de Mallorca Holística. Tu plaza fundadora
+                empieza con
+                <span className="font-semibold text-amber-950 dark:text-amber-200">
+                  {" "}
+                  180 días sin cargo{" "}
+                </span>
+                y después continúa automáticamente con tu{" "}
+                <span className="font-semibold text-amber-950 dark:text-amber-200">
+                  tarifa fundadora especial
+                </span>
+                .
               </p>
             </div>
           </div>
@@ -275,17 +311,21 @@ function BillingPage() {
             <div>
               <CardTitle>Plan actual: {currentPlanName}</CardTitle>
               <CardDescription className="mt-2">
-                {isActive
+                {hasPremiumSubscription
                   ? "Tu suscripcion esta activa."
                   : "Actualmente estas en el plan Presencia o sin suscripcion activa."}
               </CardDescription>
             </div>
-            <Badge variant={isActive ? "default" : "outline"}>
-              {isActive ? "Activa" : "Gratis / inactiva"}
+            <Badge variant={hasPremiumSubscription ? "default" : "outline"}>
+              {profile?.subscription_status === "trialing"
+                ? "Periodo fundador"
+                : isActive
+                  ? "Activa"
+                  : "Gratis / inactiva"}
             </Badge>
           </div>
         </CardHeader>
-        {isActive && (
+        {hasPremiumSubscription && (
           <CardContent>
             <Button onClick={handleManageBilling} variant="outline" disabled={portalLoading}>
               <Settings className="h-4 w-4" />
@@ -400,15 +440,15 @@ function BillingPage() {
         </CardContent>
       </Card>
 
-      {profile && !isActive && hasPendingPaidPlan && (
+      {profile && !hasPremiumSubscription && hasPendingPaidPlan && (
         <Card className="border-primary/30 bg-primary/5">
           <CardHeader>
             <CardTitle>Plan pendiente de aprobacion</CardTitle>
             <CardDescription>
               Has elegido {formatPlanSlug(profile.pending_plan_slug)}.{" "}
               {hasSavedPaymentMethod
-                ? "El metodo de pago esta guardado y se cobrara cuando aprobemos tu perfil."
-                : "Falta completar Stripe para guardar el metodo de pago."}
+                ? "El metodo de pago esta guardado en Stripe. Si aprobamos tu perfil, activaremos tu suscripcion."
+                : "Falta completar Stripe para guardar el metodo de pago antes de la revision."}
             </CardDescription>
             {profile.subscription_activation_error && (
               <p className="text-sm text-destructive">{profile.subscription_activation_error}</p>
@@ -443,7 +483,7 @@ function BillingPage() {
         </Card>
       )}
 
-      {!isActive && (
+      {!hasPremiumSubscription && (
         <div className="grid gap-6 md:grid-cols-2">
           {sortedPlans.map((plan) => (
             <Card
@@ -476,7 +516,7 @@ function BillingPage() {
                         <span className="text-sm font-normal text-muted-foreground">/mes</span>
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        🔒 Precio especial fundador garantizado para siempre
+                        180 dias sin cargo; despues, tarifa fundadora especial.
                       </p>
                     </div>
                   ) : (
@@ -499,12 +539,15 @@ function BillingPage() {
               </CardContent>
               <CardFooter>
                 <Button
-                  onClick={() => void handleSubscribe(plan.slug)}
-                  disabled={!canCheckout || pendingPlanSlug === plan.slug}
+                  onClick={() => handleSubscribe(plan)}
+                  disabled={
+                    !canCheckout ||
+                    (selectedPlanForConsent !== null && selectedPlanForConsent.slug === plan.slug)
+                  }
                   className="w-full"
                 >
-                  {pendingPlanSlug === plan.slug
-                    ? "Abriendo Stripe..."
+                  {selectedPlanForConsent !== null && selectedPlanForConsent.slug === plan.slug
+                    ? "Abriendo diálogo..."
                     : profile?.is_founder && plan.founder_price_monthly_cents !== null
                       ? isVerified
                         ? `Reservar con Tarifa Fundador`
@@ -518,6 +561,77 @@ function BillingPage() {
           ))}
         </div>
       )}
+
+      <Dialog
+        open={selectedPlanForConsent !== null}
+        onOpenChange={(open) => {
+          if (!open) handleCloseConsentModal();
+        }}
+      >
+        <DialogContent className="max-w-2xl bg-[#fffcf9] border-[#eadfce] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl text-[#526046] flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-[#526046]" />
+              Continuar con Stripe
+            </DialogTitle>
+            <DialogDescription className="text-[#5a4c3e] mt-1">
+              Te llevaremos a Stripe Checkout para gestionar el pago de forma segura.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 my-4 text-[#5a4c3e]">
+            <div className="rounded-2xl border border-[#dfcfbd] bg-[#fffaf4] p-5 space-y-4">
+              <p className="text-sm leading-relaxed">
+                Mallorca Holística no guarda números de tarjeta. Stripe registrará el método de
+                pago o activará la suscripción según el estado de tu perfil.
+              </p>
+
+              <div className="border-t border-[#dfcfbd]/60 pt-4 space-y-2">
+                <h4 className="text-sm font-semibold text-[#1f1c18] flex items-center gap-1.5">
+                  {isVerified ? "Suscripcion directa" : "Antes de la verificacion"}
+                </h4>
+                <ul className="text-sm space-y-1 list-disc pl-5">
+                  {isVerified ? (
+                    <li>Stripe activara la suscripcion del plan seleccionado al finalizar.</li>
+                  ) : (
+                    <li>
+                      Stripe guardara el metodo de pago. La suscripcion empezara solo si aprobamos
+                      tu perfil.
+                    </li>
+                  )}
+                  {profile?.is_founder && (
+                    <li>
+                      Como miembro fundador, no pagas hoy: tras la aprobacion disfrutas 180 dias sin
+                      cargo y despues se aplica tu tarifa fundadora especial.
+                    </li>
+                  )}
+                  <li>
+                    <strong>Sin permanencia.</strong>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="border-t border-[#eadfce]/40 pt-4 gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={handleCloseConsentModal}
+              disabled={savingPayment}
+              className="border-[#eadfce] text-[#5a4c3e] hover:bg-[#fffaf4]"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleContinueToStripe}
+              disabled={savingPayment}
+              className="bg-[#526046] text-white hover:bg-[#434f37]"
+            >
+              {savingPayment ? "Abriendo Stripe..." : "Continuar a Stripe"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -3,7 +3,8 @@ import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { Award, Lock, ArrowRight, ShieldCheck, AlertCircle } from "lucide-react";
+import { Lock, ArrowRight, AlertCircle, MessageCircle } from "lucide-react";
+import { checkFounderInviteByWhatsApp } from "@/lib/founder-invites";
 
 export const Route = createFileRoute("/comunidad-fundadora-acceso")({
   head: () => ({
@@ -11,7 +12,8 @@ export const Route = createFileRoute("/comunidad-fundadora-acceso")({
       { title: "Acceso Comunidad Fundadora — Mallorca Holística" },
       {
         name: "description",
-        content: "Introduce tu código de invitación para unirte como miembro de la Comunidad Fundadora.",
+        content:
+          "Confirma tu invitación por WhatsApp para unirte como miembro de la Comunidad Fundadora.",
       },
     ],
   }),
@@ -20,44 +22,47 @@ export const Route = createFileRoute("/comunidad-fundadora-acceso")({
 
 function ComunidadFundadoraAccesoPage() {
   const navigate = useNavigate();
-  const [code, setCode] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [standardSignupReady, setStandardSignupReady] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const trimmedCode = code.trim().toUpperCase();
+    setStandardSignupReady(false);
+    const trimmedWhatsapp = whatsapp.trim();
 
-    if (!trimmedCode) {
-      setError("Por favor, introduce tu código de invitación o email.");
+    if (!trimmedWhatsapp) {
+      setError("Introduce el número de WhatsApp con el que recibiste la invitación.");
       return;
     }
 
     setLoading(true);
-
-    // Simulate validation check
-    setTimeout(() => {
+    try {
+      const result = await checkFounderInviteByWhatsApp({
+        data: { whatsapp: trimmedWhatsapp },
+      });
       setLoading(false);
-      // Accept typical invitation codes or any valid-looking email
-      const isEmail = trimmedCode.includes("@");
-      const isValidCode = [
-        "MH-FOUNDER",
-        "MH_FOUNDER",
-        "MH-FOUNDERS",
-        "COMUNIDAD2026",
-        "FUNDADOR15",
-        "FUNDADORES",
-        "PROTOTYPE",
-        "TEST"
-      ].includes(trimmedCode);
 
-      if (isValidCode || isEmail || trimmedCode.length >= 4) {
-        navigate({ to: "/comunidad-fundadora-bienvenida" });
+      if (result.matched) {
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem("founderInviteToken", result.inviteToken);
+          window.sessionStorage.setItem("founderInviteWhatsapp", trimmedWhatsapp);
+        }
+
+        navigate({
+          to: "/comunidad-fundadora-bienvenida",
+          search: { founderInvite: result.inviteToken },
+        });
       } else {
-        setError("El código de invitación no parece válido. Si has recibido una invitación directa, puedes escribir el email donde la recibiste.");
+        setStandardSignupReady(true);
       }
-    }, 450);
+    } catch (err) {
+      setLoading(false);
+      console.error("Founder invite lookup failed:", err);
+      setError("No pudimos comprobar la invitación ahora mismo. Inténtalo de nuevo.");
+    }
   };
 
   return (
@@ -68,27 +73,31 @@ function ComunidadFundadoraAccesoPage() {
             <Lock className="h-6 w-6" />
           </span>
 
-          <h1 className="font-display text-2xl md:text-3xl text-foreground">
-            Comunidad Fundadora
-          </h1>
+          <h1 className="font-display text-2xl md:text-3xl text-foreground">Comunidad Fundadora</h1>
           <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-            Este es un espacio exclusivo para profesionales del bienestar seleccionados por invitación directa de Mallorca Holística.
+            Este es un espacio exclusivo para profesionales del bienestar seleccionados por
+            invitación directa de Mallorca Holística. Usamos tu WhatsApp para confirmar que la
+            invitación es personal y de un solo uso.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 text-left space-y-4">
             <div>
-              <label htmlFor="invite-code" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Código de invitación o Email
+              <label
+                htmlFor="founder-whatsapp"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
+                WhatsApp de invitación
               </label>
               <Input
-                id="invite-code"
-                placeholder="Ej. MH-FOUNDER o tu@email.com"
-                value={code}
+                id="founder-whatsapp"
+                placeholder="Ej. +34 612 345 678"
+                value={whatsapp}
                 onChange={(e) => {
-                  setCode(e.target.value);
+                  setWhatsapp(e.target.value);
                   if (error) setError(null);
+                  if (standardSignupReady) setStandardSignupReady(false);
                 }}
-                className="mt-2 rounded-xl border border-border/80 bg-background py-6 text-foreground placeholder:text-muted-foreground/60 text-center text-lg font-mono tracking-wide"
+                className="mt-2 rounded-xl border border-border/80 bg-background py-6 text-foreground placeholder:text-muted-foreground/60 text-center text-lg"
                 disabled={loading}
               />
             </div>
@@ -100,12 +109,38 @@ function ComunidadFundadoraAccesoPage() {
               </div>
             )}
 
+            {standardSignupReady && (
+              <div className="rounded-xl border border-border bg-background p-4 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">
+                  No hemos encontrado una invitación fundadora asociada a este número.
+                </p>
+                <p className="mt-1 leading-relaxed">
+                  Puedes continuar con el registro profesional estándar.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-4 w-full"
+                  onClick={() =>
+                    navigate({
+                      to: "/register",
+                      search: { plan: "profesional", track: "verificado" },
+                    })
+                  }
+                >
+                  Continuar registro estándar
+                </Button>
+              </div>
+            )}
+
             <Button
               type="submit"
               className="w-full bg-[#526046] hover:bg-[#434f3a] text-[#fffaf3] rounded-xl py-6 shadow-sm text-base flex items-center justify-center gap-2 mt-4"
               disabled={loading}
             >
-              {loading ? "Validando invitación..." : (
+              {loading ? (
+                "Comprobando invitación..."
+              ) : (
                 <>
                   Continuar <ArrowRight className="h-4 w-4" />
                 </>
@@ -114,8 +149,8 @@ function ComunidadFundadoraAccesoPage() {
           </form>
 
           <div className="mt-8 border-t border-border/60 pt-6 text-xs text-muted-foreground leading-relaxed flex items-center justify-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-emerald-700" />
-            <span>Tus datos de acceso están encriptados y seguros.</span>
+            <MessageCircle className="h-4 w-4 text-emerald-700" />
+            <span>La invitación fundadora queda vinculada al WhatsApp registrado.</span>
           </div>
         </div>
       </div>

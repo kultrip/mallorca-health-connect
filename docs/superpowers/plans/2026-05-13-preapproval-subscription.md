@@ -51,6 +51,7 @@
 ## Task 1: Add Pending Subscription Columns
 
 **Files:**
+
 - Create: `supabase/migrations/20260513000002_preapproval_subscription.sql`
 
 - [ ] **Step 1: Create migration**
@@ -101,6 +102,7 @@ Expected: the local and remote migration state clearly shows whether `2026051300
 ## Task 2: Update Supabase Types
 
 **Files:**
+
 - Modify: `src/integrations/supabase/types.ts`
 
 - [ ] **Step 1: Add therapist Row fields**
@@ -108,12 +110,12 @@ Expected: the local and remote migration state clearly shows whether `2026051300
 Inside `Database["public"]["Tables"]["therapists"]["Row"]`, add:
 
 ```ts
-          pending_plan_id: string | null
-          pending_plan_slug: string | null
-          stripe_payment_method_id: string | null
-          stripe_pending_checkout_session_id: string | null
-          stripe_setup_intent_id: string | null
-          subscription_activation_error: string | null
+pending_plan_id: string | null;
+pending_plan_slug: string | null;
+stripe_payment_method_id: string | null;
+stripe_pending_checkout_session_id: string | null;
+stripe_setup_intent_id: string | null;
+subscription_activation_error: string | null;
 ```
 
 - [ ] **Step 2: Add therapist Insert fields**
@@ -169,6 +171,7 @@ Expected: no syntax error in `src/integrations/supabase/types.ts`. If unrelated 
 ## Task 3: Branch Checkout Between Setup and Subscription
 
 **Files:**
+
 - Modify: `src/lib/stripe-functions.ts`
 
 - [ ] **Step 1: Extend checkout return type**
@@ -328,6 +331,7 @@ No lint errors in src/lib/stripe-functions.ts.
 ## Task 4: Persist Setup-Mode Checkout Webhooks
 
 **Files:**
+
 - Modify: `supabase/functions/stripe-webhook/index.ts`
 
 - [ ] **Step 1: Add setup-session helper**
@@ -344,13 +348,11 @@ async function applySetupSessionState(
   const planId = session.metadata?.plan_id ?? null;
   const planSlug = session.metadata?.plan_slug ?? null;
   const customerId =
-    typeof session.customer === "string"
-      ? session.customer
-      : session.customer?.id ?? null;
+    typeof session.customer === "string" ? session.customer : (session.customer?.id ?? null);
   const setupIntentId =
     typeof session.setup_intent === "string"
       ? session.setup_intent
-      : session.setup_intent?.id ?? null;
+      : (session.setup_intent?.id ?? null);
 
   if (!therapistId || !planId || !planSlug || !customerId || !setupIntentId) {
     throw new Error(`Setup session ${session.id} is missing required metadata`);
@@ -360,7 +362,7 @@ async function applySetupSessionState(
   const paymentMethodId =
     typeof setupIntent.payment_method === "string"
       ? setupIntent.payment_method
-      : setupIntent.payment_method?.id ?? null;
+      : (setupIntent.payment_method?.id ?? null);
 
   if (!paymentMethodId) {
     throw new Error(`Setup intent ${setupIntentId} has no payment method`);
@@ -428,9 +430,7 @@ if (session.mode === "setup") {
 
 if (session.mode === "subscription" && session.subscription) {
   const subscriptionId =
-    typeof session.subscription === "string"
-      ? session.subscription
-      : session.subscription.id;
+    typeof session.subscription === "string" ? session.subscription : session.subscription.id;
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   await applySubscriptionState(supabase, subscription);
 }
@@ -455,6 +455,7 @@ If authentication is required, run `npx supabase login` and retry.
 ## Task 5: Activate Pending Subscription on Admin Approval
 
 **Files:**
+
 - Modify: `src/lib/professional-verification.ts`
 
 - [ ] **Step 1: Add Stripe key helper**
@@ -540,9 +541,7 @@ async function activatePendingSubscription(therapistId: string) {
       .eq("id", therapistId);
   } catch (error) {
     const message =
-      error instanceof Error
-        ? error.message
-        : "No se pudo activar la suscripcion en Stripe.";
+      error instanceof Error ? error.message : "No se pudo activar la suscripcion en Stripe.";
     await supabaseAdmin
       .from("therapists")
       .update({ subscription_activation_error: message })
@@ -584,6 +583,7 @@ No lint errors in src/lib/professional-verification.ts.
 ## Task 6: Update Billing Dashboard UI
 
 **Files:**
+
 - Modify: `src/routes/dashboard/billing.tsx`
 
 - [ ] **Step 1: Replace checkout success copy**
@@ -625,20 +625,22 @@ const canCheckout = Boolean(profile && !isActive);
 Replace the current “Verificacion requerida” card body with copy that does not block plan setup:
 
 ```tsx
-{profile && !isVerified && (
-  <Card className="border-amber-300 bg-amber-50/70">
-    <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-amber-950">
-        <LockKeyhole className="h-5 w-5" />
-        Verificacion pendiente
-      </CardTitle>
-      <CardDescription className="text-amber-900">
-        Puedes elegir un plan de pago ahora. Guardaremos el metodo de pago y la suscripcion
-        empezara solo si Mallorca Holistica aprueba tu perfil.
-      </CardDescription>
-    </CardHeader>
-  </Card>
-)}
+{
+  profile && !isVerified && (
+    <Card className="border-amber-300 bg-amber-50/70">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-amber-950">
+          <LockKeyhole className="h-5 w-5" />
+          Verificacion pendiente
+        </CardTitle>
+        <CardDescription className="text-amber-900">
+          Puedes elegir un plan de pago ahora. Guardaremos el metodo de pago y la suscripcion
+          empezara solo si Mallorca Holistica aprueba tu perfil.
+        </CardDescription>
+      </CardHeader>
+    </Card>
+  );
+}
 ```
 
 - [ ] **Step 4: Add pending-plan status card**
@@ -646,22 +648,24 @@ Replace the current “Verificacion requerida” card body with copy that does n
 After the current plan card, add:
 
 ```tsx
-{profile && !isActive && hasPendingPaidPlan && (
-  <Card className="border-primary/30 bg-primary/5">
-    <CardHeader>
-      <CardTitle>Plan pendiente de aprobacion</CardTitle>
-      <CardDescription>
-        Has elegido {formatPlanSlug(profile.pending_plan_slug)}.
-        {hasSavedPaymentMethod
-          ? " El metodo de pago esta guardado y se cobrara cuando aprobemos tu perfil."
-          : " Falta completar Stripe para guardar el metodo de pago."}
-      </CardDescription>
-      {profile.subscription_activation_error && (
-        <p className="text-sm text-destructive">{profile.subscription_activation_error}</p>
-      )}
-    </CardHeader>
-  </Card>
-)}
+{
+  profile && !isActive && hasPendingPaidPlan && (
+    <Card className="border-primary/30 bg-primary/5">
+      <CardHeader>
+        <CardTitle>Plan pendiente de aprobacion</CardTitle>
+        <CardDescription>
+          Has elegido {formatPlanSlug(profile.pending_plan_slug)}.
+          {hasSavedPaymentMethod
+            ? " El metodo de pago esta guardado y se cobrara cuando aprobemos tu perfil."
+            : " Falta completar Stripe para guardar el metodo de pago."}
+        </CardDescription>
+        {profile.subscription_activation_error && (
+          <p className="text-sm text-destructive">{profile.subscription_activation_error}</p>
+        )}
+      </CardHeader>
+    </Card>
+  );
+}
 ```
 
 Add this helper below `formatMonthlyPrice`:
@@ -679,11 +683,13 @@ function formatPlanSlug(slug: string | null | undefined) {
 Replace the button label expression with:
 
 ```tsx
-{pendingPlanSlug === plan.slug
-  ? "Abriendo Stripe..."
-  : isVerified
-    ? `Seleccionar ${plan.name}`
-    : `Elegir ${plan.name}`}
+{
+  pendingPlanSlug === plan.slug
+    ? "Abriendo Stripe..."
+    : isVerified
+      ? `Seleccionar ${plan.name}`
+      : `Elegir ${plan.name}`;
+}
 ```
 
 - [ ] **Step 6: Lint billing page**
@@ -703,6 +709,7 @@ No lint errors in src/routes/dashboard/billing.tsx.
 ## Task 7: Update Documentation
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `CONTEXT.md`
 - Modify: `PLAN.md`
@@ -747,6 +754,7 @@ Add:
 ## Task 8: Full Verification
 
 **Files:**
+
 - Verify all files modified in Tasks 1-7.
 
 - [ ] **Step 1: Run focused lint**

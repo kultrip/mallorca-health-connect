@@ -114,7 +114,8 @@ export function ProfessionalsMap({
 
       // Create beautiful custom pin element
       const el = document.createElement("div");
-      el.className = "flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-115";
+      el.className =
+        "flex items-center justify-center cursor-pointer transition-transform duration-200 hover:scale-115";
       el.style.width = "28px";
       el.style.height = "28px";
       el.innerHTML = `
@@ -133,13 +134,17 @@ export function ProfessionalsMap({
       const popupHtml = `
         <div class="p-2.5 max-w-[210px] font-sans" style="font-family: inherit;">
           <div class="flex items-center gap-3">
-            ${photoUrl ? `
+            ${
+              photoUrl
+                ? `
               <img src="${photoUrl}" class="w-10 h-10 rounded-full object-cover border border-[#eadfce]" alt="${pin.name}" style="width: 40px; height: 40px; border-radius: 9999px; object-fit: cover; border: 1px solid #eadfce;" />
-            ` : `
+            `
+                : `
               <div class="w-10 h-10 rounded-full bg-[#eadfce]/30 flex items-center justify-center text-xs font-semibold text-[#5d5144]" style="width: 40px; height: 40px; border-radius: 9999px; background-color: rgba(234, 223, 206, 0.3); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #5d5144;">
                 ${pin.name[0] || "·"}
               </div>
-            `}
+            `
+            }
             <div class="flex-1 min-w-0 text-left">
               <div class="text-[10px] uppercase tracking-wider truncate" style="color: #8c7a66; letter-spacing: 0.05em;">${especialidad}</div>
               <h4 class="font-display font-semibold text-sm leading-tight text-[#11100e] truncate mt-0.5" style="margin: 2px 0 0 0; font-weight: 600; color: #11100e; font-size: 14px;">${pin.name}</h4>
@@ -199,9 +204,13 @@ export function ProfessionalsMap({
           <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 mb-3 animate-pulse">
             <MapPin className="h-6 w-6" />
           </div>
-          <h3 className="font-display text-base font-semibold text-[#11100e]">Configuración de Mapa</h3>
+          <h3 className="font-display text-base font-semibold text-[#11100e]">
+            Configuración de Mapa
+          </h3>
           <p className="mt-1 text-xs text-[#6d5b43] max-w-xs leading-normal">
-            Por favor, añade tu clave de acceso de Mapbox en tu archivo <code className="bg-muted px-1 py-0.5 rounded text-red-500 text-[10px]">.env</code> para habilitar el mapa interactivo premium:
+            Por favor, añade tu clave de acceso de Mapbox en tu archivo{" "}
+            <code className="bg-muted px-1 py-0.5 rounded text-red-500 text-[10px]">.env</code> para
+            habilitar el mapa interactivo premium:
           </p>
           <pre className="mt-3 bg-muted p-2 rounded text-[10px] text-left font-mono border border-border select-all w-full text-foreground/80 overflow-x-auto">
             VITE_MAPBOX_ACCESS_TOKEN=pk.eyJ1I...

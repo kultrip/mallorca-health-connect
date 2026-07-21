@@ -13,19 +13,12 @@ async function main() {
     const svgBuffer = await fs.readFile(svgPath);
 
     // Generate a 32x32 PNG and write it as favicon.ico (Vite / browser standard fallback)
-    await sharp(svgBuffer)
-      .resize(32, 32)
-      .png()
-      .toFile(icoPath);
+    await sharp(svgBuffer).resize(32, 32).png().toFile(icoPath);
     console.log("Successfully generated public/favicon.ico");
 
     // Generate a 192x192 PNG for mobile web clips
-    await sharp(svgBuffer)
-      .resize(192, 192)
-      .png()
-      .toFile(pngPath);
+    await sharp(svgBuffer).resize(192, 192).png().toFile(pngPath);
     console.log("Successfully generated public/favicon.png");
-
   } catch (error) {
     console.error("Error generating favicons:", error);
     process.exit(1);

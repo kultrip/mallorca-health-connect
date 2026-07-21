@@ -49,6 +49,7 @@
 ## Task 1: Extend Shared Professional Data Shape
 
 **Files:**
+
 - Modify: `src/components/therapists/TherapistCard.tsx`
 
 - [ ] **Step 1: Extend `TherapistCardData`**
@@ -91,6 +92,7 @@ Expected: exits `0`.
 ## Task 2: Add Map Pin Utility
 
 **Files:**
+
 - Create: `src/components/therapists/professional-map-utils.ts`
 
 - [ ] **Step 1: Create utility module**
@@ -198,6 +200,7 @@ Expected: exits `0`.
 ## Task 3: Add Provider-Free Map Component
 
 **Files:**
+
 - Create: `src/components/therapists/ProfessionalsMap.tsx`
 
 - [ ] **Step 1: Create `ProfessionalsMap`**
@@ -301,6 +304,7 @@ Expected: exits `0`.
 ## Task 4: Add Results Layout Component
 
 **Files:**
+
 - Create: `src/components/therapists/ProfessionalResultsWithMap.tsx`
 
 - [ ] **Step 1: Create wrapper component**
@@ -363,6 +367,7 @@ Expected: exits `0`.
 ## Task 5: Update `/professionals`
 
 **Files:**
+
 - Modify: `src/features/professionals/ProfessionalsPage.tsx`
 
 - [ ] **Step 1: Replace card import**
@@ -385,7 +390,7 @@ import { ProfessionalResultsWithMap } from "@/components/therapists/Professional
 Replace the therapist query select string with:
 
 ```ts
-"id, slug, full_name, headline, frase_clave, photo_url, especialidad, modalities, verified, address, lat, lng, municipalities(name,slug,lat,lng)"
+"id, slug, full_name, headline, frase_clave, photo_url, especialidad, modalities, verified, address, lat, lng, municipalities(name,slug,lat,lng)";
 ```
 
 - [ ] **Step 3: Replace successful grid**
@@ -393,10 +398,7 @@ Replace the therapist query select string with:
 Replace the successful card grid with:
 
 ```tsx
-<ProfessionalResultsWithMap
-  professionals={therapists!}
-  mapTitle="Profesionales en Mallorca"
-/>
+<ProfessionalResultsWithMap professionals={therapists!} mapTitle="Profesionales en Mallorca" />
 ```
 
 - [ ] **Step 4: Run focused lint**
@@ -412,6 +414,7 @@ Expected: exits `0`.
 ## Task 6: Update Conversational Search
 
 **Files:**
+
 - Modify: `src/features/search/ConversationalSearchPage.tsx`
 - Modify: `supabase/functions/symptom-search/index.ts`
 
@@ -456,16 +459,13 @@ With:
 In `supabase/functions/symptom-search/index.ts`, find the therapist select for recommended professionals and include:
 
 ```ts
-address,
-lat,
-lng,
-municipalities(name,slug,lat,lng)
+(address, lat, lng, municipalities(name, slug, lat, lng));
 ```
 
 The final selected therapist fields should include:
 
 ```ts
-"id, slug, full_name, headline, frase_clave, photo_url, especialidad, modalities, verified, address, lat, lng, municipalities(name,slug,lat,lng)"
+"id, slug, full_name, headline, frase_clave, photo_url, especialidad, modalities, verified, address, lat, lng, municipalities(name,slug,lat,lng)";
 ```
 
 - [ ] **Step 4: Run focused lint**
@@ -481,6 +481,7 @@ Expected: exits `0`.
 ## Task 7: Update Therapy Detail Related Professionals
 
 **Files:**
+
 - Modify: `src/features/therapies/TherapyDetailPage.tsx`
 - Modify: `src/features/therapies/types.ts`
 
@@ -504,7 +505,7 @@ import { ProfessionalResultsWithMap } from "@/components/therapists/Professional
 Replace the nested therapist select with:
 
 ```ts
-"therapists(id, slug, full_name, headline, frase_clave, photo_url, especialidad, modalities, verified, address, lat, lng, municipalities(name,slug,lat,lng))"
+"therapists(id, slug, full_name, headline, frase_clave, photo_url, especialidad, modalities, verified, address, lat, lng, municipalities(name,slug,lat,lng))";
 ```
 
 - [ ] **Step 3: Replace related professionals grid**
@@ -554,6 +555,7 @@ Expected: exits `0`.
 ## Task 8: Update Documentation
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `CONTEXT.md`
 - Modify: `PLAN.md`
@@ -597,6 +599,7 @@ Add under Product Rules:
 ## Task 9: Verification
 
 **Files:**
+
 - Verify all files modified in Tasks 1-8.
 
 - [ ] **Step 1: Run focused lint**

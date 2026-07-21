@@ -21,21 +21,21 @@ async function makeTransparent() {
       const r = rawBuffer[i];
       const g = rawBuffer[i + 1];
       const b = rawBuffer[i + 2];
-      
+
       // Calculate brightness or distance from cream background.
       // Cream background in this image is generally very bright and warm.
       // Let's analyze how close the pixel is to the light background.
       const minVal = Math.min(r, g, b);
       const maxVal = Math.max(r, g, b);
-      
+
       // A pixel is background if it's very bright
       // Original background is near white/cream (e.g., R > 235, G > 230, B > 220)
       let alpha = 255;
-      
+
       // We can use a simple thresholding with soft transition.
       // Let's use the average brightness:
       const brightness = (r + g + b) / 3;
-      
+
       if (brightness >= 240) {
         // High confidence background
         alpha = 0;
@@ -59,11 +59,11 @@ async function makeTransparent() {
       raw: {
         width,
         height,
-        channels: 4
-      }
+        channels: 4,
+      },
     })
-    .png()
-    .toFile(outputPath);
+      .png()
+      .toFile(outputPath);
 
     console.log(`Success! Saved to ${outputPath}`);
   } catch (error) {

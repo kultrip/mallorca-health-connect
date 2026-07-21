@@ -69,6 +69,7 @@ Out of scope for this plan:
 ## Task 1: Add Therapist Sessions Table
 
 **Files:**
+
 - Create: `supabase/migrations/20260513000001_therapist_sessions.sql`
 
 - [ ] **Step 1: Create the migration**
@@ -194,6 +195,7 @@ Expected result includes `20260513000001` as unapplied or applied. Continue only
 ## Task 2: Add Supabase Types
 
 **Files:**
+
 - Modify: `src/integrations/supabase/types.ts`
 
 - [ ] **Step 1: Add the `therapist_sessions` table type**
@@ -257,6 +259,7 @@ Expected result before later code tasks may include existing unrelated errors, b
 ## Task 3: Add Owner-Only Profile Save Function
 
 **Files:**
+
 - Create: `src/lib/professional-profile-editor.ts`
 
 - [ ] **Step 1: Create the server function file**
@@ -447,7 +450,12 @@ async function replaceHelpAreaLinks(therapistId: string, helpAreaIds: string[]) 
 
 async function replaceSessions(
   therapistId: string,
-  sessions: Array<{ name: string; duration: string | null; price_cents: number | null; position: number }>,
+  sessions: Array<{
+    name: string;
+    duration: string | null;
+    price_cents: number | null;
+    position: number;
+  }>,
 ) {
   const { error: deleteError } = await supabaseAdmin
     .from("therapist_sessions")
@@ -501,6 +509,7 @@ If the repo uses a broader lint command instead of direct `eslint`, run the proj
 ## Task 4: Rebuild Dashboard Profile Editor
 
 **Files:**
+
 - Modify: `src/routes/dashboard/index.tsx`
 
 - [ ] **Step 1: Replace ad hoc `any` profile state with typed editor state**
@@ -554,26 +563,25 @@ type SessionForm = {
 In the existing `useEffect` that loads the dashboard profile, query:
 
 ```ts
-const [
-  therapistResult,
-  therapiesResult,
-  helpAreasResult,
-  municipalitiesResult,
-] = await Promise.all([
-  supabase
-    .from("therapists")
-    .select(`
+const [therapistResult, therapiesResult, helpAreasResult, municipalitiesResult] = await Promise.all(
+  [
+    supabase
+      .from("therapists")
+      .select(
+        `
       *,
       therapist_therapies(therapy_id),
       therapist_help_areas(help_area_id),
       therapist_sessions(id,name,duration,price_cents,position)
-    `)
-    .eq("user_id", user.id)
-    .maybeSingle(),
-  supabase.from("therapies").select("id,slug,name,description").order("name"),
-  supabase.from("help_areas").select("id,slug,name,description").order("name"),
-  supabase.from("municipalities").select("id,slug,name,zone").order("name"),
-]);
+    `,
+      )
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase.from("therapies").select("id,slug,name,description").order("name"),
+    supabase.from("help_areas").select("id,slug,name,description").order("name"),
+    supabase.from("municipalities").select("id,slug,name,zone").order("name"),
+  ],
+);
 ```
 
 Expected local state after loading:
@@ -762,6 +770,7 @@ No lint errors in src/routes/dashboard/index.tsx.
 ## Task 5: Render Persisted Sessions on Public Profile
 
 **Files:**
+
 - Modify: `src/features/professionals/ProfessionalProfilePage.tsx`
 
 - [ ] **Step 1: Update the public profile select**
@@ -806,17 +815,15 @@ const sessions = Array.isArray(extra.sessions) ? extra.sessions : [];
 with:
 
 ```ts
-const sessions = (extra.therapist_sessions ?? [])
-  .slice()
-  .sort((a, b) => a.position - b.position);
+const sessions = (extra.therapist_sessions ?? []).slice().sort((a, b) => a.position - b.position);
 ```
 
 When rendering price, use:
 
 ```tsx
-{session.price_cents !== null && (
-  <span>{formatEuro(session.price_cents)}</span>
-)}
+{
+  session.price_cents !== null && <span>{formatEuro(session.price_cents)}</span>;
+}
 ```
 
 Add this helper near `whatsappHref`:
@@ -848,6 +855,7 @@ No lint errors in src/features/professionals/ProfessionalProfilePage.tsx.
 ## Task 6: Update Handoff Documentation
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `CONTEXT.md`
 - Modify: `PLAN.md`
@@ -888,6 +896,7 @@ Add this operating note:
 ## Task 7: Full Verification
 
 **Files:**
+
 - Verify all files modified in Tasks 1-6.
 
 - [ ] **Step 1: Run focused lint**

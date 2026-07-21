@@ -38,9 +38,7 @@ export function Testimonials() {
       <div className="grid gap-7 md:grid-cols-3">
         {testimonials.map((t) => (
           <figure key={t.name + t.place} className="border-l border-[#dfceb8] pl-6">
-            <blockquote className="text-sm leading-7 text-foreground/80">
-              {t.quote}
-            </blockquote>
+            <blockquote className="text-sm leading-7 text-foreground/80">{t.quote}</blockquote>
             <figcaption className="mt-6 flex items-center gap-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-xs font-medium text-foreground/70">
                 {initials(t.name)}

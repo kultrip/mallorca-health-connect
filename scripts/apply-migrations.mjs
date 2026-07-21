@@ -23,7 +23,8 @@ if (!token || !ref) {
   process.exit(1);
 }
 
-const migrationsDir = "/Users/charles.santana/Kultrip/gemini-dev/mallorca-health-connect/supabase/migrations";
+const migrationsDir =
+  "/Users/charles.santana/Kultrip/gemini-dev/mallorca-health-connect/supabase/migrations";
 const files = readdirSync(migrationsDir)
   .filter((f) => f.endsWith(".sql"))
   .sort(); // Sorting alphabetically ensures they run in correct chronological order!
@@ -42,11 +43,11 @@ async function applyMigration(file) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        query: sql
-      })
+        query: sql,
+      }),
     });
 
     const status = res.status;

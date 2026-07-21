@@ -1,5 +1,4 @@
 import heroImg from "@/assets/hero-branch-transparent.png";
-import { SearchBar } from "@/components/search/SearchBar";
 
 export function Hero() {
   return (
@@ -17,29 +16,35 @@ export function Hero() {
 
       <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(to_bottom,rgba(251,245,236,0),#fffaf3)] pointer-events-none" />
 
-      <div className="relative mx-auto flex min-h-[520px] max-w-[1320px] flex-col justify-between gap-10 px-6 py-12 md:px-10 md:py-16 lg:min-h-[580px]">
-        <div className="max-w-[620px] z-10">
-          <p className="mb-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b6a42]">
-            Bienestar verificado en Mallorca
+      <div className="relative mx-auto flex min-h-[460px] max-w-[1320px] flex-col justify-center gap-10 px-6 py-16 md:px-10 md:py-24 lg:min-h-[520px]">
+        <div className="max-w-[620px] z-10 flex flex-col justify-center">
+          <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8b6a42]">
+            MALLORCA HOLÍSTICA
           </p>
-          <h1 className="font-display text-[clamp(2.7rem,4.8vw,4.4rem)] leading-[1.05] text-[#1f3326]">
-            Encuentra un cuidado que se sienta humano.
+          
+          <h1 className="font-display text-[clamp(2.5rem,4.5vw,4rem)] leading-[1.08] text-[#1f3326] font-bold">
+            Un espacio donde el cuidado florece.
           </h1>
+          
+          <h2 className="mt-2 font-display text-[clamp(1.5rem,2.5vw,2.1rem)] leading-[1.2] text-[#8b6a42] font-semibold">
+            Al servicio del bien-estar y del bien común.
+          </h2>
 
-          <div className="my-6 h-px w-16 bg-[#b99a6e]" />
+          <div className="my-6 h-px w-16 bg-[#b99a6e]/75" />
 
-          <p className="max-w-[480px] text-[15px] leading-8 text-[#3b332b]">
-            Profesionales, terapias y espacios de bienestar elegidos con calma, criterio y
-            sensibilidad. Un lugar para orientarte sin prisa.
-          </p>
+          <div className="max-w-[500px] text-[15px] leading-8 text-[#3b332b] space-y-4">
+            <p>
+              Cada persona llega con su historia.<br />
+              Aquí encuentra un lugar —y a los suyos— para ser escuchada, comprendida y cuidada en serio. Desde el primer clic, hasta el primer paso en tu propio camino.
+            </p>
+            <p className="font-bold text-[#1f3326] mt-4">
+              Aquí conectamos personas que cuidan, con las personas que buscan.
+            </p>
+          </div>
         </div>
 
         <div className="relative z-10 w-full overflow-hidden rounded-[1.4rem] border border-[#eadfce] bg-[#7f6855] md:hidden">
           <img src={heroImg} alt="" className="aspect-[1.5/1] w-full object-cover object-center opacity-100" />
-        </div>
-
-        <div className="relative z-10 w-full max-w-[1320px] mt-2 md:mt-4">
-          <SearchBar />
         </div>
       </div>
     </section>

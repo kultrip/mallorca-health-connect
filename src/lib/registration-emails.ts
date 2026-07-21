@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { sendEmail } from "@/lib/email/resend";
+import { consumeFounderInvite } from "@/lib/founder-invites";
 import { getAdminEmail } from "./verification-emails";
 
 const registrationConfirmationSchema = z.object({
@@ -16,7 +17,10 @@ const signUpSchema = z.object({
   password: z.string().min(8),
   selectedPlan: z.string().trim().min(1),
   isFounder: z.boolean().optional(),
+  founderInviteToken: z.string().trim().optional().nullable(),
+  founderWhatsapp: z.string().trim().optional().nullable(),
   origin: z.string().trim().min(1),
+  claimTherapistId: z.string().trim().optional().nullable(),
 });
 
 function escapeHtml(value: string) {
@@ -40,7 +44,10 @@ export const signUpUser = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const planLabel = getPlanLabel(data.selectedPlan);
-    const redirectToUrl = `${data.origin}/onboarding?plan=${encodeURIComponent(data.selectedPlan)}`;
+    const redirectToUrl = `${data.origin}/onboarding?plan=${encodeURIComponent(data.selectedPlan)}${
+      data.claimTherapistId ? `&claim=${encodeURIComponent(data.claimTherapistId)}` : ""
+    }`;
+    const founderInviteRequested = data.isFounder === true;
 
     // Generate the signup link using Supabase Admin Auth
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
@@ -51,7 +58,7 @@ export const signUpUser = createServerFn({ method: "POST" })
         data: {
           display_name: data.name,
           selected_plan: data.selectedPlan,
-          is_founder: data.isFounder ?? false,
+          is_founder: false,
         },
         redirectTo: redirectToUrl,
       },
@@ -62,6 +69,31 @@ export const signUpUser = createServerFn({ method: "POST" })
     }
 
     const actionLink = linkData.properties.action_link;
+    const consumedFounderInvite = founderInviteRequested
+      ? await consumeFounderInvite({
+          inviteToken: data.founderInviteToken,
+          whatsapp: data.founderWhatsapp,
+          userId: linkData.user.id,
+          email: data.email,
+        })
+      : { consumed: false, inviteId: null };
+    const isFounder = consumedFounderInvite.consumed;
+
+    if (isFounder) {
+      const { error: updateUserError } = await supabaseAdmin.auth.admin.updateUserById(
+        linkData.user.id,
+        {
+          user_metadata: {
+            display_name: data.name,
+            selected_plan: data.selectedPlan,
+            is_founder: true,
+            founder_invite_id: consumedFounderInvite.inviteId,
+          },
+        },
+      );
+
+      if (updateUserError) throw new Error(updateUserError.message);
+    }
 
     // Send the custom confirmation email to the user (Sent by Mallorca Holística)
     const userEmailPromise = sendEmail({
@@ -74,6 +106,12 @@ export const signUpUser = createServerFn({ method: "POST" })
         "",
         "Gracias por registrarte en nuestra plataforma de salud y bienestar.",
         `Hemos recibido tu alta para el plan ${planLabel}.`,
+        ...(isFounder
+          ? [
+              "Tu invitación fundadora por WhatsApp ha sido confirmada.",
+              "Tendrás 180 días sin cargo con ventajas premium activas y después la tarifa fundadora especial.",
+            ]
+          : []),
         "",
         "Para confirmar tu dirección de correo electrónico y activar tu cuenta, haz clic en el siguiente enlace o cópialo en tu navegador:",
         "",
@@ -92,6 +130,11 @@ export const signUpUser = createServerFn({ method: "POST" })
           <h1 style="color: #0f172a; font-size: 22px; font-weight: bold; margin-bottom: 16px; text-align: center; letter-spacing: -0.025em;">¡Bienvenido/a a nuestra comunidad!</h1>
           <p style="color: #334155; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">Hola <strong>${escapeHtml(data.name)}</strong>,</p>
           <p style="color: #334155; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">Gracias por registrarte en nuestra plataforma de profesionales de la salud y el bienestar en Mallorca. Hemos recibido tu alta para el plan <strong>${escapeHtml(planLabel)}</strong>.</p>
+          ${
+            isFounder
+              ? `<p style="color: #166534; font-size: 14px; line-height: 1.6; margin-bottom: 24px; background: #dcfce7; border-radius: 16px; padding: 14px 16px;"><strong>Invitación fundadora confirmada.</strong><br />Disfrutarás 180 días sin cargo con ventajas premium activas y después la tarifa fundadora especial.</p>`
+              : ""
+          }
           
           <div style="text-align: center; margin: 36px 0;">
             <a href="${actionLink}" style="background-color: #8b5cf6; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 9999px; font-weight: 600; display: inline-block; font-size: 15px; box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.3);">Confirmar correo electrónico</a>
@@ -117,6 +160,7 @@ export const signUpUser = createServerFn({ method: "POST" })
         `Nombre o Centro: ${data.name}`,
         `Email: ${data.email}`,
         `Plan seleccionado: ${planLabel}`,
+        `Fundador: ${isFounder ? "Sí" : "No"}`,
         "",
         "Equipo de Mallorca Holística",
       ].join("\n"),
@@ -128,6 +172,7 @@ export const signUpUser = createServerFn({ method: "POST" })
             <li><strong>Nombre o Centro:</strong> ${escapeHtml(data.name)}</li>
             <li><strong>Email:</strong> ${escapeHtml(data.email)}</li>
             <li><strong>Plan seleccionado:</strong> ${escapeHtml(planLabel)}</li>
+            <li><strong>Fundador:</strong> ${isFounder ? "Sí" : "No"}</li>
           </ul>
         </div>
       `,
@@ -144,7 +189,7 @@ export const signUpUser = createServerFn({ method: "POST" })
     } catch (err) {
       console.error("Error al enviar email de confirmación al usuario:", err);
       emailError = err instanceof Error ? err.message : String(err);
-      
+
       // Log the activation link to the console for easy local development
       console.log("\n===========================================================");
       console.log("⚠️ ERROR AL ENVIAR EMAIL DE CONFIRMACIÓN DE REGISTRO:");
@@ -166,9 +211,10 @@ export const signUpUser = createServerFn({ method: "POST" })
     return {
       success: true,
       userId: linkData.user.id,
+      isFounder,
       emailSent,
       emailError,
-      actionLink: (isDev || !emailSent) ? actionLink : undefined,
+      actionLink: isDev || !emailSent ? actionLink : undefined,
     };
   });
 

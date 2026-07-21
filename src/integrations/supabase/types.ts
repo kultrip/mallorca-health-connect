@@ -299,6 +299,51 @@ export type Database = {
           },
         ];
       };
+      founder_invites: {
+        Row: {
+          created_at: string;
+          id: string;
+          invite_token: string;
+          invited_at: string;
+          invited_email: string | null;
+          invited_name: string | null;
+          normalized_whatsapp?: string;
+          updated_at: string;
+          used_at: string | null;
+          used_by_email: string | null;
+          used_by_user_id: string | null;
+          whatsapp: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          invite_token?: string;
+          invited_at?: string;
+          invited_email?: string | null;
+          invited_name?: string | null;
+          normalized_whatsapp: string;
+          updated_at?: string;
+          used_at?: string | null;
+          used_by_email?: string | null;
+          used_by_user_id?: string | null;
+          whatsapp: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          invite_token?: string;
+          invited_at?: string;
+          invited_email?: string | null;
+          invited_name?: string | null;
+          normalized_whatsapp?: string;
+          updated_at?: string;
+          used_at?: string | null;
+          used_by_email?: string | null;
+          used_by_user_id?: string | null;
+          whatsapp?: string;
+        };
+        Relationships: [];
+      };
       centers: {
         Row: {
           address: string | null;
@@ -743,6 +788,25 @@ export type Database = {
           website: string | null;
           whatsapp: string | null;
           years_experience: number | null;
+          business_name: string | null;
+          description: string | null;
+          postal_code: string | null;
+          profession: string | null;
+          extracted_therapies: string[] | null;
+          extracted_municipality: string | null;
+          profile_image_url: string | null;
+          opening_hours: string | null;
+          is_claimed: boolean;
+          verification_date: string | null;
+          source: string | null;
+          source_url: string | null;
+          imported_by_ai: boolean;
+          crm_status: string;
+          first_contact_date: string | null;
+          last_contact_date: string | null;
+          owner_user_id: string | null;
+          internal_notes: string | null;
+          import_metadata: Json;
         };
         Insert: {
           address?: string | null;
@@ -834,6 +898,25 @@ export type Database = {
           website?: string | null;
           whatsapp?: string | null;
           years_experience?: number | null;
+          business_name?: string | null;
+          description?: string | null;
+          postal_code?: string | null;
+          profession?: string | null;
+          extracted_therapies?: string[] | null;
+          extracted_municipality?: string | null;
+          profile_image_url?: string | null;
+          opening_hours?: string | null;
+          is_claimed?: boolean;
+          verification_date?: string | null;
+          source?: string | null;
+          source_url?: string | null;
+          imported_by_ai?: boolean;
+          crm_status?: string;
+          first_contact_date?: string | null;
+          last_contact_date?: string | null;
+          owner_user_id?: string | null;
+          internal_notes?: string | null;
+          import_metadata?: Json;
         };
         Update: {
           address?: string | null;
@@ -925,6 +1008,25 @@ export type Database = {
           website?: string | null;
           whatsapp?: string | null;
           years_experience?: number | null;
+          business_name?: string | null;
+          description?: string | null;
+          postal_code?: string | null;
+          profession?: string | null;
+          extracted_therapies?: string[] | null;
+          extracted_municipality?: string | null;
+          profile_image_url?: string | null;
+          opening_hours?: string | null;
+          is_claimed?: boolean;
+          verification_date?: string | null;
+          source?: string | null;
+          source_url?: string | null;
+          imported_by_ai?: boolean;
+          crm_status?: string;
+          first_contact_date?: string | null;
+          last_contact_date?: string | null;
+          owner_user_id?: string | null;
+          internal_notes?: string | null;
+          import_metadata?: Json;
         };
         Relationships: [
           {

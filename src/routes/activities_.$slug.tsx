@@ -44,7 +44,6 @@ function ActivityDetailPage() {
         .from("activities")
         .select("*")
         .eq("slug", slug)
-        .eq("status", "published")
         .maybeSingle();
       if (error) throw error;
       return data as ActivityRow | null;
@@ -81,6 +80,7 @@ function ActivityDetailPage() {
   }
 
   const category = inferCategory(activity);
+  const isUnpublished = activity.status !== "published";
 
   return (
     <PageShell>
@@ -98,27 +98,39 @@ function ActivityDetailPage() {
             <span className="font-medium text-[#1f3326]">{activity.title}</span>
           </div>
 
+          {isUnpublished && (
+            <div className="mb-8 rounded-[1.4rem] border border-[#d9c5aa] bg-white/60 p-6 text-[#9a7041] flex items-start gap-4 shadow-sm backdrop-blur-sm">
+              <Leaf className="h-6 w-6 mt-0.5 shrink-0 text-[#9a7041]" />
+              <div>
+                <h3 className="font-display text-xl text-[#1f3326] font-semibold">
+                  Vista previa del creador
+                </h3>
+                <p className="text-sm mt-1 leading-relaxed text-[#5d5144]">
+                  Esta actividad está en proceso de revisión. Solo tú puedes verla en este momento.
+                  Nuestro equipo la publicará pronto.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
             <div className="space-y-8">
-              <div className="relative min-h-[420px] overflow-hidden rounded-[1.6rem]">
-                <img
-                  src={activity.image_url || heroImg}
-                  alt={activity.title}
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.62),rgba(0,0,0,0.18))]" />
-                <div className="relative flex min-h-[420px] flex-col justify-end p-8 text-white md:p-12">
-                  <span className="mb-5 w-fit rounded-full bg-[#526046] px-3 py-1 text-xs font-bold uppercase">
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <span className="inline-block rounded-full bg-[#526046] px-3.5 py-1 text-xs font-bold uppercase text-white shadow-sm">
                     {category}
                   </span>
-                  <h1 className="font-display text-[clamp(3rem,6vw,5.8rem)] leading-none text-white">
+                  <h1 className="font-display text-[clamp(2.4rem,4.5vw,3.6rem)] leading-[1.15] text-[#1f3326]">
                     {activity.title}
                   </h1>
-                  {activity.description && (
-                    <p className="mt-5 max-w-xl text-lg leading-8 text-white/90">
-                      {firstParagraph(activity.description)}
-                    </p>
-                  )}
+                </div>
+
+                <div className="relative aspect-[16/9] max-h-[360px] w-full overflow-hidden rounded-[1.6rem] border border-[#eadfce] bg-[#fcf8f3]">
+                  <img
+                    src={activity.image_url || heroImg}
+                    alt={activity.title}
+                    className="h-full w-full object-cover object-center transition-transform duration-500 hover:scale-[1.02]"
+                  />
                 </div>
               </div>
 

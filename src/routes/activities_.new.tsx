@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { notifyAdminOfNewActivity } from "@/lib/professional-verification";
 
 export const Route = createFileRoute("/activities_/new")({
   component: PublishActivityPage,
@@ -37,7 +38,9 @@ function PublishActivityPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Yoga");
-  const [startsAt, setStartsAt] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
   const [facilitator, setFacilitator] = useState("");
@@ -62,7 +65,11 @@ function PublishActivityPage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) return;
+    if (!user) {
+      toast.error("Inicia sesión para poder publicar una actividad.");
+      void navigate({ to: "/login", search: { redirect: "/activities/new" } });
+      return;
+    }
     setUserId(user.id);
     setEmail(user.email ?? "");
 
@@ -75,6 +82,9 @@ function PublishActivityPage() {
     if (data?.id) {
       setTherapistId(data.id);
       setFacilitator(data.full_name ?? "");
+    } else {
+      toast.error("Necesitas completar tu perfil profesional antes de publicar actividades.");
+      void navigate({ to: "/onboarding" });
     }
   }
 
@@ -82,12 +92,12 @@ function PublishActivityPage() {
     event.preventDefault();
     if (!userId) {
       toast.error("Inicia sesión como profesional para publicar una actividad.");
-      navigate({ to: "/login" });
+      void navigate({ to: "/login" });
       return;
     }
     if (!therapistId) {
       toast.error("Necesitas completar tu perfil profesional antes de publicar actividades.");
-      navigate({ to: "/onboarding" });
+      void navigate({ to: "/onboarding" });
       return;
     }
 
@@ -104,26 +114,58 @@ function PublishActivityPage() {
         imageUrl = supabase.storage.from("activity-images").getPublicUrl(path).data.publicUrl;
       }
 
-      const { error } = await supabase.from("activities").insert({
-        title,
-        slug: `${slugify(title)}-${Math.floor(Math.random() * 1000)}`,
-        category,
-        starts_at: startsAt ? new Date(startsAt).toISOString() : null,
-        location,
-        price_cents: parsePrice(price),
-        facilitator_name: facilitator || null,
-        description: description || null,
-        image_url: imageUrl || null,
-        whatsapp: whatsapp || null,
-        instagram: instagram || null,
-        website: website || null,
-        link_reserva: linkReserva || null,
-        email: email || null,
-        therapist_id: therapistId,
-        status: "pending",
-      });
+      const startsAtISO =
+        eventDate && startTime ? new Date(`${eventDate}T${startTime}`).toISOString() : null;
+      const endsAtISO =
+        eventDate && endTime ? new Date(`${eventDate}T${endTime}`).toISOString() : null;
+
+      const { data: newActivity, error } = await supabase
+        .from("activities")
+        .insert({
+          title,
+          slug: `${slugify(title)}-${Math.floor(Math.random() * 1000)}`,
+          category,
+          starts_at: startsAtISO,
+          ends_at: endsAtISO,
+          location,
+          price_cents: parsePrice(price),
+          facilitator_name: facilitator || null,
+          description: description || null,
+          image_url: imageUrl || null,
+          whatsapp: whatsapp || null,
+          instagram: instagram || null,
+          website: website || null,
+          link_reserva: linkReserva || null,
+          email: email || null,
+          therapist_id: therapistId,
+          status: "pending",
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      if (newActivity) {
+        try {
+          await notifyAdminOfNewActivity({
+            activityId: newActivity.id,
+            activityTitle: newActivity.title,
+            category: newActivity.category,
+            startsAt: newActivity.starts_at
+              ? new Date(newActivity.starts_at).toLocaleString("es-ES")
+              : null,
+            location: newActivity.location,
+            facilitatorName: newActivity.facilitator_name,
+            price: price || "Gratuito / No especificado",
+            therapistId: therapistId,
+            origin: window.location.origin,
+          });
+        } catch (emailErr) {
+          console.error("Error triggering admin email notification:", emailErr);
+          // Don't interrupt user redirection or success feedback if email fails (important for Resend sandboxing)
+        }
+      }
+
       toast.success("Actividad enviada. La revisaremos antes de publicarla.");
       navigate({ to: "/activities" });
     } catch (error) {
@@ -209,12 +251,29 @@ function PublishActivityPage() {
                 </Field>
                 <Field label="Fecha *">
                   <Input
-                    type="datetime-local"
-                    value={startsAt}
-                    onChange={(event) => setStartsAt(event.target.value)}
+                    type="date"
+                    value={eventDate}
+                    onChange={(event) => setEventDate(event.target.value)}
                     required
                   />
                 </Field>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Hora de inicio *">
+                    <Input
+                      type="time"
+                      value={startTime}
+                      onChange={(event) => setStartTime(event.target.value)}
+                      required
+                    />
+                  </Field>
+                  <Field label="Hora de fin">
+                    <Input
+                      type="time"
+                      value={endTime}
+                      onChange={(event) => setEndTime(event.target.value)}
+                    />
+                  </Field>
+                </div>
                 <Field label="Lugar *">
                   <Input
                     value={location}
@@ -351,6 +410,9 @@ function IconField({
 }
 
 function parsePrice(value: string) {
+  if (!value || !/[0-9]/.test(value)) {
+    return null;
+  }
   const normalized = value.replace(/[^0-9,.-]/g, "").replace(",", ".");
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? Math.round(parsed * 100) : null;

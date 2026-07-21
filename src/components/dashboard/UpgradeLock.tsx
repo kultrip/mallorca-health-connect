@@ -10,7 +10,13 @@ interface UpgradeLockProps {
   isLocked: boolean;
 }
 
-export function UpgradeLock({ title, description, requiredPlan, children, isLocked }: UpgradeLockProps) {
+export function UpgradeLock({
+  title,
+  description,
+  requiredPlan,
+  children,
+  isLocked,
+}: UpgradeLockProps) {
   if (!isLocked) {
     return <>{children}</>;
   }
@@ -18,9 +24,7 @@ export function UpgradeLock({ title, description, requiredPlan, children, isLock
   return (
     <div className="relative overflow-hidden rounded-xl border border-border bg-card">
       {/* Blurred out content */}
-      <div className="opacity-20 blur-[2px] select-none pointer-events-none p-6">
-        {children}
-      </div>
+      <div className="opacity-20 blur-[2px] select-none pointer-events-none p-6">{children}</div>
 
       {/* Overlay */}
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/40 backdrop-blur-sm p-6 text-center">
@@ -28,13 +32,9 @@ export function UpgradeLock({ title, description, requiredPlan, children, isLock
           <Lock className="h-8 w-8" />
         </div>
         <h3 className="text-xl font-semibold mb-2">{title}</h3>
-        <p className="text-muted-foreground mb-6 max-w-md">
-          {description}
-        </p>
+        <p className="text-muted-foreground mb-6 max-w-md">{description}</p>
         <Button asChild>
-          <Link to="/dashboard/billing">
-            Actualizar al Plan {requiredPlan}
-          </Link>
+          <Link to="/dashboard/billing">Actualizar al Plan {requiredPlan}</Link>
         </Button>
       </div>
     </div>

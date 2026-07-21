@@ -28,7 +28,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
-  }
+  },
 });
 
 async function main() {
@@ -36,10 +36,13 @@ async function main() {
   console.log("🧹 MALLORCA HOLÍSTICA — TEARDOWN QA TEST USERS");
   console.log("=================================================");
 
-  const { data: { users }, error: listErr } = await supabase.auth.admin.listUsers();
+  const {
+    data: { users },
+    error: listErr,
+  } = await supabase.auth.admin.listUsers();
   if (listErr) throw listErr;
 
-  const testUsers = users.filter(u => u.email && u.email.endsWith("@test.mh"));
+  const testUsers = users.filter((u) => u.email && u.email.endsWith("@test.mh"));
   console.log(`Found ${testUsers.length} test @test.mh user accounts to delete.`);
 
   for (const user of testUsers) {
@@ -56,7 +59,7 @@ async function main() {
   console.log("=================================================");
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error("❌ Fatal error in teardown:", err);
   process.exit(1);
 });

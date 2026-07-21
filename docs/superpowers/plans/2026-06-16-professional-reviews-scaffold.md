@@ -13,6 +13,7 @@
 ### Task 1: Add the reviews table and policies
 
 **Files:**
+
 - Create: `supabase/migrations/20260616000000_add_professional_reviews.sql`
 - Modify: `src/integrations/supabase/types.ts`
 
@@ -29,9 +30,11 @@ order by ordinal_position;
 - [ ] **Step 2: Run test to verify it fails**
 
 Run:
+
 ```bash
 npx supabase db push
 ```
+
 Expected: fail because the migration file does not exist yet.
 
 - [ ] **Step 3: Write minimal implementation**
@@ -69,9 +72,11 @@ create policy "professional_reviews_admin_update"
 - [ ] **Step 4: Run test to verify it passes**
 
 Run:
+
 ```bash
 npx supabase db push
 ```
+
 Expected: migration applies successfully and the table is present.
 
 - [ ] **Step 5: Commit**
@@ -84,6 +89,7 @@ git commit -m "Add professional reviews table"
 ### Task 2: Show reviews on paid public profiles
 
 **Files:**
+
 - Modify: `src/features/professionals/ProfessionalProfilePage.tsx`
 - Modify: `src/lib/plan-access.ts`
 - Modify: `src/integrations/supabase/types.ts`
@@ -109,9 +115,11 @@ test("paid published profiles can show reviews", () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 Run:
+
 ```bash
 node --test tests/professional-reviews.test.ts -v
 ```
+
 Expected: fail because `therapistCanShowReviews` does not exist yet.
 
 - [ ] **Step 3: Write minimal implementation**
@@ -123,38 +131,49 @@ export function therapistCanShowReviews(therapist: TherapistAccessLike, plan: Pl
 ```
 
 In `ProfessionalProfilePage.tsx`, add a reviews section that:
+
 ```tsx
-{showReviewsSection && (
-  <section className="mt-10 rounded-3xl border border-border bg-card p-6">
-    <h2 className="font-display text-2xl">Opiniones</h2>
-    {reviews.length === 0 ? (
-      <p className="mt-3 text-sm text-muted-foreground">
-        Aún no hay opiniones. Sé el primero en compartir tu experiencia.
-      </p>
-    ) : (
-      <div className="mt-4 space-y-4">
-        {reviews.map((review) => (
-          <article key={review.id} className="rounded-2xl border border-border bg-background p-4">
-            <div className="flex items-center justify-between gap-3">
-              <strong>{review.reviewer_name.split(" ")[0]}</strong>
-              <span>{Array.from({ length: review.rating ?? 0 }).map(() => "★").join("")}</span>
-            </div>
-            {review.comment && <p className="mt-2 text-sm text-foreground/80">{review.comment}</p>}
-          </article>
-        ))}
-      </div>
-    )}
-    <button type="button">Dejar una opinión</button>
-  </section>
-)}
+{
+  showReviewsSection && (
+    <section className="mt-10 rounded-3xl border border-border bg-card p-6">
+      <h2 className="font-display text-2xl">Opiniones</h2>
+      {reviews.length === 0 ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Aún no hay opiniones. Sé el primero en compartir tu experiencia.
+        </p>
+      ) : (
+        <div className="mt-4 space-y-4">
+          {reviews.map((review) => (
+            <article key={review.id} className="rounded-2xl border border-border bg-background p-4">
+              <div className="flex items-center justify-between gap-3">
+                <strong>{review.reviewer_name.split(" ")[0]}</strong>
+                <span>
+                  {Array.from({ length: review.rating ?? 0 })
+                    .map(() => "★")
+                    .join("")}
+                </span>
+              </div>
+              {review.comment && (
+                <p className="mt-2 text-sm text-foreground/80">{review.comment}</p>
+              )}
+            </article>
+          ))}
+        </div>
+      )}
+      <button type="button">Dejar una opinión</button>
+    </section>
+  );
+}
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
 
 Run:
+
 ```bash
 npm run build
 ```
+
 Expected: build passes and the profile page renders the paid-only reviews section.
 
 - [ ] **Step 5: Commit**
@@ -167,6 +186,7 @@ git commit -m "Show reviews on paid profiles"
 ### Task 3: Add admin moderation for pending reviews
 
 **Files:**
+
 - Modify: `src/routes/dashboard/admin.tsx`
 - Modify: `src/components/admin/AdminRequestsPanel.tsx`
 - Create: `src/components/admin/AdminReviewsPanel.tsx`
@@ -188,9 +208,11 @@ test("admins can moderate reviews", () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 Run:
+
 ```bash
 node --test tests/review-moderation.test.ts -v
 ```
+
 Expected: fail because `canModerateReview` does not exist yet.
 
 - [ ] **Step 3: Write minimal implementation**
@@ -202,6 +224,7 @@ export function canModerateReview(isAdmin: boolean) {
 ```
 
 Add a new admin tab:
+
 ```tsx
 <TabsTrigger value="opiniones">Opiniones</TabsTrigger>
 <TabsContent value="opiniones">
@@ -210,6 +233,7 @@ Add a new admin tab:
 ```
 
 The new panel should:
+
 ```tsx
 // load pending reviews from professional_reviews where is_published = false
 // render therapist name, reviewer_name, rating, comment
@@ -219,9 +243,11 @@ The new panel should:
 - [ ] **Step 4: Run test to verify it passes**
 
 Run:
+
 ```bash
 npm run build
 ```
+
 Expected: build passes and the dashboard shows the new moderation tab.
 
 - [ ] **Step 5: Commit**
@@ -234,24 +260,30 @@ git commit -m "Add reviews moderation tab"
 ### Task 4: Final verification
 
 **Files:**
+
 - All touched files above
 
 - [ ] **Step 1: Run the full verification set**
 
 Run:
+
 ```bash
 npx eslint src/features/professionals/ProfessionalProfilePage.tsx src/lib/plan-access.ts src/routes/dashboard/admin.tsx src/components/admin/AdminReviewsPanel.tsx src/components/admin/AdminRequestsPanel.tsx
 npm run build
 ```
+
 Expected: ESLint passes and the build exits 0.
 
 - [ ] **Step 2: Smoke the public profile and admin review flow**
 
 Run:
+
 ```bash
 npm run dev
 ```
+
 Then verify:
+
 1. FREE profile pages do not show a reviews section.
 2. Paid profile pages show the placeholder or published reviews.
 3. `/dashboard/admin` includes the `Opiniones` tab.

@@ -31,7 +31,7 @@ async function run() {
       .from("therapist_therapies")
       .select("therapy_id, therapies(name, slug), therapists!inner(status)")
       .eq("therapists.status", "published");
-    
+
     if (error) {
       console.log("Error status:", error.status, "Message:", error.message);
     } else {
@@ -45,7 +45,7 @@ async function run() {
           counts[slug].count++;
         }
       }
-      
+
       const sorted = Object.entries(counts).sort((a, b) => b[1].count - a[1].count);
       for (const [slug, info] of sorted) {
         console.log(`- Slug: ${slug}, Name: ${info.name}, Active Professionals: ${info.count}`);

@@ -22,6 +22,7 @@
 ## Task 1: Hero Image And Metadata
 
 **Files:**
+
 - Modify: `src/assets/hero-branch.jpg`
 - Modify: `src/routes/__root.tsx`
 
@@ -85,6 +86,7 @@ git commit -m "feat: update hero image and site metadata"
 ## Task 2: Plan-Aware Contact Helper
 
 **Files:**
+
 - Create: `src/lib/plan-access.ts`
 
 - [ ] **Step 1: Create helper**
@@ -92,11 +94,14 @@ git commit -m "feat: update hero image and site metadata"
 Create `src/lib/plan-access.ts`:
 
 ```ts
-type PlanLike = {
-  slug?: string | null;
-  name?: string | null;
-  price_monthly_cents?: number | null;
-} | null | undefined;
+type PlanLike =
+  | {
+      slug?: string | null;
+      name?: string | null;
+      price_monthly_cents?: number | null;
+    }
+  | null
+  | undefined;
 
 const paidPlanSlugs = new Set([
   "profesional",
@@ -141,6 +146,7 @@ git commit -m "feat: add plan-aware contact helper"
 ## Task 3: Therapist Profile MVP Layout
 
 **Files:**
+
 - Modify: `src/routes/profesionales.$slug.tsx`
 
 - [ ] **Step 1: Extend Supabase select**
@@ -219,6 +225,7 @@ git commit -m "feat: polish therapist profile page"
 ## Task 4: Conversational Search Tone
 
 **Files:**
+
 - Modify: `src/routes/buscar.tsx`
 
 - [ ] **Step 1: Simplify the AI result intro display**
@@ -269,6 +276,7 @@ git commit -m "feat: soften conversational search results"
 ## Task 5: Testimonials
 
 **Files:**
+
 - Modify: `src/components/home/Testimonials.tsx`
 
 - [ ] **Step 1: Replace testimonial data with three owner-provided quotes**
@@ -309,9 +317,7 @@ Use a responsive three-card grid:
 Use a quieter quote style:
 
 ```tsx
-<blockquote className="text-sm leading-relaxed text-foreground/80">
-  {t.quote}
-</blockquote>
+<blockquote className="text-sm leading-relaxed text-foreground/80">{t.quote}</blockquote>
 ```
 
 - [ ] **Step 3: Verify**
@@ -336,6 +342,7 @@ git commit -m "feat: refine homepage testimonials"
 ## Task 6: Final Verification
 
 **Files:**
+
 - No new files unless fixes are needed.
 
 - [ ] **Step 1: Run lint**
